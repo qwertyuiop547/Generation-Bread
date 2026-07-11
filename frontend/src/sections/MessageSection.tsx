@@ -162,7 +162,7 @@ const MessageSection = () => {
       <div className="container mx-auto flex-center py-12 sm:py-16 md:py-24 relative">
         <div className="w-full h-full">
           <div className="msg-wrapper">
-            <h1 className="first-message">Stir up your fearless past and</h1>
+            <h1 className="first-message">Slow down, take a warm bite, and</h1>
 
             <div
               style={{
@@ -171,18 +171,18 @@ const MessageSection = () => {
               className="msg-text-scroll"
             >
               <div className="bg-light-brown">
-                <h2>Fuel Up</h2>
+                <h2>Warm Up</h2>
               </div>
             </div>
 
-            <h1 className="second-message">every meal with fresh flavors from Generation Bread</h1>
+            <h1 className="second-message">every day with soft bakes from Generation Bread</h1>
           </div>
 
           <div className="flex-center md:mt-20 mt-6">
             <div className="max-w-md px-10 flex-center overflow-hidden">
               <p className="message-content-copy">
-                Rev up your rebel spirit and feed the adventure of life with Generation Bread, where every bite brings warmth, comfort, and fearless
-                fun.
+                From melty cheese rolls to ube pandesal and matcha — Generation Bread brings Tacloban City comfort,
+                baked fresh and served with heart.
               </p>
             </div>
           </div>

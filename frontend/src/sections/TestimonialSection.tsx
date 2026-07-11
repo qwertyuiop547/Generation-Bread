@@ -156,7 +156,7 @@ const TestimonialSection = () => {
         <h1 className="text-black third-title">Craving</h1>
       </div>
 
-      <p className="testimonials-swipe-hint md:hidden">Swipe to see all {card.length} customer moments →</p>
+      <p className="testimonials-swipe-hint md:hidden">Swipe to see all {card.length} cafe moments →</p>
 
       <div ref={pinBoxRef} className="pin-box testimonials-pin-box">
         {card.map((cardItem, index) => {
