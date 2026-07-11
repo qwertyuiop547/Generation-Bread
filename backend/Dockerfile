@@ -17,5 +17,5 @@ COPY . .
 
 EXPOSE 8000
 
-# Migrate then serve ASGI (0.0.0.0:$PORT required on Render)
-CMD ["sh", "-c", "python manage.py migrate --noinput && daphne -b 0.0.0.0 -p ${PORT} spylt_backend.asgi:application"]
+# Migrate + seed demo accounts/menu, then serve ASGI (0.0.0.0:$PORT required on Render)
+CMD ["sh", "-c", "python manage.py migrate --noinput && python seed_users.py && python seed_menu.py && daphne -b 0.0.0.0 -p ${PORT} spylt_backend.asgi:application"]
