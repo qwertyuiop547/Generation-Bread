@@ -991,7 +991,26 @@ def admin_staff_feedback_view(request):
     admin_user, err = _require_staff_actor(request)
     if err:
         return err
-    orders = Order.objects.filter(is_archived=True).order_by('-created_at')
+    try:
+        days = int(request.query_params.get('days', 90))
+    except (TypeError, ValueError):
+        days = 90
+    return Response(staff_feedback.build_staff_feedback_report(days=days))
+
+
+@api_view(['GET'])
+@permission_classes([IsStaffOrAdmin])
+def admin_orders_archived_view(request):
+    """List archived orders for admin review."""
+    admin_user, err = _require_staff_actor(request)
+    if err:
+        return err
+    orders = (
+        Order.objects.filter(is_archived=True)
+        .select_related('user', 'served_by')
+        .prefetch_related('items')
+        .order_by('-created_at')
+    )
     serializer = OrderSerializer(orders, many=True)
     return Response(serializer.data)
 
