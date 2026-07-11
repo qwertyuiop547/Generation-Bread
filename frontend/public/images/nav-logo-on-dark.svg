@@ -1,0 +1,43 @@
+<svg width="220" height="55" viewBox="0 0 220 55" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="logoFillOnDark" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FAEADE"/>
+      <stop offset="100%" stop-color="#E8D4C0"/>
+    </linearGradient>
+    <filter id="logoShadowOnDark" x="-20%" y="-20%" width="140%" height="160%">
+      <feDropShadow dx="0" dy="1" stdDeviation="1.4" flood-color="#1A120C" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+  <text
+    x="110"
+    y="23"
+    text-anchor="middle"
+    fill="url(#logoFillOnDark)"
+    stroke="#2A1810"
+    stroke-width="0.45"
+    paint-order="stroke fill"
+    filter="url(#logoShadowOnDark)"
+    font-family="Antonio, Arial Black, sans-serif"
+    font-size="20"
+    font-weight="700"
+    letter-spacing="0.8"
+  >
+    Generation
+  </text>
+  <text
+    x="110"
+    y="45"
+    text-anchor="middle"
+    fill="url(#logoFillOnDark)"
+    stroke="#2A1810"
+    stroke-width="0.45"
+    paint-order="stroke fill"
+    filter="url(#logoShadowOnDark)"
+    font-family="Antonio, Arial Black, sans-serif"
+    font-size="20"
+    font-weight="700"
+    letter-spacing="0.8"
+  >
+    Bread
+  </text>
+</svg>

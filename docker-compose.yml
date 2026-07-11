@@ -1,0 +1,61 @@
+# Local / staging stack for horizontal scale testing.
+# Usage:
+#   docker compose up -d postgres redis
+#   set REDIS_URL=redis://127.0.0.1:6379/0
+#   daphne -b 0.0.0.0 -p 8000 spylt_backend.asgi:application
+#
+# Or run the API container (after building):
+#   docker compose up --scale api=3
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: spylt_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - gb_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d spylt_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--maxmemory", "512mb", "--maxmemory-policy", "allkeys-lru"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      DJANGO_DEBUG: "false"
+      DJANGO_SECRET_KEY: local-compose-secret-change-me
+      DJANGO_ALLOWED_HOSTS: "*"
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/spylt_db
+      REDIS_URL: redis://redis:6379/0
+      DB_CONN_MAX_AGE: "60"
+      WS_MAX_CONNECTIONS_PER_PROCESS: "2500"
+      WS_MAX_CONNECTIONS_GLOBAL: "60000"
+      PORT: "8000"
+    ports:
+      - "8000-8002:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  gb_pg:

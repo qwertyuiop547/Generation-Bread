@@ -1,0 +1,39 @@
+# Secrets
+.env
+.env.local
+**/.env
+**/.env.local
+backend/.env
+
+# Dependencies / envs
+node_modules/
+.venv/
+venv/
+**/__pycache__/
+*.pyc
+
+# Build / IDE / OS
+.next/
+out/
+dist/
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.cursor/
+
+# Local artifacts
+tmp/
+output/
+*.sqlite3
+backend/media/
+*.err
+*.out
+**/.codex-*
+**/next-dev.*
+**/django.err
+**/django.out
+**/runserver.*
+
+# Docs binaries optional — keep feature overview if you want it in repo
+# Generation_Bread_Feature_Overview_Updated.docx
