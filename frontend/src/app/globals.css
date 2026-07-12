@@ -33,6 +33,102 @@ body {
   overflow-x: hidden;
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE 10+ */
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Sky blue + white goods theme — remaps brand tokens app-wide */
+html[data-theme="sky"] {
+  --color-black: #0f172a;
+  --color-main-bg: #0c4a6e;
+  --color-dark-brown: #0c4a6e;
+  --color-mid-brown: #0284c7;
+  --color-light-brown: #38bdf8;
+  --color-red-brown: #0369a1;
+  --color-yellow-brown: #0ea5e9;
+  --color-milk-yellow: #e0f2fe;
+  --color-red: #dc2626;
+  --color-milk: #f8fafc;
+  --color-white: #ffffff;
+}
+
+html[data-theme="sky"],
+html[data-theme="sky"] body {
+  background-color: #f0f9ff;
+  color: #0c4a6e;
+}
+
+html[data-theme="sky"] .message-content {
+  background-color: #0369a1;
+}
+
+html[data-theme="sky"] .footer-section,
+html[data-theme="sky"] footer {
+  background-color: #0c4a6e;
+}
+
+.footer-stage {
+  background:
+    radial-gradient(ellipse 80% 45% at 50% 0%, rgba(162, 104, 51, 0.32), transparent 55%),
+    #1a191b;
+}
+
+html[data-theme="sky"] .footer-stage {
+  background:
+    radial-gradient(ellipse 80% 45% at 50% 0%, rgba(56, 189, 248, 0.28), transparent 55%),
+    #0c4a6e;
+}
+
+/* Theme-aware app surfaces (dashboard / auth) — UI only, not photos/videos */
+.app-canvas {
+  background-color: #f3e6d6;
+}
+.app-header-bar {
+  background-color: rgba(246, 235, 224, 0.9);
+}
+.app-panel {
+  background-color: rgba(255, 250, 244, 0.9);
+  border-color: rgba(201, 165, 116, 0.35);
+}
+.app-chip {
+  background-color: #fffaf4;
+  border-color: rgba(201, 165, 116, 0.35);
+}
+
+html[data-theme="sky"] .app-canvas {
+  background-color: #f0f9ff;
+}
+html[data-theme="sky"] .app-header-bar {
+  background-color: rgba(248, 250, 252, 0.92);
+}
+html[data-theme="sky"] .app-panel {
+  background-color: rgba(255, 255, 255, 0.95);
+  border-color: rgba(14, 165, 233, 0.28);
+}
+html[data-theme="sky"] .app-chip {
+  background-color: #ffffff;
+  border-color: rgba(14, 165, 233, 0.28);
+}
+
+/*
+ * Media lock: theme switch must NEVER tint/blur/wash photos or videos.
+ * Only UI chrome (buttons, text tokens, panel fills) should change.
+ */
+.hero-container,
+.hero-container video,
+.hero-container img,
+.flavor-section img,
+.nutrition-section img,
+.testimonials-section video,
+.vd-card video,
+.video-box video,
+img.theme-lock-media,
+video.theme-lock-media {
+  filter: none !important;
+  opacity: 1;
+}
+
+.hero-media-scrim {
+  display: none !important;
 }
 
 body::-webkit-scrollbar {
@@ -60,13 +156,12 @@ body::-webkit-scrollbar {
   }
 
   .hero-container {
-    @apply relative bg-milk w-screen h-dvh overflow-hidden;
+    @apply relative w-screen h-dvh overflow-hidden;
+    background-color: #111111; /* fixed — never follows theme */
     will-change: transform;
 
     .hero-media-scrim {
-      @apply pointer-events-none absolute inset-0 z-[1]
-        bg-gradient-to-b from-[#faeade]/55 via-[#faeade]/25 to-[#faeade]/70
-        md:from-[#faeade]/20 md:via-transparent md:to-[#faeade]/45;
+      display: none;
     }
 
     .hero-content {
@@ -80,6 +175,7 @@ body::-webkit-scrollbar {
           mb-3
           md:text-[6.5rem] md:leading-[9vw] md:tracking-[-.35vw] md:mb-5
           2xl:text-[8.5rem] 2xl:mb-0;
+        text-shadow: none;
       }
 
       .hero-text-scroll {
@@ -91,7 +187,7 @@ body::-webkit-scrollbar {
         }
 
         h1 {
-          @apply uppercase font-bold text-[#fce1cd] text-center
+          @apply uppercase font-bold text-white text-center
             text-[clamp(1.85rem,8.2vw,3.2rem)] leading-[0.95] tracking-[-0.03em]
             px-3.5 py-2.5
             md:text-[6.5rem] md:leading-[9vw] md:tracking-[-.35vw]
@@ -105,6 +201,7 @@ body::-webkit-scrollbar {
           max-w-[18rem] sm:max-w-sm md:max-w-lg
           px-2 text-[0.95rem] sm:text-base md:text-lg leading-snug
           mt-1 md:mt-3;
+        text-shadow: none;
       }
 
       .hero-button {
@@ -322,7 +419,8 @@ body::-webkit-scrollbar {
   }
 
   .benefit-section {
-    @apply min-h-dvh bg-[#222123] overflow-x-clip relative pt-24 scroll-mt-24 md:pt-0 md:scroll-mt-0;
+    @apply min-h-dvh bg-main-bg overflow-x-clip relative pt-24 scroll-mt-24 md:pt-0 md:scroll-mt-0;
+    transition: background-color 0.25s ease;
 
     p {
       @apply text-milk font-paragraph text-center text-base sm:text-lg px-4;

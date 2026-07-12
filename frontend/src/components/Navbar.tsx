@@ -1,18 +1,17 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { signOut } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { performLogout } from "@/lib/logoutTransition";
+import BrandLogo from "@/components/BrandLogo";
 
 const Navbar = () => {
   const { isLoggedIn, isAdmin, user } = useAuth();
   const pathname = usePathname();
   const isHome = pathname === "/";
-  // Home stays transparent; other pages use a solid bar.
   const [solidNav, setSolidNav] = useState(!isHome);
 
   useEffect(() => {
@@ -32,14 +31,7 @@ const Navbar = () => {
       }`}
     >
       <Link href="/" className="shrink-0">
-        <Image
-          priority
-          width={220}
-          height={55}
-          src="/images/nav-logo.svg"
-          alt="Generation Bread"
-          className="h-7 w-auto sm:h-8 md:h-10 cursor-pointer"
-        />
+        <BrandLogo priority />
       </Link>
       <div className="flex items-center gap-2 sm:gap-4 md:gap-8 md:pr-4 shrink-0">
         {isLoggedIn ? (

@@ -16,6 +16,7 @@ import {
 import PageIntro from "@/components/PageIntro";
 import { performLogout } from "@/lib/logoutTransition";
 import { withWsToken } from "@/lib/authHeaders";
+import BrandLogo from "@/components/BrandLogo";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
 
@@ -850,7 +851,7 @@ export default function DashboardPage() {
       onFinish={() => setIntroDone(true)}
     >
     {dashboardReady ? (
-    <div ref={containerRef} className="min-h-screen bg-[#f3e6d6] relative overflow-x-hidden">
+    <div ref={containerRef} className="min-h-screen app-canvas relative overflow-x-hidden">
       <div
         className="pointer-events-none absolute inset-0 opacity-90"
         style={{
@@ -860,16 +861,12 @@ export default function DashboardPage() {
       />
 
       {/* Header */}
-      <div className="dashboard-header sticky top-0 z-40 bg-[#f6ebe0]/90 backdrop-blur-xl border-b border-dark-brown/10">
+      <div className="dashboard-header sticky top-0 z-40 app-header-bar backdrop-blur-xl border-b border-dark-brown/10">
         <div className="flex items-center justify-between px-5 md:px-10 py-3.5 md:py-4">
           <div className="flex items-center gap-4">
             <Link href="/" className="dashboard-nav-item shrink-0">
-              <Image
+              <BrandLogo
                 priority
-                width={220}
-                height={55}
-                src="/images/nav-logo.svg"
-                alt="Generation Bread"
                 className="h-7 w-auto sm:h-8 md:h-10 cursor-pointer hover:scale-105 transition-transform drop-shadow-md"
               />
             </Link>
@@ -877,7 +874,7 @@ export default function DashboardPage() {
           <div className="flex items-center gap-2 sm:gap-3 justify-end relative">
             <button
               onClick={toggleLanguage}
-              className="dashboard-nav-item bg-[#fffaf4] hover:bg-light-brown/30 text-dark-brown font-bold text-xs md:text-sm rounded-full py-1.5 px-3 md:py-2 md:px-4 transition-all uppercase border border-[#c9a574]/35 shadow-sm"
+              className="dashboard-nav-item app-chip hover:bg-light-brown/30 text-dark-brown font-bold text-xs md:text-sm rounded-full py-1.5 px-3 md:py-2 md:px-4 transition-all uppercase border shadow-sm"
             >
               {language}
             </button>
@@ -932,7 +929,7 @@ export default function DashboardPage() {
               )}
               <Link
                 href="/profile"
-                className="dashboard-nav-item group flex items-center gap-2 bg-[#fffaf4] hover:bg-dark-brown text-dark-brown hover:text-milk font-bold text-sm uppercase rounded-full py-2 px-4 transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5 border border-[#c9a574]/35"
+                className="dashboard-nav-item group flex items-center gap-2 app-chip hover:bg-dark-brown text-dark-brown hover:text-milk font-bold text-sm uppercase rounded-full py-2 px-4 transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5 border"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -948,7 +945,7 @@ export default function DashboardPage() {
         {showMobileMenu && (
           <div
             ref={mobileMenuRef}
-            className="mobile-nav-menu md:hidden absolute top-[100%] right-0 w-full bg-[#f6ebe0]/98 backdrop-blur-md border-b border-dark-brown/10 shadow-[0_16px_40px_-18px_rgba(82,49,34,0.45)] flex flex-col items-center py-5 gap-3 z-50 will-change-transform"
+            className="mobile-nav-menu md:hidden absolute top-[100%] right-0 w-full app-header-bar backdrop-blur-md border-b border-dark-brown/10 shadow-[0_16px_40px_-18px_rgba(82,49,34,0.45)] flex flex-col items-center py-5 gap-3 z-50 will-change-transform"
           >
             {mostOrderedDrink && (
               <button onClick={() => { closeMobileMenu(); setShowTopDrinksModal(true); }} className="mobile-nav-item flex items-center gap-3 w-[90%] bg-gradient-to-r from-[#d4af37]/20 to-[#e9d28c]/40 text-[#5c4205] font-bold text-sm uppercase rounded-xl py-3 px-5 transition-all shadow-sm active:scale-[0.98]">
@@ -959,7 +956,7 @@ export default function DashboardPage() {
             <Link
               href="/profile"
               onClick={closeMobileMenu}
-              className="mobile-nav-item flex items-center gap-3 w-[90%] bg-[#fffaf4] hover:bg-dark-brown/5 text-dark-brown font-bold text-sm uppercase rounded-xl py-3 px-5 transition-all shadow-sm border border-[#c9a574]/30 active:scale-[0.98]"
+              className="mobile-nav-item flex items-center gap-3 w-[90%] app-chip hover:bg-dark-brown/5 text-dark-brown font-bold text-sm uppercase rounded-xl py-3 px-5 transition-all shadow-sm border active:scale-[0.98]"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -997,15 +994,15 @@ export default function DashboardPage() {
 
         {/* Stats */}
         <div className={`grid grid-cols-1 ${mostOrderedDrink ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-3'} gap-3.5 md:gap-5 mb-7 md:mb-10`}>
-          <div className="dashboard-stagger-item bg-[#fffaf4]/90 border border-[#c9a574]/35 rounded-3xl p-5 md:p-6 shadow-[0_8px_28px_-12px_rgba(82,49,34,0.25)] hover:shadow-[0_12px_32px_-10px_rgba(82,49,34,0.3)] transition-shadow">
+          <div className="dashboard-stagger-item app-panel border rounded-3xl p-5 md:p-6 shadow-[0_8px_28px_-12px_rgba(82,49,34,0.25)] hover:shadow-[0_12px_32px_-10px_rgba(82,49,34,0.3)] transition-shadow">
             <p className="font-paragraph text-dark-brown/50 text-xs uppercase tracking-wider mb-1.5">{t("Total Orders")}</p>
             <p className="text-3xl md:text-4xl font-bold text-dark-brown tracking-tight">{lifetimeTotalOrders}</p>
           </div>
-          <div className="dashboard-stagger-item bg-[#fffaf4]/90 border border-[#c9a574]/35 rounded-3xl p-5 md:p-6 shadow-[0_8px_28px_-12px_rgba(82,49,34,0.25)] hover:shadow-[0_12px_32px_-10px_rgba(82,49,34,0.3)] transition-shadow">
+          <div className="dashboard-stagger-item app-panel border rounded-3xl p-5 md:p-6 shadow-[0_8px_28px_-12px_rgba(82,49,34,0.25)] hover:shadow-[0_12px_32px_-10px_rgba(82,49,34,0.3)] transition-shadow">
             <p className="font-paragraph text-dark-brown/50 text-xs uppercase tracking-wider mb-1.5">{t("Total Spent")}</p>
             <p className="text-3xl md:text-4xl font-bold text-dark-brown tracking-tight">₱{lifetimeTotalSpent.toFixed(2)}</p>
           </div>
-          <div className="dashboard-stagger-item bg-[#fffaf4]/90 border border-[#c9a574]/35 rounded-3xl p-5 md:p-6 shadow-[0_8px_28px_-12px_rgba(82,49,34,0.25)] hover:shadow-[0_12px_32px_-10px_rgba(82,49,34,0.3)] transition-shadow">
+          <div className="dashboard-stagger-item app-panel border rounded-3xl p-5 md:p-6 shadow-[0_8px_28px_-12px_rgba(82,49,34,0.25)] hover:shadow-[0_12px_32px_-10px_rgba(82,49,34,0.3)] transition-shadow">
             <p className="font-paragraph text-dark-brown/50 text-xs uppercase tracking-wider mb-1.5">{t("Completed")}</p>
             <p className="text-3xl md:text-4xl font-bold text-dark-brown tracking-tight">{lifetimeCompleted}</p>
           </div>
@@ -1069,7 +1066,7 @@ export default function DashboardPage() {
           <h3 className="text-xl md:text-2xl font-bold text-dark-brown uppercase tracking-tight mb-1.5">{t("Spending Insights") || "Spending Insights"}</h3>
           <p className="font-paragraph text-dark-brown/45 text-sm mb-4">{t("Your monthly trends") || "Your monthly trends"}</p>
           {spendingData.length === 0 ? (
-            <div className="bg-[#fffaf4]/90 border border-[#c9a574]/35 rounded-3xl shadow-[0_8px_28px_-12px_rgba(82,49,34,0.25)] p-8 md:p-12 text-center">
+            <div className="app-panel border rounded-3xl shadow-[0_8px_28px_-12px_rgba(82,49,34,0.25)] p-8 md:p-12 text-center">
               <p className="text-4xl mb-3">📊</p>
               <p className="font-paragraph text-dark-brown/60 text-lg">{t("No spending data yet") || "No spending data yet"}</p>
               <p className="font-paragraph text-dark-brown/40 text-sm mt-1">{t("Complete an order to see your spending trends") || "Complete an order to see your spending trends"}</p>
@@ -1078,15 +1075,15 @@ export default function DashboardPage() {
             <>
               {/* Summary Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                <div className="bg-[#fffaf4]/90 border border-[#c9a574]/35 rounded-3xl shadow-[0_8px_28px_-12px_rgba(82,49,34,0.25)] p-4 md:p-5">
+                <div className="app-panel border rounded-3xl shadow-[0_8px_28px_-12px_rgba(82,49,34,0.25)] p-4 md:p-5">
                   <p className="font-paragraph text-dark-brown/50 text-xs mb-1 uppercase tracking-wider">{t("Avg Monthly") || "Avg Monthly"}</p>
                   <p className="text-2xl md:text-3xl font-bold text-dark-brown">₱{spendingSummary?.avg_monthly?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || "0.00"}</p>
                 </div>
-                <div className="bg-[#fffaf4]/90 border border-[#c9a574]/35 rounded-3xl shadow-[0_8px_28px_-12px_rgba(82,49,34,0.25)] p-4 md:p-5">
+                <div className="app-panel border rounded-3xl shadow-[0_8px_28px_-12px_rgba(82,49,34,0.25)] p-4 md:p-5">
                   <p className="font-paragraph text-dark-brown/50 text-xs mb-1 uppercase tracking-wider">{t("Months Active") || "Months Active"}</p>
                   <p className="text-2xl md:text-3xl font-bold text-dark-brown">{spendingSummary?.months_tracked || 0}</p>
                 </div>
-                <div className="bg-[#fffaf4]/90 border border-[#c9a574]/35 rounded-3xl shadow-[0_8px_28px_-12px_rgba(82,49,34,0.25)] p-4 md:p-5">
+                <div className="app-panel border rounded-3xl shadow-[0_8px_28px_-12px_rgba(82,49,34,0.25)] p-4 md:p-5">
                   <p className="font-paragraph text-dark-brown/50 text-xs mb-1 uppercase tracking-wider">{t("Top Month") || "Top Month"}</p>
                   <p className="text-2xl md:text-3xl font-bold text-dark-brown">{spendingSummary?.top_month?.month || "—"}</p>
                   {spendingSummary?.top_month && (
@@ -1096,7 +1093,7 @@ export default function DashboardPage() {
               </div>
 
               {/* Chart */}
-              <div className="bg-[#fffaf4]/90 border border-[#c9a574]/35 rounded-3xl shadow-[0_8px_28px_-12px_rgba(82,49,34,0.25)] p-5 md:p-6">
+              <div className="app-panel border rounded-3xl shadow-[0_8px_28px_-12px_rgba(82,49,34,0.25)] p-5 md:p-6">
                 <h4 className="text-base font-bold text-dark-brown uppercase tracking-tight mb-4">{t("Monthly Spending") || "Monthly Spending"}</h4>
                 <div className="h-64 min-h-[16rem] w-full">
                   {chartReady ? (
@@ -1176,7 +1173,7 @@ export default function DashboardPage() {
           <h3 className="text-xl md:text-2xl font-bold text-dark-brown uppercase tracking-tight mb-1.5">{t("Recent Orders")}</h3>
           <p className="font-paragraph text-dark-brown/45 text-sm mb-4">{t("Your latest activity") || "Your latest activity"}</p>
           {orders.length === 0 ? (
-            <div className="bg-[#fffaf4]/90 border border-[#c9a574]/35 rounded-3xl shadow-[0_8px_28px_-12px_rgba(82,49,34,0.25)] p-8 md:p-12 text-center">
+            <div className="app-panel border rounded-3xl shadow-[0_8px_28px_-12px_rgba(82,49,34,0.25)] p-8 md:p-12 text-center">
               <p className="text-5xl mb-4">🥤</p>
               <p className="font-paragraph text-dark-brown/60 text-lg">{t("No orders yet")}</p>
               <p className="font-paragraph text-dark-brown/40 text-sm mt-1">{t("Place your first order from the menu!")}</p>
@@ -1187,7 +1184,7 @@ export default function DashboardPage() {
           ) : (
             <div className="flex flex-col gap-4">
               {orders.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((order) => (
-                <div key={order.id} id={`receipt-${order.id}`} className="paginated-order bg-[#fffaf4]/90 border border-[#c9a574]/35 rounded-3xl shadow-[0_8px_28px_-12px_rgba(82,49,34,0.25)] p-5 md:p-6">
+                <div key={order.id} id={`receipt-${order.id}`} className="paginated-order app-panel border rounded-3xl shadow-[0_8px_28px_-12px_rgba(82,49,34,0.25)] p-5 md:p-6">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">

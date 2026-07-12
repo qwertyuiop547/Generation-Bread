@@ -245,7 +245,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onLoaded, triggerAnimation })
   );
 
   return (
-    <section ref={sectionRef} className="bg-main-bg">
+    <section ref={sectionRef} className="bg-[#111111]">
       <div className="hero-container">
         {useMobileFallback ? (
           <Image
@@ -253,7 +253,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onLoaded, triggerAnimation })
             alt="Generation Bread cheese roll"
             fill
             priority
-            className="absolute inset-0 w-full h-full object-cover object-[center_40%] md:hidden"
+            className="theme-lock-media absolute inset-0 w-full h-full object-cover object-[center_40%] md:hidden"
           />
         ) : (
           <video
@@ -264,7 +264,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onLoaded, triggerAnimation })
             playsInline
             preload="auto"
             poster={HERO_STILL}
-            className="absolute inset-0 w-full h-full object-cover object-[center_35%] md:hidden"
+            className="theme-lock-media absolute inset-0 w-full h-full object-cover object-[center_35%] md:hidden"
             onError={() => {
               setUseMobileFallback(true);
               markLoaded();
@@ -285,7 +285,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onLoaded, triggerAnimation })
           playsInline
           preload="auto"
           poster={HERO_STILL}
-          className="absolute inset-0 hidden h-full w-full object-cover md:block"
+          className="theme-lock-media absolute inset-0 hidden h-full w-full object-cover md:block"
           onCanPlayThrough={() => {
             markLoaded();
           }}
@@ -293,7 +293,6 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onLoaded, triggerAnimation })
             markLoaded();
           }}
         />
-        <div className="hero-media-scrim" aria-hidden />
         <div className="hero-content opacity-0">
           <div className="overflow-hidden">
             <h1 className="hero-title">Freaking Delicious</h1>

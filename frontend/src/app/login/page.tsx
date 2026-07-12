@@ -8,6 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 import { signIn } from "next-auth/react";
 import IntroHomeLink from "@/components/IntroHomeLink";
 import PageIntro from "@/components/PageIntro";
+import BrandLogo from "@/components/BrandLogo";
 
 const inputClass =
   "w-full rounded-2xl border border-[#c9a574]/45 bg-[#faf3e8] px-4 py-3.5 font-paragraph text-base text-dark-brown outline-none transition-all placeholder:text-dark-brown/35 focus:border-light-brown focus:bg-[#fffaf4] focus:ring-2 focus:ring-light-brown/30 [color-scheme:light] autofill:shadow-[inset_0_0_0_1000px_#faf3e8]";
@@ -62,7 +63,7 @@ function LoginPageContent() {
 
   return (
     <PageIntro>
-      <div className="login-page relative min-h-dvh overflow-x-hidden bg-[#f3e6d6] text-dark-brown">
+      <div className="login-page relative min-h-dvh overflow-x-hidden app-canvas text-dark-brown">
         <div className="relative z-10 grid min-h-dvh lg:grid-cols-2">
           {/* Desktop brand panel */}
           <aside className="relative hidden min-h-dvh overflow-hidden lg:block">
@@ -82,12 +83,11 @@ function LoginPageContent() {
 
             <div className="absolute inset-0 flex flex-col justify-between p-10 xl:p-14">
               <IntroHomeLink href="/" className="w-fit">
-                <Image
+                <BrandLogo
                   priority
                   width={160}
                   height={40}
-                  src="/images/nav-logo-on-dark.svg"
-                  alt="Generation Bread"
+                  onDark
                   className="h-10 w-auto opacity-95 hover:opacity-100 transition-opacity"
                 />
               </IntroHomeLink>
@@ -133,12 +133,11 @@ function LoginPageContent() {
                   Home
                 </IntroHomeLink>
                 <IntroHomeLink href="/">
-                  <Image
+                  <BrandLogo
                     priority
                     width={120}
                     height={30}
-                    src="/images/nav-logo-on-dark.svg"
-                    alt="Generation Bread"
+                    onDark
                     className="h-7 w-auto opacity-95"
                   />
                 </IntroHomeLink>

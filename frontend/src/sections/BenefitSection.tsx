@@ -6,11 +6,28 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/all";
 import ClipPathTitle from "@/components/ClipPathTitle";
 import { smoothScrollVars } from "@/lib/scrollConfig";
+import { useTheme } from "@/context/ThemeContext";
 
 gsap.registerPlugin(ScrollTrigger);
 
+const WARM_STICKERS = [
+  { title: "Fresh Bakes", color: "#faeade", bg: "#c88e64", borderColor: "#222123", className: "first-title" },
+  { title: "Tacloban City", color: "#222123", bg: "#faeade", borderColor: "#222123", className: "second-title" },
+  { title: "Dine & Pickup", color: "#faeade", bg: "#7F3B2D", borderColor: "#222123", className: "third-title" },
+  { title: "Soft & Siksik", color: "#2E2D2F", bg: "#FED775", borderColor: "#222123", className: "fourth-title" },
+] as const;
+
+const SKY_STICKERS = [
+  { title: "Fresh Bakes", color: "#f0f9ff", bg: "#38bdf8", borderColor: "#0c4a6e", className: "first-title" },
+  { title: "Tacloban City", color: "#0c4a6e", bg: "#f8fafc", borderColor: "#0c4a6e", className: "second-title" },
+  { title: "Dine & Pickup", color: "#f0f9ff", bg: "#0369a1", borderColor: "#0c4a6e", className: "third-title" },
+  { title: "Soft & Siksik", color: "#0f172a", bg: "#7dd3fc", borderColor: "#0c4a6e", className: "fourth-title" },
+] as const;
+
 const BenefitSection = () => {
   const sectionRef = useRef<HTMLElement>(null);
+  const { theme } = useTheme();
+  const stickers = theme === "sky" ? SKY_STICKERS : WARM_STICKERS;
 
   useGSAP(
     () => {
@@ -53,7 +70,6 @@ const BenefitSection = () => {
           start: "top 72%",
           end: "center 45%",
           scrub: 1,
-          // Element scroller — string "#smooth-wrapper" is scoped inside section and is null
           ...smoothScrollVars(section),
         },
       });
@@ -74,7 +90,7 @@ const BenefitSection = () => {
 
       if (outro) tl.to(outro, { autoAlpha: 1, y: 0, duration: 0.5 }, "-=0.15");
     },
-    { scope: sectionRef, dependencies: [] }
+    { scope: sectionRef, dependencies: [theme] }
   );
 
   return (
@@ -87,10 +103,16 @@ const BenefitSection = () => {
           </p>
 
           <div className="mt-12 sm:mt-16 md:mt-20 col-center benefit-titles">
-            <ClipPathTitle title={"Fresh Bakes"} color={"#faeade"} bg={"#c88e64"} className={"first-title"} borderColor={"#222123"} />
-            <ClipPathTitle title={"Tacloban City"} color={"#222123"} bg={"#faeade"} className={"second-title"} borderColor={"#222123"} />
-            <ClipPathTitle title={"Dine & Pickup"} color={"#faeade"} bg={"#7F3B2D"} className={"third-title"} borderColor={"#222123"} />
-            <ClipPathTitle title={"Soft & Siksik"} color={"#2E2D2F"} bg={"#FED775"} className={"fourth-title"} borderColor={"#222123"} />
+            {stickers.map((item) => (
+              <ClipPathTitle
+                key={`${theme}-${item.title}`}
+                title={item.title}
+                color={item.color}
+                bg={item.bg}
+                className={item.className}
+                borderColor={item.borderColor}
+              />
+            ))}
           </div>
 
           <div className="benefit-outro md:mt-0 mt-10">

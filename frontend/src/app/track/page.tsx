@@ -16,6 +16,7 @@ import {
 import { GB_EASE } from "@/lib/motion";
 import OrderProgress from "@/components/OrderProgress";
 import { withWsToken } from "@/lib/authHeaders";
+import BrandLogo from "@/components/BrandLogo";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
 
@@ -298,11 +299,7 @@ function TrackPageContent() {
         <div className="flex items-center justify-between px-5 md:px-10 py-4">
           <div className="flex items-center gap-4">
             <Link href="/" className="shrink-0">
-              <Image
-                width={220}
-                height={55}
-                src="/images/nav-logo.svg"
-                alt="Generation Bread"
+              <BrandLogo
                 className="h-7 w-auto sm:h-8 md:h-10 cursor-pointer hover:scale-105 transition-transform drop-shadow-lg"
               />
             </Link>
