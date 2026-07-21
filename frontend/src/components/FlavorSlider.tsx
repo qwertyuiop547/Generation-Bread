@@ -186,7 +186,7 @@ const FlavorSlider = () => {
               alt={flavor.name}
               fill
               sizes="(max-width: 768px) 88vw, (max-width: 1024px) 90vw, 50vw"
-              className="flavor-product object-cover object-[center_40%] scale-[1.12]"
+              className="flavor-product theme-lock-media object-cover object-[center_40%] scale-[1.12]"
               unoptimized
             />
             <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/45 to-transparent" />

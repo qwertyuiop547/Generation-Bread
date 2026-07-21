@@ -391,7 +391,7 @@ export default function OrderPage() {
   };
 
   const PAYMENT_OPTIONS = [
-    { id: "cash" as const, label: "Cash", desc: "Pay at the counter", cashless: false, accent: "#523122" },
+    { id: "cash" as const, label: "Cash", desc: "Pay at the counter", cashless: false, accent: "var(--color-dark-brown)" },
     { id: "gcash" as const, label: "GCash", desc: "Scan & pay via GCash", cashless: true, accent: "#007DFE" },
     { id: "gotyme" as const, label: "GoTyme", desc: "Scan & pay via GoTyme", cashless: true, accent: "#00A651" },
     { id: "card" as const, label: "Card", desc: "Debit / credit terminal", cashless: true, accent: "#1e293b" },
@@ -693,13 +693,13 @@ export default function OrderPage() {
   }, [cart, isLoggedIn, user?.email, isCartInitialized, isBackendCartSyncEnabled]);
 
   return (
-    <div className="min-h-screen bg-milk relative overflow-hidden pb-28">
+    <div className="min-h-screen app-canvas relative overflow-hidden pb-28">
       {/* Background blobs */}
       <div className="absolute top-[-10%] right-[-10%] w-[40vw] h-[40vw] bg-light-brown rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
       <div className="absolute bottom-[-10%] left-[-10%] w-[40vw] h-[40vw] bg-mid-brown rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
 
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-milk/80 backdrop-blur-xl border-b border-dark-brown/10">
+      <div className="sticky top-0 z-40 app-header-bar backdrop-blur-xl border-b border-dark-brown/10">
         <div className="flex items-center justify-between px-5 md:px-10 py-4">
           <div className="flex items-center gap-4">
             <Link href={isLoggedIn ? "/dashboard" : "/"} className="group flex items-center gap-2 text-dark-brown font-bold hover:text-light-brown transition-colors text-sm">
@@ -740,7 +740,7 @@ export default function OrderPage() {
             </button>
             <button
               onClick={() => setShowCart(!showCart)}
-              className="relative bg-dark-brown hover:bg-[#3a2218] text-milk font-bold text-sm uppercase rounded-full py-2 px-5 md:py-3 md:px-8 transition-all hover:-translate-y-0.5 shadow-md"
+              className="relative bg-dark-brown hover:bg-dark-brown-hover text-milk font-bold text-sm uppercase rounded-full py-2 px-5 md:py-3 md:px-8 transition-all hover:-translate-y-0.5 shadow-md"
             >
               🛒 Cart
               {totalItems > 0 && (
@@ -766,7 +766,7 @@ export default function OrderPage() {
           return (
             <div
               key={item.id ?? item.name}
-              className="group relative bg-white/50 backdrop-blur-sm border border-white/60 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all hover:-translate-y-2 flex flex-col h-full"
+              className="group relative app-panel border rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all hover:-translate-y-2 flex flex-col h-full"
             >
               {/* Item image — same photos as home flavor cards */}
               <div
@@ -882,7 +882,7 @@ export default function OrderPage() {
               ) : (
                 <div className="flex flex-col gap-4">
                   {cart.map((item) => (
-                    <div key={item.lineId} className="bg-white/50 backdrop-blur-sm rounded-2xl p-4 border border-white/60 flex items-center justify-between">
+                    <div key={item.lineId} className="app-panel border rounded-2xl p-4 flex items-center justify-between">
                       <div className="flex-1 pr-2">
                         <p className="font-bold text-dark-brown text-sm uppercase tracking-tight leading-tight">{item.name}</p>
                         {item.notes && (
@@ -998,7 +998,7 @@ export default function OrderPage() {
                 <button
                   onClick={handlePlaceOrder}
                   disabled={isPlacingOrder}
-                  className="w-full bg-dark-brown hover:bg-[#3a2218] disabled:hover:bg-dark-brown text-milk uppercase font-bold text-lg rounded-full py-4 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
+                  className="w-full bg-dark-brown hover:bg-dark-brown-hover disabled:hover:bg-dark-brown text-milk uppercase font-bold text-lg rounded-full py-4 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
                 >
                   {isPlacingOrder ? t("Placing...") : t("Place Order")}
                 </button>
@@ -1013,7 +1013,7 @@ export default function OrderPage() {
         <div className="fixed inset-0 z-[60] flex items-center justify-center px-4">
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setCustomizingItem(null)}></div>
           <div className="relative bg-milk w-full max-w-lg rounded-3xl shadow-2xl flex flex-col max-h-[90vh]">
-            <div className="p-5 border-b border-dark-brown/10 flex justify-between items-center bg-white/50 rounded-t-3xl">
+            <div className="p-5 border-b border-dark-brown/10 flex justify-between items-center app-chip rounded-t-3xl">
               <h2 className="text-2xl font-bold text-dark-brown uppercase tracking-tight">
                 {customizingItem.category === "food" ? t("Add to Cart") : t("Customize")}
               </h2>
@@ -1125,10 +1125,10 @@ export default function OrderPage() {
             </div>
 
             {/* Modal Footer */}
-            <div className="p-5 border-t border-dark-brown/10 bg-white/50 rounded-b-3xl">
+            <div className="p-5 border-t border-dark-brown/10 app-chip rounded-b-3xl">
               <button
                 onClick={confirmAddToCart}
-                className="w-full bg-dark-brown hover:bg-[#3a2218] text-milk uppercase font-bold text-lg rounded-full py-4 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1"
+                className="w-full bg-dark-brown hover:bg-dark-brown-hover text-milk uppercase font-bold text-lg rounded-full py-4 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1"
               >
                 {t("Confirm to Cart")} - ₱{getModalPrice().toFixed(2)}
               </button>
@@ -1218,13 +1218,13 @@ export default function OrderPage() {
                     className={`rounded-2xl border-2 p-3 transition-all hover:border-light-brown hover:bg-light-brown/10 ${
                       selectedPayment === opt.id
                         ? "border-light-brown bg-light-brown/15"
-                        : "border-dark-brown/15 bg-white/50"
+                        : "border-dark-brown/15 app-chip"
                     }`}
                   >
                     <p className="font-bold text-dark-brown text-sm uppercase tracking-tight">{opt.label}</p>
                     <p className="font-paragraph text-dark-brown/50 text-xs mt-0.5">{opt.desc}</p>
                     {opt.cashless && (
-                      <span className="inline-block mt-2 text-[10px] font-bold uppercase tracking-wider text-[#7a5a12] bg-[#d4af37]/20 rounded-full px-2 py-0.5">
+                      <span className="inline-block mt-2 text-[10px] font-bold uppercase tracking-wider text-dark-brown bg-yellow-brown/20 rounded-full px-2 py-0.5">
                         Cashless
                       </span>
                     )}
@@ -1310,7 +1310,7 @@ export default function OrderPage() {
                         setPaymentRef(makePaymentRef(selectedPayment));
                         setPaymentSecondsLeft(300);
                       }}
-                      className="w-full bg-dark-brown hover:bg-[#3a2218] text-milk uppercase font-bold text-sm rounded-full py-3 px-6 shadow-lg transition-all"
+                      className="w-full bg-dark-brown hover:bg-dark-brown-hover text-milk uppercase font-bold text-sm rounded-full py-3 px-6 shadow-lg transition-all"
                     >
                       Generate new QR
                     </button>
@@ -1355,7 +1355,7 @@ export default function OrderPage() {
                   <div className={`rounded-2xl border px-4 py-3 mb-1 ${
                     lastPaymentStatus === "paid"
                       ? "border-emerald-200 bg-emerald-50/80"
-                      : "border-dark-brown/10 bg-white/50"
+                      : "border-dark-brown/10 app-chip"
                   }`}>
                     <p className="text-[10px] font-bold uppercase tracking-widest text-dark-brown/45">Payment</p>
                     <p className="font-bold text-dark-brown text-sm uppercase mt-0.5">
@@ -1381,7 +1381,7 @@ export default function OrderPage() {
                 <Link
                   href={`/track?id=${lastOrderId}`}
                   onClick={() => setShowOrderModal(false)}
-                  className="w-full bg-dark-brown hover:bg-[#3a2218] text-milk uppercase font-bold text-sm md:text-base rounded-full py-3 px-6 shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
+                  className="w-full bg-dark-brown hover:bg-dark-brown-hover text-milk uppercase font-bold text-sm md:text-base rounded-full py-3 px-6 shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="12" cy="12" r="10" />
@@ -1391,7 +1391,7 @@ export default function OrderPage() {
                 </Link>
                 <button
                   onClick={() => setShowOrderModal(false)}
-                  className="w-full bg-white/50 hover:bg-white/80 text-dark-brown uppercase font-bold text-sm md:text-base rounded-full py-3 px-6 border border-dark-brown/20 transition-all"
+                  className="w-full app-chip hover:bg-milk text-dark-brown uppercase font-bold text-sm md:text-base rounded-full py-3 px-6 border border-dark-brown/20 transition-all"
                 >
                   Continue Shopping
                 </button>
@@ -1406,7 +1406,7 @@ export default function OrderPage() {
         <div className="fixed inset-0 z-[70] flex items-center justify-center px-4">
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => { setReviewingItem(null); setReviewText(""); setRatingVal(5); }}></div>
           <div className="relative bg-milk w-full max-w-lg rounded-3xl shadow-2xl flex flex-col max-h-[90vh]">
-            <div className="p-5 border-b border-dark-brown/10 flex justify-between items-center bg-white/50 rounded-t-3xl">
+            <div className="p-5 border-b border-dark-brown/10 flex justify-between items-center app-chip rounded-t-3xl">
               <h2 className="text-xl md:text-2xl font-bold text-dark-brown uppercase tracking-tight truncate pr-4">Reviews: {reviewingItem.name}</h2>
               <button onClick={() => { setReviewingItem(null); setReviewText(""); setRatingVal(5); }} className="text-dark-brown hover:text-light-brown text-2xl font-bold shrink-0">✕</button>
             </div>
@@ -1414,7 +1414,7 @@ export default function OrderPage() {
             <div className="p-5 overflow-y-auto flex-1 flex flex-col gap-6">
               {/* Review Form */}
               {isLoggedIn ? (
-                <div className="bg-white/50 rounded-2xl p-4 border border-white/60 shadow-sm">
+                <div className="app-panel border rounded-2xl p-4 shadow-sm">
                   <h4 className="font-bold text-dark-brown uppercase text-sm mb-3 tracking-wide">Leave a Review</h4>
                   <div className="flex items-center gap-2 mb-3">
                     {[1, 2, 3, 4, 5].map(star => (
@@ -1436,7 +1436,7 @@ export default function OrderPage() {
                   <button
                     onClick={submitReview}
                     disabled={!reviewText.trim()}
-                    className="bg-dark-brown hover:bg-[#3a2218] disabled:opacity-50 disabled:hover:bg-dark-brown text-milk uppercase font-bold text-xs rounded-full py-2.5 px-6 shadow-md transition-all"
+                    className="bg-dark-brown hover:bg-dark-brown-hover disabled:opacity-50 disabled:hover:bg-dark-brown text-milk uppercase font-bold text-xs rounded-full py-2.5 px-6 shadow-md transition-all"
                   >
                     Submit Review
                   </button>
@@ -1444,7 +1444,7 @@ export default function OrderPage() {
               ) : (
                 <div className="bg-light-brown/10 rounded-2xl p-6 text-center border border-light-brown/20">
                   <p className="font-paragraph text-dark-brown text-sm mb-3">Log in to leave a review</p>
-                  <Link href="/login?redirect=/order" className="inline-block bg-dark-brown hover:bg-[#3a2218] text-milk uppercase font-bold text-xs rounded-full py-2.5 px-8 shadow-md transition-all">
+                  <Link href="/login?redirect=/order" className="inline-block bg-dark-brown hover:bg-dark-brown-hover text-milk uppercase font-bold text-xs rounded-full py-2.5 px-8 shadow-md transition-all">
                     Login
                   </Link>
                 </div>

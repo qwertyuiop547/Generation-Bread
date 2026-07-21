@@ -251,7 +251,7 @@ export default function OrderProgress({
   return (
     <div
       ref={rootRef}
-      className={`bg-white/50 backdrop-blur-sm border border-white/60 rounded-3xl shadow-lg ${pad} ${className}`}
+      className={`app-panel border rounded-3xl shadow-lg ${pad} ${className}`}
     >
       <div className="mb-5 flex flex-wrap items-center justify-between gap-2 md:mb-6">
         <div>
@@ -271,7 +271,7 @@ export default function OrderProgress({
             status === "ready" || isCompleted
               ? "bg-light-brown/40 text-dark-brown"
               : status === "preparing"
-                ? "bg-[#d4af37]/25 text-[#7a5a12]"
+                ? "bg-yellow-brown/25 text-dark-brown"
                 : "bg-dark-brown/10 text-dark-brown"
           }`}
         >
@@ -305,7 +305,7 @@ export default function OrderProgress({
                       ? "border-light-brown bg-light-brown text-dark-brown shadow-[0_0_0_6px_rgba(227,164,88,0.22)]"
                       : done
                         ? "border-dark-brown bg-dark-brown text-milk"
-                        : "border-[#c9a574]/50 bg-[#fffaf4] text-dark-brown/35"
+                        : "border-light-brown/50 app-chip text-dark-brown/35"
                   }`}
                 >
                   {done ? <CheckIcon /> : STEP_META[step].icon}
@@ -340,7 +340,7 @@ export default function OrderProgress({
       {(status === "ready" || isCompleted) && (
         <div
           ref={statusBannerRef}
-          className="mt-5 rounded-2xl border border-light-brown/30 bg-gradient-to-r from-light-brown/20 to-[#d4af37]/10 px-4 py-3.5 text-center md:mt-6"
+          className="mt-5 rounded-2xl border border-light-brown/30 bg-gradient-to-r from-light-brown/20 to-yellow-brown/10 px-4 py-3.5 text-center md:mt-6"
         >
           <p className="text-sm font-bold uppercase tracking-wide text-dark-brown">
             {isCompleted ? "Order completed" : ready.bannerTitle}

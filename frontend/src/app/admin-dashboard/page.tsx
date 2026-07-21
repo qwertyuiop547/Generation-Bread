@@ -16,6 +16,7 @@ import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Area, AreaChart,
 } from "recharts";
+import { useThemeColors, withAlpha } from "@/lib/themeColors";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
 
@@ -111,8 +112,6 @@ interface Order {
   orderType: string;
 }
 
-const COLORS = ["#e3a458", "#a26833", "#523122", "#7f3b2d", "#a02128", "#c4a882"];
-
 const menuDrinks = [
   "Ube Cheese Pandesal",
   "Pork Floss Ensaymada",
@@ -125,6 +124,20 @@ const menuDrinks = [
 export default function AdminDashboardPage() {
   const { isLoggedIn, isAdmin, isStaff, user } = useAuth();
   const router = useRouter();
+  const tc = useThemeColors();
+  const chartColors = useMemo(
+    () => [tc.lightBrown, tc.midBrown, tc.darkBrown, tc.redBrown, tc.red, tc.milkYellow],
+    [tc]
+  );
+  const chartTick = withAlpha(tc.darkBrown, "aa");
+  const chartTickStrong = withAlpha(tc.darkBrown, "cc");
+  const chartGrid = withAlpha(tc.darkBrown, "15");
+  const chartTooltip = {
+    borderRadius: 16,
+    border: `1px solid ${withAlpha(tc.lightBrown, "40")}`,
+    background: tc.milk,
+    fontSize: 13,
+  } as const;
   const [orders, setOrders] = useState<Order[]>([]);
   const [mounted, setMounted] = useState(false);
   const [totalUsers, setTotalUsers] = useState(0);
@@ -426,11 +439,11 @@ export default function AdminDashboardPage() {
       takeout: { revenue: takeoutRevenue, orders: takeout.length, pct: total > 0 ? Math.round((takeoutRevenue / total) * 100) : 0 },
       total,
       chartData: [
-        { type: "Dine-In", revenue: dineInRevenue, orders: dineIn.length, fill: "#523122" },
-        { type: "Takeout", revenue: takeoutRevenue, orders: takeout.length, fill: "#e3a458" },
+        { type: "Dine-In", revenue: dineInRevenue, orders: dineIn.length, fill: tc.darkBrown },
+        { type: "Takeout", revenue: takeoutRevenue, orders: takeout.length, fill: tc.lightBrown },
       ],
     };
-  }, [filteredOrders]);
+  }, [filteredOrders, tc]);
 
   const stats = useMemo(() => {
     const active = filteredOrders.filter(o => o.status !== "cancelled");
@@ -447,14 +460,14 @@ export default function AdminDashboardPage() {
 
   if (!mounted || !isLoggedIn || !isAdmin) {
     return (
-      <div className="min-h-screen bg-milk flex items-center justify-center">
+      <div className="min-h-screen app-canvas flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-light-brown/30 border-t-light-brown rounded-full animate-spin" />
       </div>
     );
   }
 
   const StatCard = ({ label, value, icon, accent }: { label: string; value: string; icon: string; accent?: string }) => (
-    <div className="bg-white/50 backdrop-blur-sm border border-white/60 rounded-3xl p-5 md:p-6 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
+    <div className="app-panel border rounded-3xl p-5 md:p-6 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
       <div className="flex items-center justify-between mb-3">
         <span className="text-2xl">{icon}</span>
         {accent && <span className="text-xs font-bold uppercase bg-light-brown/20 text-dark-brown rounded-full px-2.5 py-1">{accent}</span>}
@@ -469,12 +482,12 @@ export default function AdminDashboardPage() {
   };
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-milk relative overflow-hidden">
+    <div ref={containerRef} className="min-h-screen app-canvas relative overflow-hidden">
       <div className="absolute top-[-10%] right-[-15%] w-[45vw] h-[45vw] bg-light-brown rounded-full mix-blend-multiply filter blur-3xl opacity-15"></div>
       <div className="absolute bottom-[-15%] left-[-10%] w-[40vw] h-[40vw] bg-mid-brown rounded-full mix-blend-multiply filter blur-3xl opacity-10"></div>
 
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-milk/80 backdrop-blur-xl border-b border-dark-brown/10">
+      <div className="sticky top-0 z-40 app-header-bar backdrop-blur-xl border-b border-dark-brown/10">
         <div className="flex items-center justify-between px-5 md:px-10 py-4 gap-3">
           <div className="flex items-center gap-4 min-w-0">
             <h1 className="text-dark-brown font-bold uppercase text-lg md:text-xl tracking-tight truncate">Analytics</h1>
@@ -533,7 +546,7 @@ export default function AdminDashboardPage() {
         {showMobileMenu && (
           <div
             ref={mobileMenuRef}
-            className="mobile-nav-menu xl:hidden absolute top-[100%] right-0 w-full bg-milk/95 backdrop-blur-md border-b border-dark-brown/10 shadow-lg flex flex-col items-center py-4 gap-3 z-50 will-change-transform"
+            className="mobile-nav-menu xl:hidden absolute top-[100%] right-0 w-full app-header-bar backdrop-blur-md border-b border-dark-brown/10 shadow-lg flex flex-col items-center py-4 gap-3 z-50 will-change-transform"
           >
             <Link href="/admin" onClick={closeMobileMenu} className="mobile-nav-item flex items-center gap-3 w-[90%] bg-white hover:bg-dark-brown/5 text-dark-brown font-bold text-sm uppercase rounded-xl py-3 px-5 transition-all shadow-sm active:scale-[0.98]">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"></path></svg>
@@ -589,7 +602,7 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Today's Shift Lineup */}
-        <div className="bg-white/50 backdrop-blur-sm border border-white/60 rounded-3xl p-5 md:p-6 shadow-lg mb-8">
+        <div className="app-panel border rounded-3xl p-5 md:p-6 shadow-lg mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
             <div>
               <h3 className="text-lg font-bold text-dark-brown uppercase tracking-tight">Today&apos;s Shift Lineup</h3>
@@ -717,7 +730,7 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Average Drink Prep Time per Staff */}
-        <div className="bg-white/50 backdrop-blur-sm border border-white/60 rounded-3xl p-5 md:p-6 shadow-lg mb-8">
+        <div className="app-panel border rounded-3xl p-5 md:p-6 shadow-lg mb-8">
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4 mb-5">
             <div>
               <h3 className="text-lg font-bold text-dark-brown uppercase tracking-tight">Average Drink Prep Time</h3>
@@ -789,14 +802,14 @@ export default function AdminDashboardPage() {
                     {chartReady ? (
                     <ResponsiveContainer width="100%" height={256} minWidth={0}>
                       <BarChart data={prepChartData} layout="vertical" margin={{ left: 8, right: 16 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#52312215" horizontal={false} />
-                        <XAxis type="number" tick={{ fontSize: 11, fill: "#523122aa" }} tickLine={false} axisLine={false} unit="m" />
-                        <YAxis dataKey="name" type="category" tick={{ fontSize: 11, fill: "#523122cc" }} tickLine={false} axisLine={false} width={88} />
+                        <CartesianGrid strokeDasharray="3 3" stroke={chartGrid} horizontal={false} />
+                        <XAxis type="number" tick={{ fontSize: 11, fill: chartTick }} tickLine={false} axisLine={false} unit="m" />
+                        <YAxis dataKey="name" type="category" tick={{ fontSize: 11, fill: chartTickStrong }} tickLine={false} axisLine={false} width={88} />
                         <Tooltip
-                          contentStyle={{ borderRadius: 16, border: "1px solid #e3a45840", background: "#faeade", fontSize: 13 }}
+                          contentStyle={chartTooltip}
                           formatter={(v: any, _: any, p: any) => [`${v} min avg`, `${p?.payload?.fullName ?? "Barista"} (${p?.payload?.orders ?? 0} orders)`]}
                         />
-                        <Bar dataKey="avgMinutes" fill="#a26833" radius={[0, 8, 8, 0]} />
+                        <Bar dataKey="avgMinutes" fill={tc.midBrown} radius={[0, 8, 8, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                     ) : null}
@@ -838,7 +851,7 @@ export default function AdminDashboardPage() {
                   <h4 className="text-sm font-bold text-dark-brown uppercase tracking-tight mb-3">Recent Measured Orders</h4>
                   <div className="overflow-x-auto rounded-2xl border border-dark-brown/10 max-h-56 overflow-y-auto">
                     <table className="w-full text-left text-sm">
-                      <thead className="sticky top-0 bg-milk/95 backdrop-blur-sm">
+                      <thead className="sticky top-0 app-header-bar backdrop-blur-sm">
                         <tr className="bg-dark-brown/5">
                           <th className="px-4 py-2.5 text-[10px] font-bold uppercase text-dark-brown/55">Order</th>
                           <th className="px-4 py-2.5 text-[10px] font-bold uppercase text-dark-brown/55">Barista</th>
@@ -869,7 +882,7 @@ export default function AdminDashboardPage() {
         {/* Charts Row 1: Revenue + Orders */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 min-w-0">
           {/* Revenue Chart */}
-          <div className="bg-white/50 backdrop-blur-sm border border-white/60 rounded-3xl p-5 md:p-6 shadow-lg min-w-0">
+          <div className="app-panel border rounded-3xl p-5 md:p-6 shadow-lg min-w-0">
             <h3 className="text-lg font-bold text-dark-brown uppercase tracking-tight mb-4">Revenue Trend</h3>
             <div className="h-64 min-h-[16rem] w-full min-w-0">
               {chartReady ? (
@@ -877,15 +890,15 @@ export default function AdminDashboardPage() {
                 <AreaChart data={dailyData}>
                   <defs>
                     <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#e3a458" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#e3a458" stopOpacity={0} />
+                      <stop offset="5%" stopColor={tc.lightBrown} stopOpacity={0.3} />
+                      <stop offset="95%" stopColor={tc.lightBrown} stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#52312215" />
-                  <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#523122aa" }} tickLine={false} axisLine={false} interval={Math.max(0, Math.floor(dailyData.length / 7) - 1)} />
-                  <YAxis tick={{ fontSize: 11, fill: "#523122aa" }} tickLine={false} axisLine={false} tickFormatter={v => `₱${v}`} />
-                  <Tooltip contentStyle={{ borderRadius: 16, border: "1px solid #e3a45840", background: "#faeade", fontSize: 13 }} formatter={(v: any) => [`₱${Number(v).toLocaleString()}`, "Revenue"]} />
-                  <Area type="monotone" dataKey="revenue" stroke="#e3a458" strokeWidth={2.5} fill="url(#revGrad)" />
+                  <CartesianGrid strokeDasharray="3 3" stroke={chartGrid} />
+                  <XAxis dataKey="date" tick={{ fontSize: 11, fill: chartTick }} tickLine={false} axisLine={false} interval={Math.max(0, Math.floor(dailyData.length / 7) - 1)} />
+                  <YAxis tick={{ fontSize: 11, fill: chartTick }} tickLine={false} axisLine={false} tickFormatter={v => `₱${v}`} />
+                  <Tooltip contentStyle={chartTooltip} formatter={(v: any) => [`₱${Number(v).toLocaleString()}`, "Revenue"]} />
+                  <Area type="monotone" dataKey="revenue" stroke={tc.lightBrown} strokeWidth={2.5} fill="url(#revGrad)" />
                 </AreaChart>
               </ResponsiveContainer>
               ) : null}
@@ -893,17 +906,17 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* Daily Orders Chart */}
-          <div className="bg-white/50 backdrop-blur-sm border border-white/60 rounded-3xl p-5 md:p-6 shadow-lg min-w-0">
+          <div className="app-panel border rounded-3xl p-5 md:p-6 shadow-lg min-w-0">
             <h3 className="text-lg font-bold text-dark-brown uppercase tracking-tight mb-4">Daily Orders</h3>
             <div className="h-64 min-h-[16rem] w-full min-w-0">
               {chartReady ? (
               <ResponsiveContainer width="100%" height={256} minWidth={0}>
                 <BarChart data={dailyData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#52312215" />
-                  <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#523122aa" }} tickLine={false} axisLine={false} interval={Math.max(0, Math.floor(dailyData.length / 7) - 1)} />
-                  <YAxis tick={{ fontSize: 11, fill: "#523122aa" }} tickLine={false} axisLine={false} allowDecimals={false} />
-                  <Tooltip contentStyle={{ borderRadius: 16, border: "1px solid #e3a45840", background: "#faeade", fontSize: 13 }} />
-                  <Bar dataKey="orders" fill="#a26833" radius={[8, 8, 0, 0]} />
+                  <CartesianGrid strokeDasharray="3 3" stroke={chartGrid} />
+                  <XAxis dataKey="date" tick={{ fontSize: 11, fill: chartTick }} tickLine={false} axisLine={false} interval={Math.max(0, Math.floor(dailyData.length / 7) - 1)} />
+                  <YAxis tick={{ fontSize: 11, fill: chartTick }} tickLine={false} axisLine={false} allowDecimals={false} />
+                  <Tooltip contentStyle={chartTooltip} />
+                  <Bar dataKey="orders" fill={tc.midBrown} radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
               ) : null}
@@ -914,14 +927,14 @@ export default function AdminDashboardPage() {
         {/* Revenue by Order Type */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           {/* Summary Cards */}
-          <div className="bg-white/50 backdrop-blur-sm border border-white/60 rounded-3xl p-5 md:p-6 shadow-lg flex flex-col justify-between">
+          <div className="app-panel border rounded-3xl p-5 md:p-6 shadow-lg flex flex-col justify-between">
             <div>
               <h3 className="text-lg font-bold text-dark-brown uppercase tracking-tight mb-4">Revenue by Order Type</h3>
               <div className="space-y-4">
                 {/* Dine-In */}
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-[#523122] flex items-center justify-center flex-shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#faeade" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                  <div className="w-10 h-10 rounded-2xl bg-dark-brown flex items-center justify-center flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-milk" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
@@ -934,8 +947,8 @@ export default function AdminDashboardPage() {
                 </div>
                 {/* Takeout */}
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-[#e3a458] flex items-center justify-center flex-shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#523122" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3h18v5H3z"/><path d="M5 8v12h14V8"/><path d="M10 12h4"/></svg>
+                  <div className="w-10 h-10 rounded-2xl bg-light-brown flex items-center justify-center flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-dark-brown" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3h18v5H3z"/><path d="M5 8v12h14V8"/><path d="M10 12h4"/></svg>
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
@@ -951,18 +964,18 @@ export default function AdminDashboardPage() {
             {/* Progress bar */}
             <div className="mt-5">
               <div className="flex h-3 rounded-full overflow-hidden bg-dark-brown/5">
-                <div className="bg-[#523122] rounded-l-full transition-all duration-700" style={{ width: `${orderTypeRevenue.dineIn.pct}%` }}></div>
-                <div className="bg-[#e3a458] rounded-r-full transition-all duration-700" style={{ width: `${orderTypeRevenue.takeout.pct}%` }}></div>
+                <div className="bg-dark-brown rounded-l-full transition-all duration-700" style={{ width: `${orderTypeRevenue.dineIn.pct}%` }}></div>
+                <div className="bg-light-brown rounded-r-full transition-all duration-700" style={{ width: `${orderTypeRevenue.takeout.pct}%` }}></div>
               </div>
               <div className="flex justify-between mt-2">
-                <span className="text-[10px] font-bold text-[#523122] uppercase">Dine-In</span>
-                <span className="text-[10px] font-bold text-[#e3a458] uppercase">Takeout</span>
+                <span className="text-[10px] font-bold text-dark-brown uppercase">Dine-In</span>
+                <span className="text-[10px] font-bold text-light-brown uppercase">Takeout</span>
               </div>
             </div>
           </div>
 
           {/* Bar Chart */}
-          <div className="bg-white/50 backdrop-blur-sm border border-white/60 rounded-3xl p-5 md:p-6 shadow-lg lg:col-span-2">
+          <div className="app-panel border rounded-3xl p-5 md:p-6 shadow-lg lg:col-span-2">
             <h3 className="text-lg font-bold text-dark-brown uppercase tracking-tight mb-4">Revenue Comparison</h3>
             {orderTypeRevenue.total === 0 ? (
               <div className="h-64 flex items-center justify-center"><p className="font-paragraph text-dark-brown/40">No revenue data yet</p></div>
@@ -971,11 +984,11 @@ export default function AdminDashboardPage() {
                 {chartReady ? (
                 <ResponsiveContainer width="100%" height={256} minWidth={0}>
                   <BarChart data={orderTypeRevenue.chartData} barSize={64}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#52312215" vertical={false} />
-                    <XAxis dataKey="type" tick={{ fontSize: 13, fill: "#523122cc", fontWeight: "bold" }} tickLine={false} axisLine={false} />
-                    <YAxis tick={{ fontSize: 11, fill: "#523122aa" }} tickLine={false} axisLine={false} tickFormatter={(v: number) => `₱${v}`} />
+                    <CartesianGrid strokeDasharray="3 3" stroke={chartGrid} vertical={false} />
+                    <XAxis dataKey="type" tick={{ fontSize: 13, fill: chartTickStrong, fontWeight: "bold" }} tickLine={false} axisLine={false} />
+                    <YAxis tick={{ fontSize: 11, fill: chartTick }} tickLine={false} axisLine={false} tickFormatter={(v: number) => `₱${v}`} />
                     <Tooltip
-                      contentStyle={{ borderRadius: 16, border: "1px solid #e3a45840", background: "#faeade", fontSize: 13 }}
+                      contentStyle={chartTooltip}
                       formatter={(v: any, name: any) => {
                         if (name === "revenue") return [`₱${Number(v).toLocaleString(undefined, { minimumFractionDigits: 2 })}`, "Revenue"];
                         return [v, name];
@@ -997,7 +1010,7 @@ export default function AdminDashboardPage() {
         {/* Charts Row 2: Popular Drinks + Status */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {/* Popular Drinks */}
-          <div className="bg-white/50 backdrop-blur-sm border border-white/60 rounded-3xl p-5 md:p-6 shadow-lg">
+          <div className="app-panel border rounded-3xl p-5 md:p-6 shadow-lg">
             <h3 className="text-lg font-bold text-dark-brown uppercase tracking-tight mb-4">Popular Drinks</h3>
             {popularDrinks.length === 0 ? (
               <div className="h-64 flex items-center justify-center"><p className="font-paragraph text-dark-brown/40">No data yet</p></div>
@@ -1006,12 +1019,12 @@ export default function AdminDashboardPage() {
                 {chartReady ? (
                 <ResponsiveContainer width="100%" height={256} minWidth={0}>
                   <BarChart data={popularDrinks} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" stroke="#52312215" horizontal={false} />
-                    <XAxis type="number" tick={{ fontSize: 11, fill: "#523122aa" }} tickLine={false} axisLine={false} allowDecimals={false} />
-                    <YAxis dataKey="name" type="category" tick={{ fontSize: 11, fill: "#523122cc" }} tickLine={false} axisLine={false} width={100} />
-                    <Tooltip contentStyle={{ borderRadius: 16, border: "1px solid #e3a45840", background: "#faeade", fontSize: 13 }} formatter={(v: any, _: any, p: any) => [v, p?.payload?.fullName ?? ""]} />
+                    <CartesianGrid strokeDasharray="3 3" stroke={chartGrid} horizontal={false} />
+                    <XAxis type="number" tick={{ fontSize: 11, fill: chartTick }} tickLine={false} axisLine={false} allowDecimals={false} />
+                    <YAxis dataKey="name" type="category" tick={{ fontSize: 11, fill: chartTickStrong }} tickLine={false} axisLine={false} width={100} />
+                    <Tooltip contentStyle={chartTooltip} formatter={(v: any, _: any, p: any) => [v, p?.payload?.fullName ?? ""]} />
                     <Bar dataKey="value" radius={[0, 8, 8, 0]}>
-                      {popularDrinks.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                      {popularDrinks.map((_, i) => <Cell key={i} fill={chartColors[i % chartColors.length]} />)}
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
@@ -1021,7 +1034,7 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* Order Status Breakdown */}
-          <div className="bg-white/50 backdrop-blur-sm border border-white/60 rounded-3xl p-5 md:p-6 shadow-lg">
+          <div className="app-panel border rounded-3xl p-5 md:p-6 shadow-lg">
             <h3 className="text-lg font-bold text-dark-brown uppercase tracking-tight mb-4">Order Status</h3>
             {statusBreakdown.length === 0 ? (
               <div className="h-64 flex items-center justify-center"><p className="font-paragraph text-dark-brown/40">No data yet</p></div>
@@ -1033,7 +1046,7 @@ export default function AdminDashboardPage() {
                     <Pie data={statusBreakdown} cx="50%" cy="50%" innerRadius={55} outerRadius={90} paddingAngle={4} dataKey="value" label={({ name, percent }: any) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`} labelLine={false}>
                       {statusBreakdown.map((entry) => <Cell key={entry.name} fill={statusColorMap[entry.name] || "#ccc"} />)}
                     </Pie>
-                    <Tooltip contentStyle={{ borderRadius: 16, border: "1px solid #e3a45840", background: "#faeade", fontSize: 13 }} />
+                    <Tooltip contentStyle={chartTooltip} />
                   </PieChart>
                 </ResponsiveContainer>
                 ) : null}
@@ -1043,7 +1056,7 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Recent Orders Table */}
-        <div className="bg-white/50 backdrop-blur-sm border border-white/60 rounded-3xl shadow-lg overflow-hidden">
+        <div className="app-panel border rounded-3xl shadow-lg overflow-hidden">
           <div className="p-5 md:p-6 border-b border-dark-brown/10 flex items-center justify-between">
             <h3 className="text-lg font-bold text-dark-brown uppercase tracking-tight">Recent Orders</h3>
             <Link href="/admin" className="text-dark-brown/60 hover:text-dark-brown font-bold text-xs uppercase transition-colors">View All →</Link>

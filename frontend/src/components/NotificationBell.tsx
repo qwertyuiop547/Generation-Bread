@@ -134,7 +134,7 @@ export default function NotificationBell({ userEmail }: { userEmail?: string }) 
       </button>
 
       {open && (
-        <div className="absolute right-0 top-12 w-80 md:w-96 bg-white rounded-3xl shadow-2xl border border-dark-brown/10 z-50 overflow-hidden">
+        <div className="absolute right-0 top-12 w-80 md:w-96 app-panel border rounded-3xl shadow-2xl z-50 overflow-hidden">
           <div className="flex items-center justify-between px-5 py-4 border-b border-dark-brown/10">
             <h3 className="font-bold text-dark-brown uppercase text-sm tracking-tight">Notifications</h3>
             {activeNotifications.length > 0 && (
@@ -209,7 +209,7 @@ export default function NotificationBell({ userEmail }: { userEmail?: string }) 
       {/* View Reason Modal */}
       {viewReasonData && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden relative" onClick={(e) => e.stopPropagation()}>
+          <div className="app-panel border rounded-3xl shadow-2xl w-full max-w-md overflow-hidden relative" onClick={(e) => e.stopPropagation()}>
             <div className="bg-red-50 border-b border-red-100 p-5 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 bg-red-100 rounded-full flex items-center justify-center">

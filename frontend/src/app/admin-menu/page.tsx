@@ -290,13 +290,13 @@ export default function AdminMenuPage() {
   if (!mounted || !isLoggedIn || !isAdmin) return null;
 
   return (
-    <div className="min-h-screen bg-milk relative overflow-hidden pb-20">
+    <div className="min-h-screen app-canvas relative overflow-hidden pb-20">
       {/* Background blobs */}
       <div className="absolute top-[-10%] right-[-10%] w-[40vw] h-[40vw] bg-light-brown rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
       <div className="absolute bottom-[-10%] left-[-10%] w-[40vw] h-[40vw] bg-mid-brown rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
 
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-milk/80 backdrop-blur-xl border-b border-dark-brown/10">
+      <div className="sticky top-0 z-40 app-header-bar backdrop-blur-xl border-b border-dark-brown/10">
         <div className="flex items-center justify-between px-5 md:px-10 py-4">
           <div className="flex items-center gap-4">
             <h1 className="text-dark-brown font-bold uppercase text-lg md:text-xl tracking-tight">Menu Manager</h1>
@@ -332,7 +332,7 @@ export default function AdminMenuPage() {
           </div>
           <button 
             onClick={openNewModal}
-            className="bg-dark-brown hover:bg-[#3a2218] text-milk font-bold uppercase text-sm py-3 px-6 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
+            className="bg-dark-brown hover:bg-dark-brown-hover text-milk font-bold uppercase text-sm py-3 px-6 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
             Add Drink & Food
@@ -344,7 +344,7 @@ export default function AdminMenuPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {menuItems.map((item, idx) => (
-              <div key={item.id || idx} className={`bg-white/50 backdrop-blur-sm border ${item.is_hidden ? 'border-red-300 opacity-70' : 'border-white/60'} rounded-3xl p-6 shadow-lg relative overflow-hidden transition-all hover:shadow-xl`}>
+              <div key={item.id || idx} className={`app-panel border ${item.is_hidden ? 'border-red-300 opacity-70' : 'border-white/60'} rounded-3xl p-6 shadow-lg relative overflow-hidden transition-all hover:shadow-xl`}>
                 <div className="absolute top-0 left-0 w-full h-2" style={{ backgroundColor: item.bg_color }}></div>
                 <div className="w-full h-36 rounded-2xl overflow-hidden mb-4 mt-2 relative" style={{ backgroundColor: item.bg_color }}>
                   <img
@@ -523,7 +523,7 @@ export default function AdminMenuPage() {
 
               <div className="pt-6 flex gap-3">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 bg-dark-brown/10 hover:bg-dark-brown/20 text-dark-brown font-bold uppercase py-3 rounded-xl transition-colors">Cancel</button>
-                <button type="submit" className="flex-1 bg-dark-brown hover:bg-[#3a2218] text-milk font-bold uppercase py-3 rounded-xl transition-colors shadow-lg">Save Item</button>
+                <button type="submit" className="flex-1 bg-dark-brown hover:bg-dark-brown-hover text-milk font-bold uppercase py-3 rounded-xl transition-colors shadow-lg">Save Item</button>
               </div>
             </form>
           </div>

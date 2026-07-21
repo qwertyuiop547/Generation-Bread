@@ -254,11 +254,11 @@ export default function AdminSalesPage() {
   if (!mounted || !isLoggedIn || !isStaff) return null;
 
   return (
-    <div className="min-h-screen bg-milk relative overflow-hidden pb-20">
+    <div className="min-h-screen app-canvas relative overflow-hidden pb-20">
       <div className="absolute top-[-10%] right-[-10%] w-[40vw] h-[40vw] bg-light-brown rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
       
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-milk/80 backdrop-blur-xl border-b border-dark-brown/10">
+      <div className="sticky top-0 z-40 app-header-bar backdrop-blur-xl border-b border-dark-brown/10">
         <div className="flex items-center justify-between px-5 md:px-10 py-4">
           <div className="flex items-center gap-4">
             <h1 className="text-dark-brown font-bold uppercase text-lg md:text-xl tracking-tight">Sales History</h1>
@@ -297,7 +297,7 @@ export default function AdminSalesPage() {
         </div>
 
         {/* Date Range Filter */}
-        <div className="bg-white/50 backdrop-blur-sm border border-white/60 rounded-3xl p-5 md:p-6 shadow-lg mb-6">
+        <div className="app-panel border rounded-3xl p-5 md:p-6 shadow-lg mb-6">
           <div className="flex flex-wrap items-center gap-3">
             <span className="text-xs font-bold text-dark-brown/60 uppercase">Quick:</span>
             {["today", "7d", "30d", "all"].map(range => (
@@ -343,11 +343,11 @@ export default function AdminSalesPage() {
 
         {/* Summary Stats */}
         <div className="grid grid-cols-2 md:grid-cols-2 gap-4 mb-6">
-          <div className="bg-white/50 backdrop-blur-sm border border-white/60 rounded-3xl p-5 shadow-lg">
+          <div className="app-panel border rounded-3xl p-5 shadow-lg">
             <p className="font-paragraph text-dark-brown/50 text-sm mb-1">Orders in Range</p>
             <p className="text-3xl font-bold text-dark-brown">{filteredOrderCount}</p>
           </div>
-          <div className="bg-white/50 backdrop-blur-sm border border-white/60 rounded-3xl p-5 shadow-lg">
+          <div className="app-panel border rounded-3xl p-5 shadow-lg">
             <p className="font-paragraph text-dark-brown/50 text-sm mb-1">Revenue in Range</p>
             <p className="text-2xl md:text-3xl font-bold text-dark-brown">P{filteredRevenue.toFixed(2)}</p>
           </div>

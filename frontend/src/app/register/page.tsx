@@ -11,7 +11,7 @@ import PageIntro from "@/components/PageIntro";
 import BrandLogo from "@/components/BrandLogo";
 
 const inputClass =
-  "w-full rounded-2xl border border-[#c9a574]/45 bg-[#faf3e8] px-4 py-3.5 font-paragraph text-base text-dark-brown outline-none transition-all placeholder:text-dark-brown/35 focus:border-light-brown focus:bg-[#fffaf4] focus:ring-2 focus:ring-light-brown/30 [color-scheme:light] autofill:shadow-[inset_0_0_0_1000px_#faf3e8]";
+  "w-full rounded-2xl border border-light-brown/45 bg-milk px-4 py-3.5 font-paragraph text-base text-dark-brown outline-none transition-all placeholder:text-dark-brown/35 focus:border-light-brown focus:bg-milk focus:ring-2 focus:ring-light-brown/30 [color-scheme:light] autofill:shadow-[inset_0_0_0_1000px_var(--color-milk)]";
 
 function RegisterPageContent() {
   const [name, setName] = useState("");
@@ -79,14 +79,14 @@ function RegisterPageContent() {
               </IntroHomeLink>
 
               <div className="max-w-md">
-                <p className="mb-4 font-paragraph text-xs uppercase tracking-[0.35em] text-[#faeade]/70">
+                <p className="mb-4 font-paragraph text-xs uppercase tracking-[0.35em] text-milk/70">
                   Join the table
                 </p>
-                <h2 className="text-[clamp(2.75rem,5vw,4.5rem)] font-bold uppercase leading-[0.9] tracking-[-0.03em] text-[#faeade]">
+                <h2 className="text-[clamp(2.75rem,5vw,4.5rem)] font-bold uppercase leading-[0.9] tracking-[-0.03em] text-milk">
                   Create your
                   <span className="mt-1 block text-light-brown">account.</span>
                 </h2>
-                <p className="mt-5 max-w-sm font-paragraph text-base leading-relaxed text-[#faeade]/75">
+                <p className="mt-5 max-w-sm font-paragraph text-base leading-relaxed text-milk/75">
                   Order faster, track deliveries, and unlock Generation Bread favorites.
                 </p>
               </div>
@@ -110,7 +110,7 @@ function RegisterPageContent() {
               <div className="absolute inset-x-0 top-0 z-10 flex items-center justify-between px-4 pt-[max(0.85rem,env(safe-area-inset-top))]">
                 <IntroHomeLink
                   href="/"
-                  className="inline-flex items-center gap-1.5 rounded-full bg-[#faeade]/15 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-[#faeade] backdrop-blur-sm transition-colors hover:bg-[#faeade]/25"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-milk/15 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-milk backdrop-blur-sm transition-colors hover:bg-milk/25"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="m15 18-6-6 6-6" />
@@ -129,10 +129,10 @@ function RegisterPageContent() {
               </div>
 
               <div className="absolute inset-x-0 bottom-0 z-10 px-5 pb-8">
-                <p className="mb-1.5 font-paragraph text-[0.65rem] uppercase tracking-[0.35em] text-[#faeade]/65">
+                <p className="mb-1.5 font-paragraph text-[0.65rem] uppercase tracking-[0.35em] text-milk/65">
                   Join the table
                 </p>
-                <p className="text-2xl font-bold uppercase leading-none tracking-tight text-[#faeade]">
+                <p className="text-2xl font-bold uppercase leading-none tracking-tight text-milk">
                   Create your <span className="text-light-brown">account.</span>
                 </p>
               </div>
@@ -247,7 +247,7 @@ function RegisterPageContent() {
                 <button
                   type="button"
                   onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
-                  className="flex w-full items-center justify-center gap-3 rounded-full border border-[#c9a574]/40 bg-[#fffaf4] py-3.5 font-paragraph font-semibold text-dark-brown transition-all active:scale-[0.98] hover:border-dark-brown/25 hover:bg-white animate-[fadeUp_0.65s_ease-out_0.14s_both]"
+                  className="flex w-full items-center justify-center gap-3 rounded-full border border-light-brown/40 bg-milk py-3.5 font-paragraph font-semibold text-dark-brown transition-all active:scale-[0.98] hover:border-dark-brown/25 hover:bg-white animate-[fadeUp_0.65s_ease-out_0.14s_both]"
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden>
                     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />

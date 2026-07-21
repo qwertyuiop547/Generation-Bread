@@ -179,7 +179,7 @@ const TestimonialSection = () => {
               playsInline
               muted
               loop
-              className="size-full object-cover"
+              className="size-full object-cover theme-lock-media"
             />
           </div>
           );

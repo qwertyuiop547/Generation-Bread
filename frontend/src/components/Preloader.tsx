@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
+import { useThemeColors } from "@/lib/themeColors";
 
 export type PreloaderVariant = "welcome" | "goodbye";
 
@@ -26,6 +27,7 @@ const Preloader: React.FC<PreloaderProps> = ({
 }) => {
   const isGoodbye = variant === "goodbye";
   const duration = minDuration ?? (isGoodbye ? GOODBYE_MIN_DURATION : DEFAULT_MIN_DURATION);
+  const tc = useThemeColors();
 
   const dialogRef = useRef<HTMLDialogElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -337,7 +339,7 @@ const Preloader: React.FC<PreloaderProps> = ({
     >
       <div
         ref={panelRef}
-        className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden bg-[#1f120c] will-change-transform"
+        className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden bg-black will-change-transform"
         role="status"
         aria-live="polite"
       >
@@ -361,11 +363,11 @@ const Preloader: React.FC<PreloaderProps> = ({
           {/* Light wash — product stays visible; readability comes from local scrim */}
           <div
             className={`absolute inset-0 ${
-              isGoodbye ? "bg-[#1f120c]/45" : "bg-[#1f120c]/38"
+              isGoodbye ? "bg-black/45" : "bg-black/38"
             }`}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#1f120c]/88 via-[#1f120c]/25 to-[#1f120c]/55" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_48%,rgba(31,18,12,0.55)_0%,transparent_70%)]" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/25 to-black/55" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_48%,rgba(0,0,0,0.55)_0%,transparent_70%)]" />
         </div>
 
         <div
@@ -373,8 +375,8 @@ const Preloader: React.FC<PreloaderProps> = ({
           className="pointer-events-none absolute inset-0 opacity-[0.22] transition-opacity duration-300"
           style={{
             background: isGoodbye
-              ? "radial-gradient(ellipse 58% 42% at 50% 46%, rgba(250,234,222,0.18) 0%, rgba(227,164,88,0.22) 35%, transparent 72%)"
-              : "radial-gradient(ellipse 70% 55% at 50% 48%, rgba(227,164,88,0.28) 0%, rgba(127,59,45,0.12) 48%, transparent 75%)",
+              ? `radial-gradient(ellipse 58% 42% at 50% 46%, ${tc.milk}2e 0%, ${tc.lightBrown}38 35%, transparent 72%)`
+              : `radial-gradient(ellipse 70% 55% at 50% 48%, ${tc.lightBrown}47 0%, ${tc.redBrown}1f 48%, transparent 75%)`,
           }}
         />
 
@@ -392,13 +394,13 @@ const Preloader: React.FC<PreloaderProps> = ({
         >
           {isGoodbye ? (
             <>
-              <p className="preloader-eyebrow mb-6 font-paragraph text-[0.65rem] sm:text-xs uppercase tracking-[0.42em] text-[#faeade]/70">
+              <p className="preloader-eyebrow mb-6 font-paragraph text-[0.65rem] sm:text-xs uppercase tracking-[0.42em] text-milk/70">
                 Generation Bread
               </p>
 
               <h1 className="text-center font-bold uppercase leading-[0.88] tracking-[-0.03em]">
                 <span className="block overflow-hidden">
-                  <span className="preloader-word inline-block text-[clamp(2.6rem,10vw,5rem)] text-[#faeade] drop-shadow-[0_2px_24px_rgba(0,0,0,0.35)]">
+                  <span className="preloader-word inline-block text-[clamp(2.6rem,10vw,5rem)] text-milk drop-shadow-[0_2px_24px_rgba(0,0,0,0.35)]">
                     Thank
                   </span>
                 </span>
@@ -409,7 +411,7 @@ const Preloader: React.FC<PreloaderProps> = ({
                 </span>
               </h1>
 
-              <div className="preloader-bar-track relative mt-9 h-[2px] w-full max-w-[11rem] origin-center overflow-visible rounded-full bg-[#faeade]/12">
+              <div className="preloader-bar-track relative mt-9 h-[2px] w-full max-w-[11rem] origin-center overflow-visible rounded-full bg-milk/12">
                 <div className="absolute inset-0 overflow-hidden rounded-full">
                   <div
                     ref={barFillRef}
@@ -418,30 +420,30 @@ const Preloader: React.FC<PreloaderProps> = ({
                 </div>
                 <div
                   ref={barGlowRef}
-                  className="pointer-events-none absolute top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-[#faeade] opacity-0 shadow-[0_0_10px_3px_rgba(227,164,88,0.65)]"
+                  className="pointer-events-none absolute top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-milk opacity-0 shadow-[0_0_10px_3px_rgba(227,164,88,0.65)]"
                   style={{ left: 0 }}
                 />
               </div>
 
               <p
                 ref={tagRef}
-                className="mt-8 max-w-[16rem] text-center font-paragraph text-sm leading-relaxed tracking-wide text-[#faeade]/55 sm:max-w-xs sm:text-base"
+                className="mt-8 max-w-[16rem] text-center font-paragraph text-sm leading-relaxed tracking-wide text-milk/55 sm:max-w-xs sm:text-base"
               >
                 Salamat for visiting.
-                <span className="mt-1.5 block text-[#faeade]/40">
+                <span className="mt-1.5 block text-milk/40">
                   Come back hungry · Tacloban City
                 </span>
               </p>
             </>
           ) : (
             <>
-              <p className="preloader-eyebrow mb-5 font-paragraph text-[0.65rem] sm:text-xs uppercase tracking-[0.45em] text-[#faeade]/65">
+              <p className="preloader-eyebrow mb-5 font-paragraph text-[0.65rem] sm:text-xs uppercase tracking-[0.45em] text-milk/65">
                 Cheese loaded
               </p>
 
               <h1 className="text-center font-bold uppercase leading-[0.88] tracking-[-0.03em]">
                 <span className="block overflow-hidden">
-                  <span className="preloader-word inline-block text-[clamp(2.4rem,9vw,4.75rem)] text-[#faeade] drop-shadow-[0_2px_24px_rgba(0,0,0,0.35)]">
+                  <span className="preloader-word inline-block text-[clamp(2.4rem,9vw,4.75rem)] text-milk drop-shadow-[0_2px_24px_rgba(0,0,0,0.35)]">
                     Generation
                   </span>
                 </span>
@@ -452,23 +454,23 @@ const Preloader: React.FC<PreloaderProps> = ({
                 </span>
               </h1>
 
-              <div className="preloader-bar-track relative mt-9 h-[3px] w-full max-w-[15rem] origin-left overflow-visible rounded-full bg-[#faeade]/12">
+              <div className="preloader-bar-track relative mt-9 h-[3px] w-full max-w-[15rem] origin-left overflow-visible rounded-full bg-milk/12">
                 <div className="absolute inset-0 overflow-hidden rounded-full">
                   <div
                     ref={barFillRef}
-                    className="h-full w-0 rounded-full bg-gradient-to-r from-[#a26833] via-light-brown to-[#faeade]"
+                    className="h-full w-0 rounded-full bg-gradient-to-r from-mid-brown via-light-brown to-milk"
                   />
                 </div>
                 <div
                   ref={barGlowRef}
-                  className="pointer-events-none absolute top-1/2 h-3 w-3 -translate-y-1/2 rounded-full bg-[#faeade] opacity-0 shadow-[0_0_12px_4px_rgba(227,164,88,0.75)]"
+                  className="pointer-events-none absolute top-1/2 h-3 w-3 -translate-y-1/2 rounded-full bg-milk opacity-0 shadow-[0_0_12px_4px_rgba(227,164,88,0.75)]"
                   style={{ left: 0 }}
                 />
               </div>
 
               <p
                 ref={tagRef}
-                className="mt-7 font-paragraph text-center text-sm tracking-wide text-[#faeade]/50"
+                className="mt-7 font-paragraph text-center text-sm tracking-wide text-milk/50"
               >
                 Tacloban City
               </p>

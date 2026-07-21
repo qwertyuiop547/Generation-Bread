@@ -3,6 +3,11 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import gsap from "gsap";
+import { useGSAP } from "@gsap/react";
+import type { Html5Qrcode } from "html5-qrcode";
+
+gsap.registerPlugin(useGSAP);
 
 type CameraDevice = { id: string; label: string };
 type CameraConfig = string | { facingMode: "user" | "environment" };
@@ -50,7 +55,7 @@ function getCameraErrorMessage(error: unknown): string {
   return "Hindi ma-start ang camera. Payagan ang camera permission at subukan ulit.";
 }
 
-async function stopScanner(scanner: any) {
+async function stopScanner(scanner: Html5Qrcode | null) {
   if (!scanner) return;
 
   try {
@@ -93,8 +98,10 @@ async function requestAnyCameraAccess(): Promise<boolean> {
 
 export default function ScanPage() {
   const router = useRouter();
+  const pageRef = useRef<HTMLDivElement>(null);
+  const scannerFrameRef = useRef<HTMLDivElement>(null);
   const scannerRef = useRef<HTMLDivElement>(null);
-  const html5QrCodeRef = useRef<any>(null);
+  const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
   const isStartingRef = useRef(false);
   const [error, setError] = useState("");
   const [scanned, setScanned] = useState(false);
@@ -106,8 +113,120 @@ export default function ScanPage() {
   const [cameras, setCameras] = useState<CameraDevice[]>([]);
   const [activeCameraIndex, setActiveCameraIndex] = useState(0);
 
+  useGSAP(
+    () => {
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (reducedMotion) {
+        gsap.set([".scan-heading", ".scan-copy", ".scanner-shell"], { autoAlpha: 1, y: 0 });
+        return;
+      }
+
+      gsap
+        .timeline({ defaults: { ease: "power3.out" } })
+        .from(".scan-heading", { y: 18, autoAlpha: 0, duration: 0.55 })
+        .from(".scan-copy", { y: 12, autoAlpha: 0, duration: 0.45 }, "-=0.32")
+        .from(".scanner-shell", { y: 24, scale: 0.97, autoAlpha: 0, duration: 0.65 }, "-=0.28");
+    },
+    { scope: pageRef }
+  );
+
+  useGSAP(
+    () => {
+      if (!cameraReady || error || scanned) return;
+
+      const frame = scannerFrameRef.current;
+      const laser = pageRef.current?.querySelector<HTMLElement>(".scan-laser");
+      if (!frame || !laser) return;
+
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (reducedMotion) {
+        gsap.set([".scan-laser", ".scan-corner", ".scanner-aura", ".scan-status-dot"], {
+          autoAlpha: 1,
+        });
+        return;
+      }
+
+      const laserTween = gsap.fromTo(
+        laser,
+        { y: 0, autoAlpha: 0.45 },
+        {
+          y: () => Math.max(0, frame.clientHeight - 42),
+          autoAlpha: 1,
+          duration: 2.05,
+          ease: "sine.inOut",
+          repeat: -1,
+          yoyo: true,
+          repeatRefresh: true,
+        }
+      );
+      const cornerTween = gsap.to(".scan-corner", {
+        scale: 1.08,
+        autoAlpha: 0.62,
+        duration: 0.9,
+        ease: "sine.inOut",
+        repeat: -1,
+        yoyo: true,
+        stagger: { each: 0.12, from: "edges" },
+      });
+      const auraTween = gsap.to(".scanner-aura", {
+        scale: 1.025,
+        autoAlpha: 0.85,
+        duration: 1.25,
+        ease: "sine.inOut",
+        repeat: -1,
+        yoyo: true,
+      });
+      const statusTween = gsap.to(".scan-status-dot", {
+        scale: 1.65,
+        autoAlpha: 0.35,
+        duration: 0.75,
+        ease: "sine.inOut",
+        repeat: -1,
+        yoyo: true,
+      });
+
+      return () => {
+        laserTween.kill();
+        cornerTween.kill();
+        auraTween.kill();
+        statusTween.kill();
+      };
+    },
+    { dependencies: [cameraReady, error, scanned], scope: pageRef, revertOnUpdate: true }
+  );
+
+  useGSAP(
+    () => {
+      if (!scanned) return;
+
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (reducedMotion) {
+        gsap.set([".scan-success-ring", ".scan-success-title", ".scan-success-copy", ".scan-success-loader"], {
+          autoAlpha: 1,
+          scale: 1,
+          y: 0,
+        });
+        gsap.set(".scan-success-check", { strokeDashoffset: 0 });
+        return;
+      }
+
+      gsap
+        .timeline({ defaults: { ease: "power3.out" } })
+        .fromTo(
+          ".scan-success-ring",
+          { scale: 0.55, autoAlpha: 0, rotation: -12 },
+          { scale: 1, autoAlpha: 1, rotation: 0, duration: 0.55, ease: "back.out(1.8)" }
+        )
+        .to(".scan-success-check", { strokeDashoffset: 0, duration: 0.42, ease: "power2.out" }, "-=0.25")
+        .from(".scan-success-title", { y: 16, autoAlpha: 0, duration: 0.4 }, "-=0.2")
+        .from(".scan-success-copy", { y: 10, autoAlpha: 0, duration: 0.35 }, "-=0.25")
+        .from(".scan-success-loader", { scaleX: 0, autoAlpha: 0, duration: 0.45 }, "-=0.15");
+    },
+    { dependencies: [scanned], scope: pageRef, revertOnUpdate: true }
+  );
+
   const handleScanSuccess = useCallback(
-    (_decodedText: string) => {
+    () => {
       setScanned(true);
       stopScanner(html5QrCodeRef.current);
       setTimeout(() => router.push("/order"), 1500);
@@ -115,7 +234,7 @@ export default function ScanPage() {
     [router]
   );
 
-  const detectActiveCamera = useCallback((scanner: any, onLaptop: boolean) => {
+  const detectActiveCamera = useCallback((scanner: Html5Qrcode, onLaptop: boolean) => {
     try {
       const settings = scanner.getRunningTrackSettings?.();
       const facingMode = settings?.facingMode;
@@ -241,7 +360,7 @@ export default function ScanPage() {
   }, [startScanner]);
 
   return (
-    <div className="min-h-screen bg-[#222123] flex flex-col items-center relative overflow-hidden">
+    <div ref={pageRef} className="min-h-screen bg-black flex flex-col items-center relative overflow-hidden">
       <div className="absolute top-[-10%] left-[-10%] w-[40vw] h-[40vw] bg-dark-brown rounded-full mix-blend-screen filter blur-3xl opacity-20"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-[40vw] h-[40vw] bg-mid-brown rounded-full mix-blend-screen filter blur-3xl opacity-20"></div>
 
@@ -269,27 +388,33 @@ export default function ScanPage() {
       <div className="flex-1 flex flex-col items-center justify-center px-5 w-full max-w-md z-10">
         {scanned ? (
           <div className="text-center">
-            <div className="w-24 h-24 mx-auto mb-6 bg-light-brown/20 rounded-full flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#e3a458" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="20 6 9 17 4 12" />
+            <div className="scan-success-ring w-24 h-24 mx-auto mb-6 bg-light-brown/20 border border-light-brown/35 rounded-full flex items-center justify-center shadow-[0_0_55px_rgba(227,164,88,0.22)] will-change-transform">
+              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-light-brown" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline
+                  className="scan-success-check"
+                  points="20 6 9 17 4 12"
+                  pathLength="1"
+                  strokeDasharray="1"
+                  strokeDashoffset="1"
+                />
               </svg>
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold text-milk uppercase tracking-tighter mb-3">
+            <h1 className="scan-success-title text-3xl md:text-4xl font-bold text-milk uppercase tracking-tighter mb-3">
               QR Scanned!
             </h1>
-            <p className="font-paragraph text-milk/60 text-lg">
+            <p className="scan-success-copy font-paragraph text-milk/60 text-lg">
               Loading menu...
             </p>
-            <div className="mt-6 flex justify-center">
-              <div className="w-8 h-8 border-4 border-light-brown/30 border-t-light-brown rounded-full animate-spin"></div>
+            <div className="scan-success-loader mt-7 mx-auto h-1 w-36 origin-left overflow-hidden rounded-full bg-light-brown/20">
+              <div className="h-full w-full bg-gradient-to-r from-mid-brown via-light-brown to-milk" />
             </div>
           </div>
         ) : (
           <>
-            <h1 className="text-3xl md:text-4xl font-bold text-milk uppercase tracking-tighter mb-2 text-center">
+            <h1 className="scan-heading text-3xl md:text-4xl font-bold text-milk uppercase tracking-tighter mb-2 text-center">
               Scan QR Code
             </h1>
-            <p className="font-paragraph text-milk/60 mb-4 text-center">
+            <p className="scan-copy font-paragraph text-milk/60 mb-4 text-center">
               {isLaptop
                 ? "Itutok ang laptop webcam sa QR code (para sa testing)"
                 : "Itutok ang rear camera sa QR code sa mesa"}
@@ -301,8 +426,11 @@ export default function ScanPage() {
             )}
             {!isLaptop && <div className="mb-8" />}
 
-            <div className="w-full relative">
-              <div className="relative bg-black/30 backdrop-blur-sm rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
+            <div className="scanner-shell w-full relative will-change-transform">
+              <div
+                ref={scannerFrameRef}
+                className="relative bg-black/30 backdrop-blur-sm rounded-3xl overflow-hidden border border-white/10 shadow-2xl"
+              >
                 <div
                   id="qr-reader"
                   ref={scannerRef}
@@ -312,10 +440,20 @@ export default function ScanPage() {
 
                 {!error && (
                   <>
-                    <div className="absolute top-4 left-4 w-10 h-10 border-t-4 border-l-4 border-light-brown rounded-tl-xl pointer-events-none"></div>
-                    <div className="absolute top-4 right-4 w-10 h-10 border-t-4 border-r-4 border-light-brown rounded-tr-xl pointer-events-none"></div>
-                    <div className="absolute bottom-4 left-4 w-10 h-10 border-b-4 border-l-4 border-light-brown rounded-bl-xl pointer-events-none"></div>
-                    <div className="absolute bottom-4 right-4 w-10 h-10 border-b-4 border-r-4 border-light-brown rounded-br-xl pointer-events-none"></div>
+                    <div aria-hidden className="scanner-aura absolute inset-2 rounded-[1.25rem] border border-light-brown/25 opacity-40 pointer-events-none will-change-transform" />
+                    <div aria-hidden className="scan-corner absolute top-4 left-4 w-10 h-10 border-t-4 border-l-4 border-light-brown rounded-tl-xl pointer-events-none will-change-transform"></div>
+                    <div aria-hidden className="scan-corner absolute top-4 right-4 w-10 h-10 border-t-4 border-r-4 border-light-brown rounded-tr-xl pointer-events-none will-change-transform"></div>
+                    <div aria-hidden className="scan-corner absolute bottom-4 left-4 w-10 h-10 border-b-4 border-l-4 border-light-brown rounded-bl-xl pointer-events-none will-change-transform"></div>
+                    <div aria-hidden className="scan-corner absolute bottom-4 right-4 w-10 h-10 border-b-4 border-r-4 border-light-brown rounded-br-xl pointer-events-none will-change-transform"></div>
+                    {cameraReady && (
+                      <div
+                        aria-hidden
+                        className="scan-laser absolute left-5 right-5 top-5 h-[2px] pointer-events-none opacity-0 will-change-transform"
+                      >
+                        <div className="absolute inset-x-0 -top-3 h-7 bg-gradient-to-b from-transparent via-light-brown/20 to-transparent blur-sm" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-light-brown to-transparent shadow-[0_0_14px_rgba(227,164,88,0.9)]" />
+                      </div>
+                    )}
                   </>
                 )}
               </div>
@@ -323,7 +461,7 @@ export default function ScanPage() {
               {cameraReady && !error && (
                 <div className="mt-4 flex flex-col items-center gap-3">
                   <div className="flex items-center justify-center gap-2">
-                    <div className="w-2 h-2 bg-light-brown rounded-full animate-pulse"></div>
+                    <div className="scan-status-dot w-2 h-2 bg-light-brown rounded-full will-change-transform"></div>
                     <p className="font-paragraph text-milk/50 text-sm text-center">
                       {isLaptop
                         ? "Ginagamit ang laptop webcam"
@@ -337,7 +475,7 @@ export default function ScanPage() {
                     <button
                       type="button"
                       onClick={switchCamera}
-                      className="px-4 py-2 rounded-full border border-light-brown/40 text-milk text-sm font-bold hover:bg-light-brown/20 transition-colors"
+                      className="cursor-pointer px-4 py-2 rounded-full border border-light-brown/40 text-milk text-sm font-bold hover:bg-light-brown/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-light-brown"
                     >
                       Switch Camera
                     </button>
@@ -353,7 +491,7 @@ export default function ScanPage() {
                   <button
                     type="button"
                     onClick={startScanner}
-                    className="px-4 py-2 rounded-full bg-light-brown text-dark-brown text-sm font-bold hover:bg-mid-brown hover:text-milk transition-colors"
+                    className="cursor-pointer px-4 py-2 rounded-full bg-light-brown text-dark-brown text-sm font-bold hover:bg-mid-brown hover:text-milk transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-light-brown"
                   >
                     Payagan ang Camera
                   </button>

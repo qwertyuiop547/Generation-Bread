@@ -280,7 +280,7 @@ function TrackPageContent() {
 
   if (!mounted || isAuthLoading || !isLoggedIn) {
     return (
-      <div className="min-h-screen bg-milk flex items-center justify-center">
+      <div className="min-h-screen app-canvas flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-light-brown/30 border-t-light-brown rounded-full animate-spin" />
       </div>
     );
@@ -289,13 +289,13 @@ function TrackPageContent() {
   const isCancelled = trackedOrder?.status === "cancelled";
 
   return (
-    <div className="min-h-screen bg-milk relative overflow-hidden">
+    <div className="min-h-screen app-canvas relative overflow-hidden">
       {/* Background blobs */}
       <div className="absolute top-[-10%] right-[-10%] w-[40vw] h-[40vw] bg-light-brown rounded-full mix-blend-multiply filter blur-3xl opacity-20" />
       <div className="absolute bottom-[-10%] left-[-10%] w-[40vw] h-[40vw] bg-mid-brown rounded-full mix-blend-multiply filter blur-3xl opacity-20" />
 
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-milk/80 backdrop-blur-xl border-b border-dark-brown/10">
+      <div className="sticky top-0 z-40 app-header-bar backdrop-blur-xl border-b border-dark-brown/10">
         <div className="flex items-center justify-between px-5 md:px-10 py-4">
           <div className="flex items-center gap-4">
             <Link href="/" className="shrink-0">
@@ -360,7 +360,7 @@ function TrackPageContent() {
           <button
             type="submit"
             disabled={loading}
-            className="bg-dark-brown hover:bg-[#3a2218] text-milk uppercase font-bold text-sm rounded-2xl px-6 md:px-8 shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="bg-dark-brown hover:bg-dark-brown-hover text-milk uppercase font-bold text-sm rounded-2xl px-6 md:px-8 shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {loading ? (
               <div className="w-5 h-5 border-2 border-milk/30 border-t-milk rounded-full animate-spin" />
@@ -392,7 +392,7 @@ function TrackPageContent() {
               <div className="bg-gradient-to-r from-light-brown/20 to-[#d4af37]/10 border border-light-brown/30 rounded-3xl p-5 md:p-6 shadow-md">
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 rounded-2xl bg-dark-brown/10 flex items-center justify-center shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#523122" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <circle cx="12" cy="12" r="10" />
                       <polyline points="12 6 12 12 16 14" />
                     </svg>
@@ -414,7 +414,7 @@ function TrackPageContent() {
             )}
 
             {/* 3 — Order summary */}
-            <div className="bg-white/50 backdrop-blur-sm border border-white/60 rounded-3xl p-5 md:p-6 shadow-lg">
+            <div className="app-panel border rounded-3xl p-5 md:p-6 shadow-lg">
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <p className="font-bold text-dark-brown uppercase tracking-tight text-sm">{trackedOrder.id}</p>
@@ -480,7 +480,7 @@ function TrackPageContent() {
 
         {/* Empty state */}
         {!trackedOrder && !loading && !error && (
-          <div className="bg-white/50 backdrop-blur-sm border border-white/60 rounded-3xl p-8 md:p-12 text-center shadow-lg">
+          <div className="app-panel border rounded-3xl p-8 md:p-12 text-center shadow-lg">
             <div className="text-5xl mb-4">📦</div>
             <p className="font-paragraph text-dark-brown/60 text-lg">Enter an order ID to track</p>
             <p className="font-paragraph text-dark-brown/40 text-sm mt-1">
@@ -488,7 +488,7 @@ function TrackPageContent() {
             </p>
             <Link
               href="/dashboard"
-              className="inline-block mt-6 bg-dark-brown hover:bg-[#3a2218] text-milk uppercase font-bold text-sm rounded-full py-3 px-8 shadow-lg hover:shadow-xl transition-all"
+              className="inline-block mt-6 bg-dark-brown hover:bg-dark-brown-hover text-milk uppercase font-bold text-sm rounded-full py-3 px-8 shadow-lg hover:shadow-xl transition-all"
             >
               View My Orders
             </Link>
@@ -518,7 +518,7 @@ function TrackPageContent() {
 export default function TrackPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-milk flex items-center justify-center">
+      <div className="min-h-screen app-canvas flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-light-brown/30 border-t-light-brown rounded-full animate-spin" />
       </div>
     }>

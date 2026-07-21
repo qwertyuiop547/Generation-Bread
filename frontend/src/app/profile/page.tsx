@@ -114,7 +114,7 @@ export default function ProfilePage() {
 
   if (!mounted || isAuthLoading || !isLoggedIn || !user) {
     return (
-      <div className="min-h-screen bg-milk flex items-center justify-center">
+      <div className="min-h-screen app-canvas flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-light-brown/30 border-t-light-brown rounded-full animate-spin" />
       </div>
     );
@@ -234,14 +234,14 @@ const handleChangePassword = (e: React.FormEvent) => {
   const isGoogleUser = user.provider === "google";
 
   return (
-    <div className="min-h-screen bg-milk relative overflow-hidden">
+    <div className="min-h-screen app-canvas relative overflow-hidden">
       {/* Background blobs */}
       <div className="absolute top-[-10%] right-[-15%] w-[45vw] h-[45vw] bg-light-brown rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
       <div className="absolute bottom-[-15%] left-[-10%] w-[40vw] h-[40vw] bg-mid-brown rounded-full mix-blend-multiply filter blur-3xl opacity-15"></div>
       <div className="absolute top-[40%] left-[50%] w-[30vw] h-[30vw] bg-dark-brown rounded-full mix-blend-multiply filter blur-3xl opacity-10"></div>
 
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-milk/80 backdrop-blur-xl border-b border-dark-brown/10">
+      <div className="sticky top-0 z-40 app-header-bar backdrop-blur-xl border-b border-dark-brown/10">
         <div className="flex items-center justify-between px-5 md:px-10 py-4">
           <div className="flex items-center gap-4">
             <h1 className="text-dark-brown font-bold uppercase text-lg md:text-xl tracking-tight">My Profile</h1>
@@ -263,7 +263,7 @@ const handleChangePassword = (e: React.FormEvent) => {
       <div className="max-w-3xl mx-auto px-5 md:px-10 py-8 md:py-12 relative z-10">
 
         {/* Profile Photo & Name Header */}
-        <div className="bg-white/50 backdrop-blur-sm border border-white/60 rounded-3xl p-6 md:p-10 shadow-lg mb-6 md:mb-8">
+        <div className="app-panel border rounded-3xl p-6 md:p-10 shadow-lg mb-6 md:mb-8">
           <div className="flex flex-col sm:flex-row items-center gap-6 md:gap-8">
             {/* Avatar */}
             <div className="relative group">
@@ -312,7 +312,7 @@ const handleChangePassword = (e: React.FormEvent) => {
                     onKeyDown={(e) => { if (e.key === "Enter") handleSaveName(); if (e.key === "Escape") { setEditingName(false); setNameValue(user.name); } }}
                   />
                   <div className="flex gap-2">
-                    <button onClick={handleSaveName} className="bg-dark-brown hover:bg-[#3a2218] text-milk font-bold text-xs uppercase rounded-full py-2 px-5 shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5">Save</button>
+                    <button onClick={handleSaveName} className="bg-dark-brown hover:bg-dark-brown-hover text-milk font-bold text-xs uppercase rounded-full py-2 px-5 shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5">Save</button>
                     <button onClick={() => { setEditingName(false); setNameValue(user.name); }} className="bg-dark-brown/10 hover:bg-dark-brown/20 text-dark-brown font-bold text-xs uppercase rounded-full py-2 px-5 transition-all">Cancel</button>
                   </div>
                 </div>
@@ -444,7 +444,7 @@ const handleChangePassword = (e: React.FormEvent) => {
         </div>
 
         {/* Account Details Card */}
-        <div className="bg-white/50 backdrop-blur-sm border border-white/60 rounded-3xl p-6 md:p-8 shadow-lg mb-6 md:mb-8">
+        <div className="app-panel border rounded-3xl p-6 md:p-8 shadow-lg mb-6 md:mb-8">
           <h3 className="text-xl md:text-2xl font-bold text-dark-brown uppercase tracking-tight mb-6 flex items-center gap-3">
             <div className="w-8 h-8 bg-light-brown/20 rounded-xl flex items-center justify-center">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-dark-brown">
@@ -503,7 +503,7 @@ const handleChangePassword = (e: React.FormEvent) => {
         </div>
 
         {/* Security / Change Password Card */}
-        <div className="bg-white/50 backdrop-blur-sm border border-white/60 rounded-3xl p-6 md:p-8 shadow-lg mb-6 md:mb-8">
+        <div className="app-panel border rounded-3xl p-6 md:p-8 shadow-lg mb-6 md:mb-8">
           <h3 className="text-xl md:text-2xl font-bold text-dark-brown uppercase tracking-tight mb-6 flex items-center gap-3">
             <div className="w-8 h-8 bg-red-brown/15 rounded-xl flex items-center justify-center">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-brown">
@@ -585,7 +585,7 @@ const handleChangePassword = (e: React.FormEvent) => {
                   <div className="flex gap-3 mt-2">
                     <button
                       type="submit"
-                      className="flex-1 bg-dark-brown hover:bg-[#3a2218] text-milk uppercase font-bold text-sm rounded-full py-3 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
+                      className="flex-1 bg-dark-brown hover:bg-dark-brown-hover text-milk uppercase font-bold text-sm rounded-full py-3 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
                     >
                       Update Password
                     </button>
@@ -612,7 +612,7 @@ const handleChangePassword = (e: React.FormEvent) => {
 
         {/* Quick Links */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Link href={isAdmin ? "/admin" : isStaff ? "/staff" : "/dashboard"} className="group bg-dark-brown hover:bg-[#3a2218] text-milk rounded-3xl p-5 md:p-6 shadow-lg hover:shadow-xl transition-all flex items-center justify-between">
+          <Link href={isAdmin ? "/admin" : isStaff ? "/staff" : "/dashboard"} className="group bg-dark-brown hover:bg-dark-brown-hover text-milk rounded-3xl p-5 md:p-6 shadow-lg hover:shadow-xl transition-all flex items-center justify-between">
             <div>
               <p className="font-bold uppercase text-lg">{isAdmin ? "Admin Panel" : isStaff ? "Staff Panel" : "Dashboard"}</p>
               <p className="font-paragraph text-milk/60 text-sm mt-1">{isAdmin || isStaff ? "Manage orders & operations" : "View your orders & activity"}</p>
@@ -652,7 +652,7 @@ const handleChangePassword = (e: React.FormEvent) => {
       {/* Delete Account Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl shadow-2xl p-6 md:p-8 w-[90%] max-w-md">
+          <div className="app-panel border rounded-3xl shadow-2xl p-6 md:p-8 w-[90%] max-w-md">
             <h3 className="text-xl font-bold text-red-800 uppercase tracking-tight mb-2">Delete Account</h3>
             <p className="font-paragraph text-red-700 text-sm mb-4">
               This will permanently delete your account and all data. Type <strong>DELETE</strong> to confirm.

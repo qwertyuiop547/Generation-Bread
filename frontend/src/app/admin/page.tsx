@@ -1395,20 +1395,20 @@ export default function AdminPage() {
   const isConfirmedAdmin = isAdmin || isStoredAdmin;
   if (!mounted || (isAuthLoading && !isConfirmedAdmin) || (!isLoggedIn && !storedUserRaw)) {
     return (
-      <div className="min-h-screen bg-milk flex items-center justify-center">
+      <div className="min-h-screen app-canvas flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-light-brown/30 border-t-light-brown rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-milk relative overflow-hidden">
+    <div ref={containerRef} className="min-h-screen app-canvas relative overflow-hidden">
       {/* Background blobs */}
       <div className="admin-stagger-item absolute top-[-10%] right-[-10%] w-[40vw] h-[40vw] bg-light-brown rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
       <div className="admin-stagger-item absolute bottom-[-10%] left-[-10%] w-[40vw] h-[40vw] bg-mid-brown rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
 
       {/* Header */}
-      <div className="admin-header sticky top-0 z-40 bg-milk/80 backdrop-blur-xl border-b border-dark-brown/10">
+      <div className="admin-header sticky top-0 z-40 app-header-bar backdrop-blur-xl border-b border-dark-brown/10">
         <div className="flex items-center justify-between px-5 md:px-10 py-4">
           <div className="flex items-center gap-4">
             <h1 className="admin-nav-item text-dark-brown font-bold uppercase text-lg md:text-xl tracking-tight">Admin Panel</h1>
@@ -1508,7 +1508,7 @@ export default function AdminPage() {
         {showMobileMenu && (
           <div
             ref={mobileMenuRef}
-            className="mobile-nav-menu xl:hidden absolute top-[100%] right-0 w-full bg-milk/95 backdrop-blur-md border-b border-dark-brown/10 shadow-lg flex flex-col items-center py-4 gap-3 z-50 will-change-transform"
+            className="mobile-nav-menu xl:hidden absolute top-[100%] right-0 w-full app-header-bar backdrop-blur-md border-b border-dark-brown/10 shadow-lg flex flex-col items-center py-4 gap-3 z-50 will-change-transform"
           >
             <Link
               href="/profile"
@@ -1577,19 +1577,19 @@ export default function AdminPage() {
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-8 md:mb-10">
-          <div className="admin-stagger-item bg-white/50 backdrop-blur-sm border border-white/60 rounded-3xl p-5 md:p-6 shadow-lg">
+          <div className="admin-stagger-item app-panel border rounded-3xl p-5 md:p-6 shadow-lg">
             <p className="font-paragraph text-dark-brown/50 text-sm mb-1">{t("Total Orders")}</p>
             <p className="text-3xl md:text-4xl font-bold text-dark-brown">{totalOrders}</p>
           </div>
-          <div className="admin-stagger-item bg-white/50 backdrop-blur-sm border border-white/60 rounded-3xl p-5 md:p-6 shadow-lg">
+          <div className="admin-stagger-item app-panel border rounded-3xl p-5 md:p-6 shadow-lg">
             <p className="font-paragraph text-dark-brown/50 text-sm mb-1">{t("Sales")}</p>
             <p className="text-2xl md:text-3xl font-bold text-dark-brown">₱{totalRevenue.toFixed(0)}</p>
           </div>
-          <div className="admin-stagger-item bg-white/50 backdrop-blur-sm border border-white/60 rounded-3xl p-5 md:p-6 shadow-lg">
+          <div className="admin-stagger-item app-panel border rounded-3xl p-5 md:p-6 shadow-lg">
             <p className="font-paragraph text-dark-brown/50 text-sm mb-1">{t("Pending")}</p>
             <p className="text-3xl md:text-4xl font-bold text-dark-brown">{pendingOrders}</p>
           </div>
-          <div className="admin-stagger-item bg-white/50 backdrop-blur-sm border border-white/60 rounded-3xl p-5 md:p-6 shadow-lg">
+          <div className="admin-stagger-item app-panel border rounded-3xl p-5 md:p-6 shadow-lg">
             <p className="font-paragraph text-dark-brown/50 text-sm mb-1">{t("Customer")}</p>
             <p className="text-3xl md:text-4xl font-bold text-dark-brown">{totalUsers}</p>
           </div>
@@ -1719,7 +1719,7 @@ export default function AdminPage() {
         </div>
 
         {/* Orders Table */}
-        <div className="admin-stagger-item bg-white/50 backdrop-blur-sm border border-white/60 rounded-3xl shadow-lg overflow-hidden">
+        <div className="admin-stagger-item app-panel border rounded-3xl shadow-lg overflow-hidden">
           <div className="p-5 md:p-6 border-b border-dark-brown/10 flex items-center justify-between">
             <h3 className="text-lg md:text-xl font-bold text-dark-brown uppercase tracking-tight">{viewTab === "archived" ? "Archived Orders" : "Orders"}</h3>
             <span className="font-paragraph text-dark-brown/50 text-sm">{filteredOrders.length} result{filteredOrders.length !== 1 ? "s" : ""}</span>
@@ -1923,7 +1923,7 @@ export default function AdminPage() {
         </div>
 
         {staffUsers.length === 0 ? (
-          <div className="bg-white/50 backdrop-blur-sm border border-white/60 rounded-3xl p-10 text-center shadow-lg">
+          <div className="app-panel border rounded-3xl p-10 text-center shadow-lg">
             <p className="text-4xl mb-3">👥</p>
             <p className="font-paragraph text-dark-brown/50">No staff accounts found</p>
           </div>
@@ -1933,7 +1933,7 @@ export default function AdminPage() {
               <div
                 key={s.id}
                 onClick={() => openAttendanceHistory(s)}
-                className="bg-white/50 backdrop-blur-sm border border-white/60 rounded-3xl p-5 shadow-lg hover:shadow-xl transition-all group hover:-translate-y-1 cursor-pointer"
+                className="app-panel border rounded-3xl p-5 shadow-lg hover:shadow-xl transition-all group hover:-translate-y-1 cursor-pointer"
               >
                 <div className="flex items-start gap-4">
                   {/* Avatar */}
@@ -2069,7 +2069,7 @@ export default function AdminPage() {
               {feedbackData.staff.length > 0 && (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-8">
                   {feedbackData.staff.map((s: any) => (
-                    <div key={s.user_id} className="bg-white/60 backdrop-blur-sm border border-white/60 rounded-3xl p-5 shadow-lg">
+                    <div key={s.user_id} className="app-panel border rounded-3xl p-5 shadow-lg">
                       <div className="flex items-start justify-between gap-3 mb-3">
                         <div>
                           <p className="font-bold text-dark-brown uppercase">{s.name}</p>
@@ -2105,7 +2105,7 @@ export default function AdminPage() {
                 </div>
               )}
 
-              <div className="bg-white/60 backdrop-blur-sm border border-white/60 rounded-3xl p-6 shadow-lg">
+              <div className="app-panel border rounded-3xl p-6 shadow-lg">
                 <p className="text-[10px] font-bold uppercase text-dark-brown/50 mb-4">Tag Staff on Customer Reviews</p>
                 {feedbackData.untagged_reviews.length === 0 && feedbackData.summary.total_ratings === 0 ? (
                   <p className="font-paragraph text-dark-brown/45 text-sm">No customer reviews yet. Ratings appear after customers rate completed orders.</p>
@@ -2161,12 +2161,12 @@ export default function AdminPage() {
         </div>
 
         {staffUsers.length === 0 ? (
-          <div className="bg-white/50 backdrop-blur-sm border border-white/60 rounded-3xl p-10 text-center shadow-lg">
+          <div className="app-panel border rounded-3xl p-10 text-center shadow-lg">
             <p className="text-4xl mb-3">📋</p>
             <p className="font-paragraph text-dark-brown/50">No staff accounts to assign roles</p>
           </div>
         ) : (
-          <div className="bg-white/50 backdrop-blur-sm border border-white/60 rounded-3xl shadow-lg overflow-hidden">
+          <div className="app-panel border rounded-3xl shadow-lg overflow-hidden">
             {/* Header */}
             <div className="hidden md:grid grid-cols-[1fr_1fr_1fr] gap-4 px-6 py-3 bg-dark-brown/5 border-b border-dark-brown/10 text-[10px] font-bold text-dark-brown/50 uppercase tracking-wider">
               <span>Staff</span>
@@ -2270,7 +2270,7 @@ export default function AdminPage() {
         </div>
 
         {staffUsers.length === 0 ? (
-          <div className="bg-white/50 backdrop-blur-sm border border-white/60 rounded-3xl p-10 text-center shadow-lg">
+          <div className="app-panel border rounded-3xl p-10 text-center shadow-lg">
             <p className="text-4xl mb-3">📞</p>
             <p className="font-paragraph text-dark-brown/50">No staff contacts to display</p>
           </div>
@@ -2281,7 +2281,7 @@ export default function AdminPage() {
               return (
                 <div
                   key={s.id}
-                  className="bg-white/60 backdrop-blur-sm border border-white/60 rounded-2xl p-5 shadow-md hover:shadow-lg transition-all group"
+                  className="app-panel border rounded-2xl p-5 shadow-md hover:shadow-lg transition-all group"
                 >
                   {/* Top: Avatar + Name + Role */}
                   <div className="flex items-center gap-3 mb-4">
@@ -2449,12 +2449,12 @@ export default function AdminPage() {
 
         {/* Attendance Table */}
         {!attendanceData?.attendance?.length ? (
-          <div className="bg-white/50 backdrop-blur-sm border border-white/60 rounded-3xl p-10 text-center shadow-lg">
+          <div className="app-panel border rounded-3xl p-10 text-center shadow-lg">
             <p className="text-4xl mb-3">📋</p>
             <p className="font-paragraph text-dark-brown/50">No staff attendance data yet</p>
           </div>
         ) : (
-          <div className="bg-white/60 backdrop-blur-sm border border-white/60 rounded-2xl overflow-hidden shadow-lg">
+          <div className="app-panel border rounded-2xl overflow-hidden shadow-lg">
             {/* Desktop Table */}
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full">
@@ -2707,7 +2707,7 @@ export default function AdminPage() {
             </div>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white/60 backdrop-blur-sm border border-white/60 rounded-3xl p-6 shadow-lg">
+            <div className="app-panel border rounded-3xl p-6 shadow-lg">
               <div className="space-y-4">
                 <div>
                   <label className="block text-[10px] font-bold uppercase text-dark-brown/50 mb-1.5">Staff Member</label>
@@ -2774,7 +2774,7 @@ export default function AdminPage() {
                 </button>
               </div>
             </div>
-            <div className="bg-white/60 backdrop-blur-sm border border-white/60 rounded-3xl p-6 shadow-lg">
+            <div className="app-panel border rounded-3xl p-6 shadow-lg">
               <div className="flex items-center justify-between gap-3 mb-3">
                 <p className="text-[10px] font-bold uppercase text-dark-brown/50">This Week&apos;s Schedule</p>
                 <button
@@ -2832,7 +2832,7 @@ export default function AdminPage() {
             </p>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white/60 backdrop-blur-sm border border-white/60 rounded-3xl p-6 shadow-lg">
+            <div className="app-panel border rounded-3xl p-6 shadow-lg">
               <div className="space-y-4">
                 <div>
                   <label className="block text-[10px] font-bold uppercase text-dark-brown/50 mb-1.5">Staff Member</label>
@@ -2875,7 +2875,7 @@ export default function AdminPage() {
                 </button>
               </div>
             </div>
-            <div className="bg-white/60 backdrop-blur-sm border border-white/60 rounded-3xl p-6 shadow-lg">
+            <div className="app-panel border rounded-3xl p-6 shadow-lg">
               <p className="text-[10px] font-bold uppercase text-dark-brown/50 mb-3">Upcoming Planned Absences</p>
               {absenceRequests.filter((r) => r.status === "approved" && r.absence_date >= new Date().toISOString().slice(0, 10)).length === 0 ? (
                 <p className="font-paragraph text-dark-brown/45 text-sm">No upcoming planned absences</p>
@@ -2933,7 +2933,7 @@ export default function AdminPage() {
               </select>
             </div>
           </div>
-          <div className="bg-white/60 backdrop-blur-sm border border-white/60 rounded-3xl p-5 md:p-8 shadow-lg">
+          <div className="app-panel border rounded-3xl p-5 md:p-8 shadow-lg">
             <MonthlyCalendarGrid
               data={calendarData}
               loading={calendarLoading}
@@ -2969,7 +2969,7 @@ export default function AdminPage() {
               <button
                 onClick={fetchPayrollSummary}
                 disabled={payrollLoading}
-                className="px-4 py-2 rounded-xl text-[10px] font-bold uppercase bg-dark-brown hover:bg-[#3a2218] text-milk transition-all disabled:opacity-50"
+                className="px-4 py-2 rounded-xl text-[10px] font-bold uppercase bg-dark-brown hover:bg-dark-brown-hover text-milk transition-all disabled:opacity-50"
               >
                 {payrollLoading ? "Loading…" : "Apply"}
               </button>
@@ -2998,15 +2998,15 @@ export default function AdminPage() {
           )}
 
           {payrollLoading && !payrollData ? (
-            <div className="bg-white/50 border border-white/60 rounded-3xl p-10 text-center">
+            <div className="app-panel border rounded-3xl p-10 text-center">
               <div className="w-8 h-8 border-4 border-light-brown/30 border-t-light-brown rounded-full animate-spin mx-auto" />
             </div>
           ) : !payrollData?.staff?.length ? (
-            <div className="bg-white/50 backdrop-blur-sm border border-white/60 rounded-3xl p-10 text-center shadow-lg">
+            <div className="app-panel border rounded-3xl p-10 text-center shadow-lg">
               <p className="font-paragraph text-dark-brown/50">No payroll data for this week</p>
             </div>
           ) : (
-            <div className="bg-white/60 backdrop-blur-sm border border-white/60 rounded-2xl overflow-hidden shadow-lg">
+            <div className="app-panel border rounded-2xl overflow-hidden shadow-lg">
               <div className="hidden md:block overflow-x-auto">
                 <table className="w-full">
                   <thead>
@@ -3106,7 +3106,7 @@ export default function AdminPage() {
         </div>
 
         {activityFeed.length === 0 ? (
-          <div className="bg-white/50 backdrop-blur-sm border border-white/60 rounded-3xl p-12 text-center">
+          <div className="app-panel border rounded-3xl p-12 text-center">
             <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgb(120,113,108)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mx-auto mb-3"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
             <p className="text-dark-brown/40 font-bold uppercase text-sm">No activity yet</p>
             <p className="text-dark-brown/30 text-xs mt-1">Actions will appear here as staff clock in, take breaks, etc.</p>
@@ -3136,7 +3136,7 @@ export default function AdminPage() {
                 return `${Math.floor(diff / 86400)}d ago`;
               })();
               return (
-                <div key={a.id} className="flex items-start gap-3 bg-white/50 backdrop-blur-sm border border-white/60 rounded-2xl px-4 py-3 hover:bg-white/70 transition-all">
+                <div key={a.id} className="flex items-start gap-3 app-panel border rounded-2xl px-4 py-3 hover:bg-white/70 transition-all">
                   <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-sm flex-shrink-0 ${cfg.bg} ${cfg.color}`}>
                     {cfg.icon}
                   </div>
@@ -3164,7 +3164,7 @@ export default function AdminPage() {
       {historyStaff && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" onClick={closeAttendanceHistory}>
           <div
-            className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
+            className="app-panel border rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="bg-dark-brown/5 border-b border-dark-brown/10 p-5 flex items-center justify-between flex-shrink-0">
@@ -3358,7 +3358,7 @@ export default function AdminPage() {
                   <button
                     disabled={!historyData.pagination.has_next || historyLoading}
                     onClick={() => historyStaff && fetchAttendanceHistory(historyStaff, historyPage + 1, historyMarkFilter)}
-                    className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase bg-dark-brown hover:bg-[#3a2218] text-milk disabled:opacity-40"
+                    className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase bg-dark-brown hover:bg-dark-brown-hover text-milk disabled:opacity-40"
                   >
                     Next
                   </button>
@@ -3372,7 +3372,7 @@ export default function AdminPage() {
       {/* Edit Staff Modal */}
       {editingStaff && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col">
+          <div className="app-panel border rounded-3xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col">
             {/* Header */}
             <div className="bg-dark-brown/5 border-b border-dark-brown/10 p-5 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -3605,7 +3605,7 @@ export default function AdminPage() {
 
               {/* Joined date (read-only) */}
               <div className="bg-dark-brown/5 rounded-xl p-3 flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#52312280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-dark-brown/50" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                 <span className="text-dark-brown/50 text-xs font-paragraph">Joined {new Date(editingStaff.date_joined).toLocaleDateString()}</span>
               </div>
             </div>
@@ -3620,7 +3620,7 @@ export default function AdminPage() {
               </button>
               <button
                 onClick={saveStaff}
-                className="flex-1 bg-dark-brown hover:bg-[#3a2218] text-milk font-bold uppercase py-3 rounded-xl transition-colors shadow-lg text-sm"
+                className="flex-1 bg-dark-brown hover:bg-dark-brown-hover text-milk font-bold uppercase py-3 rounded-xl transition-colors shadow-lg text-sm"
               >
                 Save Changes
               </button>
@@ -3632,7 +3632,7 @@ export default function AdminPage() {
       {/* Void Reason Modal */}
       {voidModalOrderId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl shadow-2xl p-6 md:p-8 w-[90%] max-w-md">
+          <div className="app-panel border rounded-3xl shadow-2xl p-6 md:p-8 w-[90%] max-w-md">
             <h3 className="text-xl font-bold text-dark-brown uppercase tracking-tight mb-2">Void Order</h3>
             <p className="font-paragraph text-dark-brown/60 text-sm mb-4">Provide a reason for voiding order <strong>{voidModalOrderId}</strong>. Inventory will be restored.</p>
             <textarea
@@ -3664,7 +3664,7 @@ export default function AdminPage() {
       {/* View Reason Modal */}
       {viewReasonData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
+          <div className="app-panel border rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
             <div className="bg-red-50 border-b border-red-100 p-5 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 bg-red-100 rounded-full flex items-center justify-center">

@@ -69,7 +69,7 @@ export default function AdminTablesPage() {
 
   if (!mounted || !isLoggedIn || !isStaff) {
     return (
-      <div className="min-h-screen bg-milk flex items-center justify-center">
+      <div className="min-h-screen app-canvas flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-light-brown/30 border-t-light-brown rounded-full animate-spin" />
       </div>
     );
@@ -83,13 +83,13 @@ export default function AdminTablesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-milk relative overflow-hidden">
+    <div className="min-h-screen app-canvas relative overflow-hidden">
       {/* BG blobs */}
       <div className="absolute top-[-10%] right-[-15%] w-[45vw] h-[45vw] bg-light-brown rounded-full mix-blend-multiply filter blur-3xl opacity-15" />
       <div className="absolute bottom-[-15%] left-[-10%] w-[40vw] h-[40vw] bg-mid-brown rounded-full mix-blend-multiply filter blur-3xl opacity-10" />
 
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-milk/80 backdrop-blur-xl border-b border-dark-brown/10">
+      <div className="sticky top-0 z-40 app-header-bar backdrop-blur-xl border-b border-dark-brown/10">
         <div className="flex items-center justify-between px-5 md:px-10 py-4">
           <div className="flex items-center gap-4">
             <h1 className="text-dark-brown font-bold uppercase text-lg md:text-xl tracking-tight">Floor Map</h1>
@@ -131,7 +131,7 @@ export default function AdminTablesPage() {
           {(["free", "ordering", "occupied"] as const).map(s => {
             const cfg = STATUS_CFG[s];
             return (
-              <div key={s} className="bg-white/50 backdrop-blur-sm border border-white/60 rounded-3xl p-5 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1" style={{ borderLeft: `4px solid ${cfg.color}` }}>
+              <div key={s} className="app-panel border rounded-3xl p-5 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1" style={{ borderLeft: `4px solid ${cfg.color}` }}>
                 <p className="font-paragraph text-dark-brown/50 text-sm mb-1">{cfg.label}</p>
                 <p className="text-3xl md:text-4xl font-bold text-dark-brown">{summary[s]}</p>
                 <p className="font-paragraph text-dark-brown/40 text-xs mt-1">of {summary.total} tables</p>
@@ -214,7 +214,7 @@ export default function AdminTablesPage() {
 
         {/* Detail Panel */}
         {selected && (
-          <div className="bg-white/50 backdrop-blur-sm border border-white/60 rounded-3xl p-6 md:p-8 shadow-lg transition-all animate-[fadeUp_0.3s_ease-out]">
+          <div className="app-panel border rounded-3xl p-6 md:p-8 shadow-lg transition-all animate-[fadeUp_0.3s_ease-out]">
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-4">
                 <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl" style={{ background: STATUS_CFG[selected.table_status].bg }}>
@@ -226,7 +226,7 @@ export default function AdminTablesPage() {
                 </div>
               </div>
               <button onClick={() => setSelected(null)} className="bg-dark-brown/10 hover:bg-dark-brown/20 rounded-full p-2 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#523122" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
               </button>
             </div>
 

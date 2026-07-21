@@ -211,7 +211,7 @@ const NutritionSection = () => {
         height={2000}
         alt=""
         aria-hidden
-        className="w-full object-cover pointer-events-none select-none"
+        className="w-full object-cover pointer-events-none select-none theme-lock-media"
       />
 
       <div className="nutrition-bestseller-layout">
@@ -245,7 +245,7 @@ const NutritionSection = () => {
               width={1200}
               height={1200}
               alt="Generation Bread ube cheese pandesal"
-              className="nutrition-product-img"
+              className="nutrition-product-img theme-lock-media"
               unoptimized
             />
           </div>

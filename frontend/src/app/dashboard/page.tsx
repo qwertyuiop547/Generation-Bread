@@ -17,6 +17,7 @@ import PageIntro from "@/components/PageIntro";
 import { performLogout } from "@/lib/logoutTransition";
 import { withWsToken } from "@/lib/authHeaders";
 import BrandLogo from "@/components/BrandLogo";
+import { useThemeColors, withAlpha } from "@/lib/themeColors";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
 
@@ -44,6 +45,9 @@ export default function DashboardPage() {
   const { isLoggedIn, isAuthLoading, user, logout } = useAuth();
   const router = useRouter();
   const { language, toggleLanguage, t } = useLanguage();
+  const tc = useThemeColors();
+  const chartTick = withAlpha(tc.darkBrown, "aa");
+  const chartGrid = withAlpha(tc.darkBrown, "15");
   const [orders, setOrders] = useState<Order[]>([]);
   const [lifetimeTotalOrders, setLifetimeTotalOrders] = useState(0);
   const [lifetimeTotalSpent, setLifetimeTotalSpent] = useState(0);
@@ -1024,7 +1028,7 @@ export default function DashboardPage() {
         {/* Quick Actions */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 md:gap-5 mb-7 md:mb-10">
           <div className="dashboard-stagger-item">
-            <Link href="/order" className="group bg-dark-brown hover:bg-[#3a2218] text-milk rounded-3xl p-5 md:p-6 shadow-[0_10px_28px_-10px_rgba(42,24,16,0.45)] transition-all flex items-center justify-between h-full active:scale-[0.99]">
+            <Link href="/order" className="group bg-dark-brown hover:bg-dark-brown-hover text-milk rounded-3xl p-5 md:p-6 shadow-[0_10px_28px_-10px_rgba(42,24,16,0.45)] transition-all flex items-center justify-between h-full active:scale-[0.99]">
               <div>
                 <p className="font-bold uppercase text-lg tracking-tight">{t("Order Now")}</p>
                 <p className="font-paragraph text-milk/60 text-sm mt-1">{t("Browse the menu and place an order")}</p>
@@ -1099,16 +1103,16 @@ export default function DashboardPage() {
                   {chartReady ? (
                     <ResponsiveContainer width="100%" height={256} minWidth={0}>
                       <BarChart data={spendingData} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#52312215" vertical={false} />
+                      <CartesianGrid strokeDasharray="3 3" stroke={chartGrid} vertical={false} />
                       <XAxis
                         dataKey="month"
-                        tick={{ fontSize: 11, fill: "#523122aa" }}
+                        tick={{ fontSize: 11, fill: chartTick }}
                         tickLine={false}
                         axisLine={false}
                         interval={spendingData.length > 6 ? Math.floor(spendingData.length / 6) : 0}
                       />
                       <YAxis
-                        tick={{ fontSize: 11, fill: "#523122aa" }}
+                        tick={{ fontSize: 11, fill: chartTick }}
                         tickLine={false}
                         axisLine={false}
                         tickFormatter={(v: number) => `₱${v}`}
@@ -1116,8 +1120,8 @@ export default function DashboardPage() {
                       <Tooltip
                         contentStyle={{
                           borderRadius: 16,
-                          border: "1px solid #c9a57455",
-                          background: "#fffaf4",
+                          border: `1px solid ${withAlpha(tc.lightBrown, "55")}`,
+                          background: tc.milk,
                           fontSize: 13,
                         }}
                         formatter={(v: any, name: any) => {
@@ -1138,7 +1142,7 @@ export default function DashboardPage() {
                           return (
                             <Cell
                               key={index}
-                              fill={isTop ? "#d4af37" : "#a26833"}
+                              fill={isTop ? tc.yellowBrown : tc.midBrown}
                               stroke={isTop ? "#b8960f" : "none"}
                               strokeWidth={isTop ? 2 : 0}
                             />
@@ -1155,11 +1159,11 @@ export default function DashboardPage() {
                 </div>
                 <div className="flex items-center gap-4 mt-3 px-1">
                   <div className="flex items-center gap-1.5">
-                    <div className="w-3 h-3 rounded-sm bg-[#a26833]"></div>
+                    <div className="w-3 h-3 rounded-sm bg-mid-brown"></div>
                     <span className="text-[10px] font-bold uppercase tracking-wider text-dark-brown/50">{t("Monthly") || "Monthly"}</span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <div className="w-3 h-3 rounded-sm bg-[#d4af37]"></div>
+                    <div className="w-3 h-3 rounded-sm bg-yellow-brown"></div>
                     <span className="text-[10px] font-bold uppercase tracking-wider text-dark-brown/50">{t("Top Month") || "Top Month"}</span>
                   </div>
                 </div>
@@ -1177,7 +1181,7 @@ export default function DashboardPage() {
               <p className="text-5xl mb-4">🥤</p>
               <p className="font-paragraph text-dark-brown/60 text-lg">{t("No orders yet")}</p>
               <p className="font-paragraph text-dark-brown/40 text-sm mt-1">{t("Place your first order from the menu!")}</p>
-              <Link href="/order" className="inline-block mt-6 bg-dark-brown hover:bg-[#3a2218] text-milk uppercase font-bold text-sm rounded-full py-3 px-8 shadow-lg hover:shadow-xl transition-all">
+              <Link href="/order" className="inline-block mt-6 bg-dark-brown hover:bg-dark-brown-hover text-milk uppercase font-bold text-sm rounded-full py-3 px-8 shadow-lg hover:shadow-xl transition-all">
                 {t("Order Now")}
               </Link>
             </div>

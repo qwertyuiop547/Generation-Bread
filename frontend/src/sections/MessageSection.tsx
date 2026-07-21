@@ -52,8 +52,14 @@ const MessageSection = () => {
           splits.push(firstMsgSplit, secMsgSplit);
           if (paragraphSplit) splits.push(paragraphSplit);
 
+          const milk = getComputedStyle(document.documentElement)
+            .getPropertyValue("--color-milk")
+            .trim() || "#faeade";
+          const milkFaint =
+            milk.startsWith("#") && milk.length === 7 ? `${milk}10` : milk;
+
           if (prefersReduced) {
-            gsap.set([firstMsgSplit.words, secMsgSplit.words], { color: "#faeade" });
+            gsap.set([firstMsgSplit.words, secMsgSplit.words], { color: milk });
             if (fuelUp) {
               gsap.set(fuelUp, {
                 clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
@@ -64,8 +70,8 @@ const MessageSection = () => {
             return;
           }
 
-          gsap.set(firstMsgSplit.words, { color: "#faeade10" });
-          gsap.set(secMsgSplit.words, { color: "#faeade10" });
+          gsap.set(firstMsgSplit.words, { color: milkFaint });
+          gsap.set(secMsgSplit.words, { color: milkFaint });
 
           if (fuelUp) {
             gsap.set(fuelUp, {
@@ -112,7 +118,7 @@ const MessageSection = () => {
 
           // Storytelling scrub — words warm up as you read
           gsap.to(firstMsgSplit.words, {
-            color: "#faeade",
+            color: milk,
             ease: "none",
             stagger: 0.3,
             scrollTrigger: {
@@ -125,7 +131,7 @@ const MessageSection = () => {
           });
 
           gsap.to(secMsgSplit.words, {
-            color: "#faeade",
+            color: milk,
             ease: "none",
             stagger: 0.25,
             scrollTrigger: {

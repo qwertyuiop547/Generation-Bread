@@ -668,16 +668,16 @@ export default function StaffDashboardPage() {
   const isConfirmedStaff = isStaff || isStoredStaff;
   if (!mounted || (isAuthLoading && !isConfirmedStaff) || (!isLoggedIn && !isStoredStaff)) {
     return (
-      <div className="min-h-screen bg-milk flex items-center justify-center">
+      <div className="min-h-screen app-canvas flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-light-brown/30 border-t-light-brown rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-milk relative overflow-hidden">
+    <div ref={containerRef} className="min-h-screen app-canvas relative overflow-hidden">
       {/* Header */}
-      <div className="staff-header sticky top-0 z-40 bg-milk/80 backdrop-blur-xl border-b border-dark-brown/10">
+      <div className="staff-header sticky top-0 z-40 app-header-bar backdrop-blur-xl border-b border-dark-brown/10">
         <div className="flex items-center justify-between px-5 md:px-10 py-4">
           <div className="flex items-center gap-4">
             <h1 className="text-dark-brown font-bold uppercase text-lg md:text-xl tracking-tight hidden sm:block staff-nav-item">{t("Staff Panel")}</h1>
@@ -760,7 +760,7 @@ export default function StaffDashboardPage() {
         {showMobileMenu && (
           <div
             ref={mobileMenuRef}
-            className="mobile-nav-menu md:hidden absolute top-[100%] right-0 w-full bg-milk/95 backdrop-blur-md border-b border-dark-brown/10 shadow-lg flex flex-col items-center py-4 gap-3 z-50 will-change-transform"
+            className="mobile-nav-menu md:hidden absolute top-[100%] right-0 w-full app-header-bar backdrop-blur-md border-b border-dark-brown/10 shadow-lg flex flex-col items-center py-4 gap-3 z-50 will-change-transform"
           >
             <Link
               href="/profile"
@@ -820,19 +820,19 @@ export default function StaffDashboardPage() {
 
         {/* Stat Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="staff-stagger-item bg-white/50 backdrop-blur-sm border border-white/60 rounded-3xl p-5 shadow-lg">
+          <div className="staff-stagger-item app-panel border rounded-3xl p-5 shadow-lg">
             <p className="font-paragraph text-dark-brown/50 text-xs uppercase mb-1">{t("Today's Orders")}</p>
             <p className="text-2xl md:text-3xl font-bold text-dark-brown">{todayOrders.length}</p>
           </div>
-          <div className="staff-stagger-item bg-white/50 backdrop-blur-sm border border-white/60 rounded-3xl p-5 shadow-lg">
+          <div className="staff-stagger-item app-panel border rounded-3xl p-5 shadow-lg">
             <p className="font-paragraph text-dark-brown/50 text-xs uppercase mb-1">{t("Today's Revenue")}</p>
             <p className="text-2xl md:text-3xl font-bold text-dark-brown">₱{todayRevenue.toLocaleString()}</p>
           </div>
-          <div className="staff-stagger-item bg-white/50 backdrop-blur-sm border border-white/60 rounded-3xl p-5 shadow-lg">
+          <div className="staff-stagger-item app-panel border rounded-3xl p-5 shadow-lg">
             <p className="font-paragraph text-dark-brown/50 text-xs uppercase mb-1">{t("Pending")}</p>
             <p className="text-2xl md:text-3xl font-bold text-yellow-700">{pendingCount}</p>
           </div>
-          <div className="staff-stagger-item bg-white/50 backdrop-blur-sm border border-white/60 rounded-3xl p-5 shadow-lg">
+          <div className="staff-stagger-item app-panel border rounded-3xl p-5 shadow-lg">
             <p className="font-paragraph text-dark-brown/50 text-xs uppercase mb-1">{t("Occupied Tables")}</p>
             <p className="text-2xl md:text-3xl font-bold text-dark-brown">{occupiedTables}<span className="text-sm text-dark-brown/40">/10</span></p>
           </div>
@@ -851,7 +851,7 @@ export default function StaffDashboardPage() {
               ? "bg-emerald-50/80 backdrop-blur-sm border-emerald-200/60"
               : !canClockIn
               ? "bg-red-50/50 backdrop-blur-sm border-red-200/40"
-              : "bg-white/50 backdrop-blur-sm border-white/60"
+              : "app-panel border"
           }`}>
             <div className="flex flex-col md:flex-row md:items-center gap-5">
               {/* Left: Status + Button */}
@@ -1025,13 +1025,13 @@ export default function StaffDashboardPage() {
             {/* Orders List */}
             <div className="staff-stagger-item space-y-3">
               {filteredOrders.length === 0 ? (
-                <div className="bg-white/50 backdrop-blur-sm border border-white/60 rounded-3xl p-10 text-center shadow-lg">
+                <div className="app-panel border rounded-3xl p-10 text-center shadow-lg">
                   <p className="text-4xl mb-3">📋</p>
                   <p className="font-paragraph text-dark-brown/50">No orders yet</p>
                 </div>
               ) : (
                 displayedOrders.map(order => (
-                  <div key={order.id} className="paginated-order bg-white/50 backdrop-blur-sm border border-white/60 rounded-3xl p-5 shadow-lg hover:shadow-xl transition-all">
+                  <div key={order.id} className="paginated-order app-panel border rounded-3xl p-5 shadow-lg hover:shadow-xl transition-all">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-3">
                       <div className="flex items-center gap-3">
                         <span className={`w-3 h-3 rounded-full ${STATUS_DOTS[order.status]}`}></span>
@@ -1094,7 +1094,7 @@ export default function StaffDashboardPage() {
                         </button>
                       )}
                       {order.status !== "completed" && order.status !== "cancelled" && STATUS_FLOW[order.status] && (
-                        <button onClick={() => updateStatus(order.id, STATUS_FLOW[order.status])} className="bg-dark-brown hover:bg-[#3a2218] text-milk font-bold text-xs uppercase rounded-full py-2 px-5 shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5">
+                        <button onClick={() => updateStatus(order.id, STATUS_FLOW[order.status])} className="bg-dark-brown hover:bg-dark-brown-hover text-milk font-bold text-xs uppercase rounded-full py-2 px-5 shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5">
                           Mark {STATUS_LABELS[STATUS_FLOW[order.status]]}
                         </button>
                       )}
@@ -1167,7 +1167,7 @@ export default function StaffDashboardPage() {
             </div>
 
             {staffUsers.length === 0 ? (
-              <div className="bg-white/50 backdrop-blur-sm border border-white/60 rounded-3xl p-10 text-center shadow-lg">
+              <div className="app-panel border rounded-3xl p-10 text-center shadow-lg">
                 <p className="text-4xl mb-3">📞</p>
                 <p className="font-paragraph text-dark-brown/50">No staff contacts to display</p>
               </div>
@@ -1176,7 +1176,7 @@ export default function StaffDashboardPage() {
                 {staffUsers.map((s: any) => (
                   <div
                     key={s.id}
-                    className="bg-white/60 backdrop-blur-sm border border-white/60 rounded-2xl p-5 shadow-md hover:shadow-lg transition-all group"
+                    className="app-panel border rounded-2xl p-5 shadow-md hover:shadow-lg transition-all group"
                   >
                     {/* Avatar + Name */}
                     <div className="flex items-center gap-3 mb-4">
@@ -1262,7 +1262,7 @@ export default function StaffDashboardPage() {
       {/* Void Modal */}
       {voidModalOrderId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl shadow-2xl p-6 md:p-8 w-[90%] max-w-md">
+          <div className="app-panel border rounded-3xl shadow-2xl p-6 md:p-8 w-[90%] max-w-md">
             <h3 className="text-xl font-bold text-red-800 uppercase tracking-tight mb-2">Void Order</h3>
             <p className="font-paragraph text-red-700 text-sm mb-4">Provide a reason for voiding this order. This action will restore inventory.</p>
             <textarea
