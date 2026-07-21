@@ -17,6 +17,33 @@ const SCANNER_CONFIG = {
   qrbox: { width: 250, height: 250 },
   aspectRatio: 1,
 };
+const TOTAL_TABLES = 10;
+const DEPLOYED_WEB_URL =
+  process.env.NEXT_PUBLIC_APP_URL || "https://generation-bread-web.onrender.com";
+
+function getTableOrderRoute(decodedText: string): string | null {
+  if (typeof window === "undefined") return null;
+
+  const value = decodedText.trim();
+  const isRelativeUrl = value.startsWith("/");
+
+  try {
+    const parsed = new URL(value, window.location.origin);
+    const productionHost = new URL(DEPLOYED_WEB_URL).host;
+    const allowedHosts = new Set([window.location.host, productionHost]);
+    const table = parsed.searchParams.get("table") || "";
+    const tableNumber = Number(table);
+
+    if (!["http:", "https:"].includes(parsed.protocol)) return null;
+    if (!isRelativeUrl && !allowedHosts.has(parsed.host)) return null;
+    if (parsed.pathname !== "/order") return null;
+    if (!/^\d+$/.test(table) || tableNumber < 1 || tableNumber > TOTAL_TABLES) return null;
+
+    return `/order?table=${tableNumber}`;
+  } catch {
+    return null;
+  }
+}
 
 function isLikelyMobile(): boolean {
   if (typeof navigator === "undefined") return false;
@@ -103,7 +130,9 @@ export default function ScanPage() {
   const scannerRef = useRef<HTMLDivElement>(null);
   const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
   const isStartingRef = useRef(false);
+  const invalidScanCooldownRef = useRef(0);
   const [error, setError] = useState("");
+  const [invalidQrMessage, setInvalidQrMessage] = useState("");
   const [scanned, setScanned] = useState(false);
   const [cameraReady, setCameraReady] = useState(false);
   const [usingFrontCamera, setUsingFrontCamera] = useState(false);
@@ -226,10 +255,23 @@ export default function ScanPage() {
   );
 
   const handleScanSuccess = useCallback(
-    () => {
+    (decodedText: string) => {
+      const orderRoute = getTableOrderRoute(decodedText);
+      if (!orderRoute) {
+        const now = Date.now();
+        if (now >= invalidScanCooldownRef.current) {
+          invalidScanCooldownRef.current = now + 2500;
+          setInvalidQrMessage(
+            "Hindi ito valid na Generation Bread table QR. I-scan ang QR na naka-display sa mesa."
+          );
+        }
+        return;
+      }
+
+      setInvalidQrMessage("");
       setScanned(true);
-      stopScanner(html5QrCodeRef.current);
-      setTimeout(() => router.push("/order"), 1500);
+      void stopScanner(html5QrCodeRef.current);
+      setTimeout(() => router.push(orderRoute), 1500);
     },
     [router]
   );
@@ -271,6 +313,7 @@ export default function ScanPage() {
     if (isStartingRef.current) return;
     isStartingRef.current = true;
     setError("");
+    setInvalidQrMessage("");
     setCameraReady(false);
 
     try {
@@ -480,6 +523,16 @@ export default function ScanPage() {
                       Switch Camera
                     </button>
                   )}
+                </div>
+              )}
+
+              {invalidQrMessage && !error && (
+                <div
+                  className="mt-4 rounded-xl border border-red-brown/35 bg-red-brown/15 px-4 py-3 text-center font-paragraph text-sm text-milk"
+                  role="status"
+                  aria-live="polite"
+                >
+                  {invalidQrMessage}
                 </div>
               )}
             </div>
