@@ -230,7 +230,7 @@ const Preloader: React.FC<PreloaderProps> = ({
         onComplete: () => {
           dialogRef.current?.close();
           setFinished(true);
-          onFinish();
+          onFinishRef.current();
         },
       });
 
@@ -315,17 +315,29 @@ const Preloader: React.FC<PreloaderProps> = ({
     { dependencies: [readyToExit], scope: panelRef }
   );
 
+  const onFinishRef = useRef(onFinish);
+  onFinishRef.current = onFinish;
+
   useEffect(() => {
     const safety = window.setTimeout(() => {
       if (!exitRan.current) {
         exitRan.current = true;
         dialogRef.current?.close();
         setFinished(true);
-        onFinish();
+        onFinishRef.current();
       }
-    }, duration + 3500);
+    }, duration + 2500);
     return () => window.clearTimeout(safety);
-  }, [duration, onFinish]);
+  }, [duration]);
+
+  const skipPreloader = () => {
+    if (exitRan.current) return;
+    exitRan.current = true;
+    loadTweenRef.current?.kill();
+    dialogRef.current?.close();
+    setFinished(true);
+    onFinishRef.current();
+  };
 
   if (finished) return null;
 
@@ -336,6 +348,7 @@ const Preloader: React.FC<PreloaderProps> = ({
       aria-label={isGoodbye ? "Thank you for visiting Generation Bread" : "Loading Generation Bread"}
       aria-busy="true"
       onCancel={(e) => e.preventDefault()}
+      onClick={skipPreloader}
     >
       <div
         ref={panelRef}

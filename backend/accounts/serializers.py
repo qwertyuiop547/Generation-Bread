@@ -1,9 +1,10 @@
 from rest_framework import serializers
 from .models import CustomUser, Order, OrderItem, Cart, CartItem, MenuItem, ShiftLog, StaffActivity, AbsenceRequest, ShiftAssignment
+from .sql_safety import normalize_email, normalize_text
 
 
 class RegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, min_length=6)
+    password = serializers.CharField(write_only=True, min_length=10)
     name = serializers.CharField(source='first_name')
 
     class Meta:
@@ -11,8 +12,22 @@ class RegisterSerializer(serializers.ModelSerializer):
         fields = ['name', 'email', 'password']
 
     def validate_email(self, value):
-        if CustomUser.objects.filter(email=value).exists():
+        email = normalize_email(value)
+        if not email:
+            raise serializers.ValidationError("Enter a valid email address.")
+        if CustomUser.objects.filter(email=email).exists():
             raise serializers.ValidationError("An account with this email already exists.")
+        return email
+
+    def validate_name(self, value):
+        name = normalize_text(value, max_length=120, allow_empty=False)
+        if name is None:
+            raise serializers.ValidationError("Enter a valid name.")
+        return name
+
+    def validate_password(self, value):
+        from django.contrib.auth.password_validation import validate_password
+        validate_password(value)
         return value
 
     def create(self, validated_data):

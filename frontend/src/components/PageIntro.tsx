@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Preloader, { type PreloaderVariant } from "@/components/Preloader";
 
 interface PageIntroProps {
@@ -22,10 +22,17 @@ export default function PageIntro({
   const [done, setDone] = useState(false);
   const ready = waitForLoad ? isLoaded : true;
 
-  const handleFinish = () => {
+  const handleFinish = useCallback(() => {
     setDone(true);
     onFinish?.();
-  };
+  }, [onFinish]);
+
+  // Absolute failsafe: never leave the page inert / unclickable
+  useEffect(() => {
+    if (done) return;
+    const failsafe = window.setTimeout(() => setDone(true), 8000);
+    return () => window.clearTimeout(failsafe);
+  }, [done]);
 
   useEffect(() => {
     if (done) return;

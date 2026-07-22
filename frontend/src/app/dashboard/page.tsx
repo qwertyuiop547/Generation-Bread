@@ -15,9 +15,13 @@ import {
 } from "recharts";
 import PageIntro from "@/components/PageIntro";
 import { performLogout } from "@/lib/logoutTransition";
-import { withWsToken } from "@/lib/authHeaders";
+import { withWsToken, authHeaders } from "@/lib/authHeaders";
+import { unwrapListResponse } from "@/lib/apiList";
 import BrandLogo from "@/components/BrandLogo";
 import { useThemeColors, withAlpha } from "@/lib/themeColors";
+import QueuePositionCard from "@/components/QueuePositionCard";
+import { fetchOrderEta, type SmartEta } from "@/lib/smartEta";
+import { notifyOrderReady } from "@/lib/orderReadyAlerts";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
 
@@ -74,6 +78,7 @@ export default function DashboardPage() {
   const [spendingSummary, setSpendingSummary] = useState<{ total_spent: number; avg_monthly: number; top_month: { month: string; total: number; orders: number } | null; months_tracked: number } | null>(null);
   const [chartReady, setChartReady] = useState(false);
   const [introDone, setIntroDone] = useState(false);
+  const [orderEtas, setOrderEtas] = useState<Record<string, SmartEta>>({});
 
   useEffect(() => {
     if (toastMessage) {
@@ -235,6 +240,8 @@ export default function DashboardPage() {
           setRateOrderId(orderIdFormatted);
         }
 
+        void notifyOrderReady(data.order_id, data.status);
+
         setOrders((prev) => {
           const exists = prev.some((o) => o.id === orderIdFormatted);
           if (exists) {
@@ -302,9 +309,11 @@ export default function DashboardPage() {
         
         let mappedOrders: Order[] = [];
         try {
-          const res = await fetch(`${API_BASE_URL}/api/auth/orders/?email=${encodeURIComponent(user.email)}`);
+          const res = await fetch(`${API_BASE_URL}/api/auth/orders/?limit=200`, {
+            headers: authHeaders(),
+          });
           if (res.ok) {
-            const data = await res.json();
+            const data = unwrapListResponse<any>(await res.json());
             // Map Django order structure to our frontend structure
             mappedOrders = data.map((d: any) => ({
               id: `ORD-${d.id.toString().padStart(4, '0')}`,
@@ -367,6 +376,38 @@ export default function DashboardPage() {
 
     fetchOrders();
   }, [user]);
+
+  // Live queue position for active customer orders
+  useEffect(() => {
+    const active = orders.filter((o) => o.status === "pending" || o.status === "preparing");
+    if (active.length === 0) {
+      setOrderEtas({});
+      return;
+    }
+
+    let cancelled = false;
+    const load = async () => {
+      const entries = await Promise.all(
+        active.map(async (order) => {
+          const eta = await fetchOrderEta(order.id);
+          return [order.id, eta] as const;
+        })
+      );
+      if (cancelled) return;
+      const next: Record<string, SmartEta> = {};
+      for (const [id, eta] of entries) {
+        if (eta) next[id] = eta;
+      }
+      setOrderEtas(next);
+    };
+
+    void load();
+    const interval = setInterval(() => void load(), 20000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [orders]);
 
   useEffect(() => {
     if (!user?.email) return;
@@ -570,8 +611,8 @@ export default function DashboardPage() {
     try {
       const res = await fetch(`${API_BASE_URL}/api/auth/orders/${numericId}/cancel/`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: user?.email, cancel_reason: finalReason }),
+        headers: authHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify({ cancel_reason: finalReason }),
       });
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
@@ -605,8 +646,8 @@ export default function DashboardPage() {
     try {
       const res = await fetch(`${API_BASE_URL}/api/auth/orders/${numericId}/rate/`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: user?.email, rating: ratingValue, comment: ratingComment.trim() }),
+        headers: authHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify({ rating: ratingValue, rating_comment: ratingComment.trim() }),
       });
       if (res.ok) {
         setOrders(prev => prev.map(o => o.id === rateOrderId ? { ...o, rating: ratingValue } : o));
@@ -1204,6 +1245,9 @@ export default function DashboardPage() {
                             {order.paymentMethod ? `${order.paymentMethod} · ` : ""}
                             {order.paymentStatus === "paid" ? "paid" : "unpaid"}
                           </span>
+                        )}
+                        {(order.status === "pending" || order.status === "preparing") && orderEtas[order.id] && (
+                          <QueuePositionCard eta={orderEtas[order.id]} compact />
                         )}
                       </div>
                       <p className="font-paragraph text-dark-brown/50 text-xs mt-0.5">{new Date(order.date).toLocaleString()}</p>

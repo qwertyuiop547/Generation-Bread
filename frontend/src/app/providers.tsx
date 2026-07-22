@@ -5,6 +5,8 @@ import { LanguageProvider } from "@/context/LanguageContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import SessionProvider from "@/components/SessionProvider";
 import ThemeToggle from "@/components/ThemeToggle";
+import OrderReadyAlertUI from "@/components/OrderReadyAlertUI";
+import { CustomerOrderReadyAlerts } from "@/hooks/useCustomerOrderReadyAlerts";
 import { ReactNode } from "react";
 import "./suppress-dev-noise";
 
@@ -14,6 +16,8 @@ export default function Providers({ children }: { children: ReactNode }) {
       <ThemeProvider>
         <AuthProvider>
           <LanguageProvider>
+            <CustomerOrderReadyAlerts />
+            <OrderReadyAlertUI />
             {children}
             <div className="pointer-events-none fixed bottom-4 right-4 z-[100] sm:bottom-6 sm:right-6">
               <div className="pointer-events-auto">

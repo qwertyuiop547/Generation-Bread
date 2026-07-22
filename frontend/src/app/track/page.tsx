@@ -9,14 +9,15 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import {
   fetchOrderEta,
-  formatSmartEtaDisplay,
   localFallbackEta,
   type SmartEta,
 } from "@/lib/smartEta";
 import { GB_EASE } from "@/lib/motion";
 import OrderProgress from "@/components/OrderProgress";
+import QueuePositionCard from "@/components/QueuePositionCard";
 import { withWsToken } from "@/lib/authHeaders";
 import BrandLogo from "@/components/BrandLogo";
+import { notifyOrderReady } from "@/lib/orderReadyAlerts";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
 
@@ -207,6 +208,7 @@ function TrackPageContent() {
       const newStatus = data.status as TrackedOrder["status"];
       setTrackedOrder((prev) => (prev ? { ...prev, status: newStatus } : prev));
       void refreshOrderEta(orderIdFormatted, newStatus, current.totalItems);
+      void notifyOrderReady(data.order_id, newStatus);
       setToast({
         title: "Order Updated",
         desc: `Your order is now ${newStatus.toUpperCase()}`,
@@ -223,7 +225,7 @@ function TrackPageContent() {
 
     const interval = setInterval(() => {
       void refreshOrderEta(trackedOrder.id, trackedOrder.status, trackedOrder.totalItems);
-    }, 30000);
+    }, 15000);
 
     return () => clearInterval(interval);
   }, [trackedOrder, refreshOrderEta]);
@@ -387,30 +389,9 @@ function TrackPageContent() {
               tableNumber={trackedOrder.tableNumber}
             />
 
-            {/* 2 — Smart ETA */}
+            {/* 2 — Queue position + Smart ETA */}
             {!isCancelled && orderEta && (
-              <div className="bg-gradient-to-r from-light-brown/20 to-[#d4af37]/10 border border-light-brown/30 rounded-3xl p-5 md:p-6 shadow-md">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-dark-brown/10 flex items-center justify-center shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="10" />
-                      <polyline points="12 6 12 12 16 14" />
-                    </svg>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-dark-brown/50 mb-1">Smart ETA</p>
-                    <p className="text-2xl md:text-3xl font-bold text-dark-brown tracking-tight">
-                      {formatSmartEtaDisplay(orderEta)}
-                    </p>
-                    <p className="font-paragraph text-dark-brown/60 text-sm mt-1">{orderEta.message}</p>
-                    {orderEta.queue_ahead > 0 && trackedOrder.status === "pending" && (
-                      <p className="font-paragraph text-dark-brown/45 text-xs mt-2">
-                        Updates automatically as your order moves through the queue.
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
+              <QueuePositionCard eta={orderEta} />
             )}
 
             {/* 3 — Order summary */}

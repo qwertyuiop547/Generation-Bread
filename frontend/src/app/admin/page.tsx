@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { authHeaders } from "@/lib/authHeaders";
+import { unwrapListResponse } from "@/lib/apiList";
 import { useLanguage } from "@/context/LanguageContext";
 import { signOut } from "next-auth/react";
 import { performLogout } from "@/lib/logoutTransition";
@@ -591,10 +592,10 @@ export default function AdminPage() {
 
       let mapped: Order[] = [];
       try {
-        const url = `${API_BASE_URL}/api/auth/admin/orders/?admin_email=${encodeURIComponent(user.email)}`;
+        const url = `${API_BASE_URL}/api/auth/admin/orders/?admin_email=${encodeURIComponent(user.email)}&limit=500`;
         const res = await fetch(url, { headers: authHeaders() });
         if (res.ok) {
-          const data = await res.json();
+          const data = unwrapListResponse<any>(await res.json());
           mapped = data.map((d: any) => ({
             id: `ORD-${d.id.toString().padStart(4, "0")}`,
             items: d.items.map((i: any) => ({

@@ -1,7 +1,11 @@
 """Application-layer IP request throttle (anti-abuse / soft anti-DDoS)."""
+import logging
+
 from django.conf import settings
 from django.core.cache import cache
 from django.http import JsonResponse
+
+logger = logging.getLogger(__name__)
 
 
 def get_client_ip(request):
@@ -16,6 +20,7 @@ class IPRateLimitMiddleware:
     """
     Limit total HTTP requests per client IP.
 
+    Uses cache.add + incr so counters stay mostly race-safe under concurrency.
     Defaults (overridable via settings):
       RATE_LIMIT_IP_REQUESTS = 120
       RATE_LIMIT_IP_WINDOW = 60  (seconds)
@@ -42,11 +47,19 @@ class IPRateLimitMiddleware:
 
         ip = get_client_ip(request)
         cache_key = f"rl:ip:{ip}"
-        count = cache.get(cache_key)
 
-        if count is None:
+        # First request in the window — set atomically.
+        if cache.add(cache_key, 1, self.window):
+            return self.get_response(request)
+
+        try:
+            count = cache.incr(cache_key)
+        except ValueError:
             cache.set(cache_key, 1, self.window)
-        elif count >= self.max_requests:
+            count = 1
+
+        if count > self.max_requests:
+            logger.warning("ip_rate_limited ip=%s path=%s count=%s", ip, path, count)
             response = JsonResponse(
                 {
                     "error": "Too many requests. Please slow down and try again shortly.",
@@ -56,10 +69,5 @@ class IPRateLimitMiddleware:
             )
             response["Retry-After"] = str(self.window)
             return response
-        else:
-            try:
-                cache.incr(cache_key)
-            except ValueError:
-                cache.set(cache_key, count + 1, self.window)
 
         return self.get_response(request)

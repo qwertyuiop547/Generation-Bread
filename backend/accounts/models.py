@@ -113,6 +113,13 @@ class Order(models.Model):
         help_text='Staff member tagged as having served this order',
     )
     is_archived = models.BooleanField(default=False, help_text="Archived orders are hidden from the main admin view")
+    access_token = models.CharField(
+        max_length=64,
+        blank=True,
+        default='',
+        db_index=True,
+        help_text='Secret token returned on create; authorizes guest cancel/pay/rate without email spoofing',
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -122,6 +129,9 @@ class Order(models.Model):
             models.Index(fields=['status', '-created_at'], name='order_status_created_idx'),
             models.Index(fields=['payment_status', 'status'], name='order_pay_status_idx'),
             models.Index(fields=['is_archived', 'status', '-created_at'], name='order_arch_status_idx'),
+            models.Index(fields=['order_type', 'status'], name='order_type_status_idx'),
+            models.Index(fields=['table_number', 'status'], name='order_table_status_idx'),
+            models.Index(fields=['rating', '-rated_at'], name='order_rating_rated_idx'),
         ]
 
     def __str__(self):
@@ -191,6 +201,12 @@ class MenuItem(models.Model):
     track_stock = models.BooleanField(default=False, help_text='Enable inventory tracking for this item')
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['is_hidden', 'category'], name='menuitem_hidden_cat_idx'),
+            models.Index(fields=['name'], name='menuitem_name_idx'),
+        ]
+
     def __str__(self):
         return self.name
 
@@ -221,6 +237,13 @@ class ShiftLog(models.Model):
     attendance_mark = models.CharField(max_length=10, choices=MARK_CHOICES, blank=True, null=True, help_text='Admin mark: on_time, late, or absent')
     minutes_late = models.PositiveIntegerField(blank=True, null=True, help_text='Minutes past shift start time when clocked in')
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['user', 'clock_out'], name='shiftlog_user_out_idx'),
+            models.Index(fields=['-clock_in'], name='shiftlog_clock_in_idx'),
+            models.Index(fields=['is_approved', '-clock_in'], name='shiftlog_approved_idx'),
+        ]
 
     @property
     def status(self):
@@ -275,6 +298,11 @@ class StaffActivity(models.Model):
     class Meta:
         ordering = ['-created_at']
         verbose_name_plural = 'staff activities'
+        indexes = [
+            models.Index(fields=['-created_at'], name='staffact_created_idx'),
+            models.Index(fields=['user', '-created_at'], name='staffact_user_created_idx'),
+            models.Index(fields=['action', '-created_at'], name='staffact_action_created_idx'),
+        ]
 
     def __str__(self):
         return f"{self.user.first_name or self.user.email} - {self.get_action_display()} ({self.created_at:%Y-%m-%d %H:%M})"
@@ -358,3 +386,24 @@ class OrderStatusLog(models.Model):
 
     def __str__(self):
         return f"Order #{self.order_id} → {self.status} ({self.created_at:%Y-%m-%d %H:%M})"
+
+
+class SecurityEvent(models.Model):
+    """Lightweight audit trail for security-relevant events."""
+    event_type = models.CharField(max_length=64, db_index=True)
+    detail = models.CharField(max_length=255, blank=True, default='')
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user = models.ForeignKey(
+        CustomUser, on_delete=models.SET_NULL, null=True, blank=True, related_name='security_events',
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['-created_at'], name='secevent_created_idx'),
+            models.Index(fields=['event_type', '-created_at'], name='secevent_type_created_idx'),
+        ]
+
+    def __str__(self):
+        return f"SecurityEvent {self.event_type} @ {self.created_at:%Y-%m-%d %H:%M}"

@@ -202,6 +202,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = () => {
+    const refresh = refreshToken || (typeof window !== "undefined" ? localStorage.getItem("spylt_refresh_token") : null);
+    if (refresh) {
+      fetch(`${API_BASE_URL}/api/auth/logout/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refresh }),
+      }).catch(() => {});
+    }
     setUser(null);
     setAccessToken(null);
     setRefreshToken(null);
@@ -268,7 +276,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return response;
   };
 
-  if (!mounted) return null;
+  if (!mounted) {
+    return (
+      <AuthContext.Provider
+        value={{
+          user: null,
+          accessToken: null,
+          refreshToken: null,
+          isLoggedIn: false,
+          isAuthLoading: true,
+          isAdmin: false,
+          isStaff: false,
+          login: async () => false,
+          register: () => false,
+          logout: () => {},
+          updateUser: () => {},
+          changePassword: () => false,
+          refreshAccessToken: async () => false,
+          apiFetch: async () => new Response(null, { status: 503 }),
+        }}
+      >
+        {children}
+      </AuthContext.Provider>
+    );
+  }
 
   return (
     <AuthContext.Provider value={{ user, accessToken, refreshToken, isLoggedIn: !!user, isAuthLoading, isAdmin: user?.role === "admin", isStaff: user?.role === "staff" || user?.role === "admin", login, register, logout, updateUser, changePassword, refreshAccessToken, apiFetch }}>

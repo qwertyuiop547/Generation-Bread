@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { authHeaders } from "@/lib/authHeaders";
+import { unwrapListResponse } from "@/lib/apiList";
 import { signOut } from "next-auth/react";
 import { performLogout } from "@/lib/logoutTransition";
 import NotificationBell from "@/components/NotificationBell";
@@ -59,7 +60,7 @@ export default function AdminSalesPage() {
     const fetchSales = async () => {
       try {
         const res = await fetch(
-          `${API_BASE_URL}/api/auth/admin/orders/?admin_email=${encodeURIComponent(user.email)}`,
+          `${API_BASE_URL}/api/auth/admin/orders/?admin_email=${encodeURIComponent(user.email)}&limit=500`,
           { headers: authHeaders() }
         );
         if (!res.ok) {
@@ -67,10 +68,7 @@ export default function AdminSalesPage() {
           throw new Error(errBody.error || `Sales request failed (${res.status})`);
         }
 
-        const data = await res.json();
-        if (!Array.isArray(data)) {
-          throw new Error("Unexpected sales response format");
-        }
+        const data = unwrapListResponse<any>(await res.json());
 
         const mapped: Order[] = data.map((d: any) => ({
           id: `ORD-${d.id.toString().padStart(4, "0")}`,

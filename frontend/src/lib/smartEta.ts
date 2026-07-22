@@ -6,11 +6,57 @@ export interface SmartEta {
   eta_label: string;
   message: string;
   queue_ahead: number;
+  /** 1-based spot in line (0 when ready / cancelled). */
+  queue_position?: number;
   item_units: number;
   source: "historical" | "default" | string;
 }
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
+
+export function getQueuePosition(eta: SmartEta | null | undefined): number {
+  if (!eta) return 0;
+  if (typeof eta.queue_position === "number" && eta.queue_position > 0) {
+    return eta.queue_position;
+  }
+  if (eta.status === "ready" || eta.status === "completed" || eta.status === "cancelled") {
+    return 0;
+  }
+  return Math.max(0, (eta.queue_ahead ?? 0) + 1);
+}
+
+/** Short badge text, e.g. "#3 in line" or "Next up". */
+export function formatQueuePositionShort(eta: SmartEta | null | undefined): string | null {
+  if (!eta) return null;
+  if (eta.status === "ready" || eta.status === "completed") return null;
+  if (eta.status === "cancelled") return null;
+
+  const position = getQueuePosition(eta);
+  if (eta.status === "preparing" && (eta.queue_ahead ?? 0) === 0) {
+    return "Preparing now";
+  }
+  if (position <= 1) return "Next in line";
+  return `#${position} in line`;
+}
+
+/** Full sentence for customers. */
+export function formatQueuePositionDisplay(eta: SmartEta | null | undefined): string | null {
+  if (!eta) return null;
+  if (eta.status === "ready" || eta.status === "completed" || eta.status === "cancelled") {
+    return null;
+  }
+  if (eta.message && /in line|preparing|next/i.test(eta.message)) {
+    return eta.message;
+  }
+  const position = getQueuePosition(eta);
+  const ahead = eta.queue_ahead ?? Math.max(0, position - 1);
+  if (eta.status === "preparing" && ahead === 0) {
+    return "You're up — we're preparing your order now.";
+  }
+  if (position <= 1) return "You're next in line.";
+  if (ahead === 1) return "You're #2 in line — 1 order ahead.";
+  return `You're #${position} in line — ${ahead} orders ahead.`;
+}
 
 export function formatSmartEtaDisplay(eta: SmartEta | null): string {
   if (!eta) return "~10–15 mins";
@@ -60,6 +106,7 @@ export function localFallbackEta(itemCount: number): SmartEta {
     eta_label: minMinutes === maxMinutes ? `~${minMinutes} min` : `~${minMinutes}–${maxMinutes} mins`,
     message: "Estimated wait based on your order size.",
     queue_ahead: 0,
+    queue_position: 1,
     item_units: itemCount,
     source: "default",
   };

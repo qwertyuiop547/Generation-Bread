@@ -1,6 +1,5 @@
 """Smart ETA: dynamic order wait estimates from queue load and prep history."""
-from datetime import timedelta
-
+from django.db.models import Prefetch
 from django.utils import timezone
 
 from . import drink_prep
@@ -21,7 +20,8 @@ def _historical_avg_prep_seconds():
 
 
 def _item_units(order):
-    return sum(item.quantity for item in order.items.all())
+    items = list(order.items.all())
+    return sum(item.quantity for item in items)
 
 
 def _prep_seconds_for_order(item_units, avg_prep_seconds):
@@ -58,10 +58,30 @@ def _format_minutes_range(min_seconds, max_seconds):
     return f'~{min_minutes}–{max_minutes} mins', min_minutes, max_minutes
 
 
+def _active_queue_qs():
+    from .models import Order, OrderItem
+
+    return (
+        Order.objects.filter(status__in=('pending', 'preparing'))
+        .prefetch_related(Prefetch('items', queryset=OrderItem.objects.only('quantity', 'order_id')))
+        .order_by('created_at', 'id')
+    )
+
+
+def _queue_position_label(status, queue_ahead):
+    """Human-facing queue copy for customers."""
+    position = queue_ahead + 1
+    if status == 'preparing' and queue_ahead == 0:
+        return "You're up — we're preparing your order now.", position
+    if queue_ahead == 0:
+        return "You're next in line.", position
+    if queue_ahead == 1:
+        return "You're #2 in line — 1 order ahead.", position
+    return f"You're #{position} in line — {queue_ahead} orders ahead.", position
+
+
 def build_eta_payload(order):
     """Return a customer-facing ETA dict for a single order."""
-    from .models import Order
-
     now = timezone.now()
     status = order.status
     item_units = _item_units(order)
@@ -77,6 +97,7 @@ def build_eta_payload(order):
             'eta_label': 'Ready now',
             'message': 'Your order is ready for pickup.',
             'queue_ahead': 0,
+            'queue_position': 0,
             'item_units': item_units,
             'source': data_source,
         }
@@ -90,19 +111,20 @@ def build_eta_payload(order):
             'eta_label': 'Cancelled',
             'message': 'This order was cancelled.',
             'queue_ahead': 0,
+            'queue_position': 0,
             'item_units': item_units,
             'source': data_source,
         }
 
-    active_orders = list(
-        Order.objects.filter(status__in=('pending', 'preparing'))
-        .order_by('created_at', 'id')
-    )
+    active_orders = list(_active_queue_qs())
     ahead = []
     for active in active_orders:
         if active.id == order.id:
             break
         ahead.append(active)
+
+    queue_ahead = len(ahead)
+    queue_message, queue_position = _queue_position_label(status, queue_ahead)
 
     queue_wait = 0.0
     for ahead_order in ahead:
@@ -115,18 +137,12 @@ def build_eta_payload(order):
     if status == 'preparing':
         own_remaining = _remaining_prep_seconds(order, avg_prep, now)
         total_seconds = max(MIN_ETA_SECONDS, own_remaining)
-        message = 'Your order is being prepared.'
     else:
         own_prep = _prep_seconds_for_order(item_units, avg_prep)
         total_seconds = queue_wait + own_prep + DEFAULT_PENDING_BUFFER_SECONDS
         total_seconds = max(MIN_ETA_SECONDS, min(total_seconds, MAX_ETA_SECONDS))
-        if len(ahead) == 0:
-            message = 'Your order is next in line.'
-        elif len(ahead) == 1:
-            message = '1 order ahead of yours.'
-        else:
-            message = f'{len(ahead)} orders ahead of yours.'
 
+    message = queue_message
     min_seconds = total_seconds * 0.85
     max_seconds = min(MAX_ETA_SECONDS, total_seconds * 1.2)
     eta_label, eta_min_minutes, eta_max_minutes = _format_minutes_range(min_seconds, max_seconds)
@@ -138,7 +154,8 @@ def build_eta_payload(order):
         'eta_max_minutes': eta_max_minutes,
         'eta_label': eta_label,
         'message': message,
-        'queue_ahead': len(ahead),
+        'queue_ahead': queue_ahead,
+        'queue_position': queue_position,
         'item_units': item_units,
         'source': data_source,
     }
@@ -146,15 +163,10 @@ def build_eta_payload(order):
 
 def build_preview_eta(item_units=1):
     """Estimate wait time before an order is placed (no order id yet)."""
-    from .models import Order
-
     now = timezone.now()
     avg_prep = _historical_avg_prep_seconds()
     data_source = 'historical' if avg_prep != DEFAULT_AVG_PREP_SECONDS else 'default'
-    active_orders = list(
-        Order.objects.filter(status__in=('pending', 'preparing'))
-        .order_by('created_at', 'id')
-    )
+    active_orders = list(_active_queue_qs())
 
     queue_wait = 0.0
     for active_order in active_orders:
@@ -173,12 +185,13 @@ def build_preview_eta(item_units=1):
     eta_label, eta_min_minutes, eta_max_minutes = _format_minutes_range(min_seconds, max_seconds)
 
     queue_ahead = len(active_orders)
+    queue_position = queue_ahead + 1
     if queue_ahead == 0:
-        message = 'Kitchen is clear — your order can start soon.'
+        message = "Kitchen is clear — you'd be #1 in line."
     elif queue_ahead == 1:
-        message = '1 order currently in the queue.'
+        message = "You'd be #2 in line — 1 order currently waiting."
     else:
-        message = f'{queue_ahead} orders currently in the queue.'
+        message = f"You'd be #{queue_position} in line — {queue_ahead} orders currently waiting."
 
     return {
         'status': 'preview',
@@ -188,6 +201,7 @@ def build_preview_eta(item_units=1):
         'eta_label': eta_label,
         'message': message,
         'queue_ahead': queue_ahead,
+        'queue_position': queue_position,
         'item_units': max(1, item_units),
         'source': data_source,
     }

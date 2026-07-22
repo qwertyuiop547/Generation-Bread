@@ -1,5 +1,6 @@
 # pyre-unsafe
 import csv
+import logging
 from django.utils import timezone
 from datetime import datetime, timedelta
 import secrets
@@ -14,6 +15,7 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.contrib.auth import authenticate, login
 from django.db import connection, transaction
+from django.db.models import Count
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -23,6 +25,7 @@ from . import attendance_calendar
 from . import drink_prep
 from . import smart_eta
 from . import staff_feedback
+from .pagination import paginate_queryset, paginated_response
 from .throttling import (
     LoginRateThrottle,
     RegisterRateThrottle,
@@ -32,7 +35,14 @@ from .throttling import (
     PaymentRateThrottle,
 )
 from .security import is_login_locked, record_login_failure, clear_login_failures
+from .sql_safety import normalize_email, normalize_text
+from .access_control import authorize_order_access, require_authenticated_user
+from .security_audit import log_security_event
+from .uploads import validate_uploaded_image
 from .permissions import IsStaffOrAdmin, IsAdminRole
+from django.core.exceptions import ValidationError as DjangoValidationError
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.exceptions import TokenError
 from .serializers import (
     RegisterSerializer,
     VerifyEmailSerializer,
@@ -49,6 +59,8 @@ from .serializers import (
     ShiftAssignmentSerializer,
 )
 
+logger = logging.getLogger(__name__)
+
 
 VALID_ORDER_STATUSES = {'pending', 'preparing', 'ready', 'completed', 'cancelled'}
 MENU_CACHE_KEY = 'menu:public:v1'
@@ -61,14 +73,28 @@ def health_view(request):
     db_ok = True
     try:
         connection.ensure_connection()
-    except Exception:
+    except Exception as exc:
         db_ok = False
+        logger.warning('health_db_down error=%s', exc)
+
+    cache_ok = True
+    try:
+        cache.set('health:ping', '1', 5)
+        cache_ok = cache.get('health:ping') == '1'
+    except Exception as exc:
+        cache_ok = False
+        logger.warning('health_cache_down error=%s', exc)
+
+    redis_configured = bool(getattr(settings, 'REDIS_URL', ''))
+    # In production Redis backs cache; treat cache failure as degraded when configured.
+    healthy = db_ok and (cache_ok or not redis_configured)
     payload = {
-        'status': 'ok' if db_ok else 'degraded',
+        'status': 'ok' if healthy else 'degraded',
         'database': 'up' if db_ok else 'down',
-        'redis_configured': bool(getattr(settings, 'REDIS_URL', '')),
+        'cache': 'up' if cache_ok else 'down',
+        'redis_configured': redis_configured,
     }
-    code = status.HTTP_200_OK if db_ok else status.HTTP_503_SERVICE_UNAVAILABLE
+    code = status.HTTP_200_OK if healthy else status.HTTP_503_SERVICE_UNAVAILABLE
     return Response(payload, status=code)
 
 
@@ -85,11 +111,15 @@ def jwt_login_view(request):
     email = request.data.get('email')
     password = request.data.get('password')
     
-    if not email or not password:
+    email, email_err = _require_email(email)
+    if email_err:
+        return email_err
+    if not password:
         return Response({'error': 'Email and password are required.'}, status=status.HTTP_400_BAD_REQUEST)
 
     locked, retry_after = is_login_locked(request, email)
     if locked:
+        log_security_event('login_lockout', request=request, detail=email)
         response = Response(
             {
                 'error': 'Too many failed login attempts. Please try again later.',
@@ -105,7 +135,9 @@ def jwt_login_view(request):
     
     if not user:
         locked_now, retry_after = record_login_failure(request, email)
+        log_security_event('login_failed', request=request, detail=email)
         if locked_now:
+            log_security_event('login_lockout', request=request, detail=email)
             response = Response(
                 {
                     'error': 'Too many failed login attempts. Please try again later.',
@@ -121,6 +153,7 @@ def jwt_login_view(request):
         return Response({'error': 'Account is inactive.'}, status=status.HTTP_401_UNAUTHORIZED)
 
     clear_login_failures(request, email)
+    log_security_event('login_success', request=request, user=user)
     
     # Generate JWT tokens
     refresh = RefreshToken.for_user(user)
@@ -138,6 +171,9 @@ def jwt_login_view(request):
 
 
 def _get_or_create_user_by_email(email):
+    email = normalize_email(email)
+    if not email:
+        raise ValueError('Invalid email.')
     try:
         return CustomUser.objects.get(email=email)
     except CustomUser.DoesNotExist:
@@ -147,6 +183,14 @@ def _get_or_create_user_by_email(email):
             password=secrets.token_urlsafe(20),
             first_name='Guest',
         )
+
+
+def _require_email(value):
+    """Return (email, error_response). error_response is None when email is valid."""
+    email = normalize_email(value)
+    if not email:
+        return None, Response({'error': 'Invalid email.'}, status=status.HTTP_400_BAD_REQUEST)
+    return email, None
 
 
 @api_view(['POST'])
@@ -243,9 +287,9 @@ def verify_email_view(request):
 @throttle_classes([ResendCodeRateThrottle])
 def resend_code_view(request):
     """Resend verification code."""
-    email = request.data.get('email')
-    if not email:
-        return Response({'error': 'Email is required.'}, status=status.HTTP_400_BAD_REQUEST)
+    email, email_err = _require_email(request.data.get('email'))
+    if email_err:
+        return email_err
 
     try:
         user = CustomUser.objects.get(email=email)
@@ -315,7 +359,9 @@ def login_view(request):
     user = authenticate(username=email, password=password)
     if not user:
         locked_now, retry_after = record_login_failure(request, email)
+        log_security_event('login_failed', request=request, detail=email)
         if locked_now:
+            log_security_event('login_lockout', request=request, detail=email)
             response = Response(
                 {
                     'error': 'Too many failed login attempts. Please try again later.',
@@ -328,6 +374,7 @@ def login_view(request):
         return Response({'error': 'Invalid email or password.'}, status=status.HTTP_401_UNAUTHORIZED)
 
     clear_login_failures(request, email)
+    log_security_event('login_success', request=request, user=user)
     login(request, user)
 
     return Response({
@@ -343,134 +390,207 @@ def me_view(request):
     return Response(UserSerializer(request.user).data)
 
 
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def logout_view(request):
+    """Blacklist refresh token so it cannot be reused after logout."""
+    refresh = request.data.get('refresh')
+    if not refresh:
+        return Response({'error': 'refresh token is required.'}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        token = RefreshToken(refresh)
+        token.blacklist()
+    except TokenError:
+        log_security_event('logout_invalid_token', request=request)
+        return Response({'error': 'Invalid or expired refresh token.'}, status=status.HTTP_400_BAD_REQUEST)
+    except AttributeError:
+        return Response(
+            {'error': 'Token blacklist is not configured on the server.'},
+            status=status.HTTP_503_SERVICE_UNAVAILABLE,
+        )
+    user = getattr(request, 'user', None)
+    log_security_event(
+        'logout',
+        request=request,
+        user=user if getattr(user, 'is_authenticated', False) else None,
+    )
+    return Response({'message': 'Logged out.'}, status=status.HTTP_200_OK)
+
+
 @api_view(['GET', 'POST'])
 @permission_classes([AllowAny])
 @throttle_classes([OrderCreateRateThrottle])
 def order_view(request):
-    """Get current user orders or create a new order."""
-    email = request.query_params.get('email') or request.data.get('email')
-
-    if not email:
-        return Response({'error': 'Email is required.'}, status=status.HTTP_400_BAD_REQUEST)
-
-    user = _get_or_create_user_by_email(email)
-
+    """Get current user orders (auth required) or create a new order."""
     if request.method == 'GET':
-        orders = Order.objects.filter(user=user).order_by('-created_at')
-        serializer = OrderSerializer(orders, many=True)
-        return Response(serializer.data)
-    elif request.method == 'POST':
-        # Expects: {"total_price": 500, "items": [{"name": "Item A", "quantity": 2, "price": 250}]}
-        total_price = request.data.get('total_price')
-        items = request.data.get('items', [])
-        raw_order_type = str(request.data.get('order_type', 'takeout')).strip().lower()
-        table_number = request.data.get('table_number')
-        pickup_time = request.data.get('pickup_time')
-        customer_name = (request.data.get('customer_name') or '').strip()
+        user, err = require_authenticated_user(request)
+        if err:
+            return err
+        qs = (
+            Order.objects.filter(user=user)
+            .select_related('user', 'served_by')
+            .prefetch_related('items')
+            .order_by('-created_at')
+        )
+        page, meta = paginate_queryset(qs, request, default_limit=50, max_limit=200)
+        serializer = OrderSerializer(page, many=True)
+        return Response(paginated_response(serializer.data, meta))
 
-        if raw_order_type in {'dine-in', 'dine_in', 'dinein'}:
-            normalized_order_type = 'dine_in'
-        elif raw_order_type in {'scheduled', 'pre-order', 'pre_order'}:
-            normalized_order_type = 'scheduled'
-        else:
-            normalized_order_type = 'takeout'
+    # POST create — prefer JWT identity; fall back to validated email for walk-in APIs
+    auth_user = getattr(request, 'user', None)
+    if auth_user is not None and getattr(auth_user, 'is_authenticated', False):
+        user = auth_user
+    else:
+        email, email_err = _require_email(
+            request.query_params.get('email') or request.data.get('email')
+        )
+        if email_err:
+            return email_err
+        try:
+            user = _get_or_create_user_by_email(email)
+        except ValueError:
+            return Response({'error': 'Invalid email.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        if normalized_order_type == 'dine_in' and not table_number:
-            return Response({'error': 'Table number is required for dine-in orders.'}, status=status.HTTP_400_BAD_REQUEST)
+    # Expects: {"total_price": 500, "items": [{"name": "Item A", "quantity": 2, "price": 250}]}
+    total_price = request.data.get('total_price')
+    items = request.data.get('items', [])
+    raw_order_type = str(request.data.get('order_type', 'takeout')).strip().lower()
+    table_number = request.data.get('table_number')
+    pickup_time = request.data.get('pickup_time')
+    customer_name = normalize_text(
+        request.data.get('customer_name') or '',
+        max_length=120,
+        allow_empty=True,
+    )
+    if customer_name is None:
+        return Response({'error': 'Invalid customer name.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        if normalized_order_type == 'scheduled' and not pickup_time:
-            return Response({'error': 'Pickup time is required for scheduled orders.'}, status=status.HTTP_400_BAD_REQUEST)
+    if raw_order_type in {'dine-in', 'dine_in', 'dinein'}:
+        normalized_order_type = 'dine_in'
+    elif raw_order_type in {'scheduled', 'pre-order', 'pre_order'}:
+        normalized_order_type = 'scheduled'
+    else:
+        normalized_order_type = 'takeout'
 
-        # Parse scheduled_at from pickup_time for auto-cancel logic
-        scheduled_at = None
-        if normalized_order_type == 'scheduled' and pickup_time:
+    if normalized_order_type == 'dine_in' and not table_number:
+        return Response({'error': 'Table number is required for dine-in orders.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if table_number is not None and table_number != '':
+        table_number = normalize_text(str(table_number), max_length=10, allow_empty=False)
+        if table_number is None or not str(table_number).isdigit():
+            return Response({'error': 'Invalid table number.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if normalized_order_type == 'scheduled' and not pickup_time:
+        return Response({'error': 'Pickup time is required for scheduled orders.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Parse scheduled_at from pickup_time for auto-cancel logic
+    scheduled_at = None
+    if normalized_order_type == 'scheduled' and pickup_time:
+        try:
+            from datetime import datetime as dt
+            scheduled_at = dt.fromisoformat(pickup_time)
+        except (ValueError, TypeError):
             try:
-                from datetime import datetime as dt
-                scheduled_at = dt.fromisoformat(pickup_time)
+                scheduled_at = dt.strptime(pickup_time, '%Y-%m-%dT%H:%M')
             except (ValueError, TypeError):
                 try:
-                    scheduled_at = dt.strptime(pickup_time, '%Y-%m-%dT%H:%M')
+                    scheduled_at = dt.strptime(pickup_time, '%m/%d/%Y, %I:%M %p')
                 except (ValueError, TypeError):
-                    try:
-                        scheduled_at = dt.strptime(pickup_time, '%m/%d/%Y, %I:%M %p')
-                    except (ValueError, TypeError):
-                        scheduled_at = None
+                    scheduled_at = None
 
-        # Create order and deduct stock
-        with transaction.atomic():
-            order = Order.objects.create(
-                user=user,
-                total_price=total_price,
-                status='pending',
-                order_type=normalized_order_type,
-                table_number=table_number,
-                pickup_time=pickup_time,
-                scheduled_at=scheduled_at,
-                customer_name=customer_name or user.first_name or user.email,
-            )
-            for item_data in items:
-                OrderItem.objects.create(
-                    order=order,
-                    name=item_data['name'],
-                    quantity=item_data['quantity'],
-                    price=item_data['price'],
-                    size=item_data.get('size', 'Medium'),
-                    sugar_level=item_data.get('sugar_level', '100%'),
-                    add_ons=item_data.get('add_ons', []),
-                    notes=item_data.get('notes', ''),
-                )
-                # Deduct stock if track_stock is enabled
-                try:
-                    menu_item = MenuItem.objects.get(name=item_data['name'])
-                    if menu_item.track_stock and menu_item.stock > 0:
-                        menu_item.stock = max(0, menu_item.stock - item_data['quantity'])
-                        menu_item.save()
-                except MenuItem.DoesNotExist:
-                    pass
-
-            OrderStatusLog.objects.create(order=order, status='pending')
-
-        # Broadcast via channels
-        channel_layer = get_channel_layer()
-        async_to_sync(channel_layer.group_send)(
-            'orders',
-            {
-                'type': 'order_update',
-                'message': {
-                    'order_id': order.id,
-                    'status': 'pending',
-                    'items': items,
-                    'total_price': str(total_price),
-                    'user_email': user.email,
-                    'customer_name': order.customer_name,
-                    'created_at': order.created_at.isoformat(),
-                }
-            }
+    access_token = secrets.token_urlsafe(32)
+    with transaction.atomic():
+        order = Order.objects.create(
+            user=user,
+            total_price=total_price,
+            status='pending',
+            order_type=normalized_order_type,
+            table_number=table_number,
+            pickup_time=pickup_time,
+            scheduled_at=scheduled_at,
+            customer_name=customer_name or user.first_name or user.email,
+            access_token=access_token,
         )
+        for item_data in items:
+            OrderItem.objects.create(
+                order=order,
+                name=item_data['name'],
+                quantity=item_data['quantity'],
+                price=item_data['price'],
+                size=item_data.get('size', 'Medium'),
+                sugar_level=item_data.get('sugar_level', '100%'),
+                add_ons=item_data.get('add_ons', []),
+                notes=item_data.get('notes', ''),
+            )
+            try:
+                menu_item = MenuItem.objects.get(name=item_data['name'])
+                if menu_item.track_stock and menu_item.stock > 0:
+                    menu_item.stock = max(0, menu_item.stock - item_data['quantity'])
+                    menu_item.save()
+            except MenuItem.DoesNotExist:
+                pass
 
-        eta = smart_eta.build_eta_payload(order)
-        return Response({
-            'message': 'Order created successfully.',
-            'order_id': order.id,
-            'total_price': str(total_price),
-            'items': items,
-            'created_at': order.created_at.isoformat(),
-            'eta': eta,
-        }, status=status.HTTP_201_CREATED)
+        OrderStatusLog.objects.create(order=order, status='pending')
+
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        'orders',
+        {
+            'type': 'order_update',
+            'message': {
+                'order_id': order.id,
+                'status': 'pending',
+                'items': items,
+                'total_price': str(total_price),
+                'user_email': user.email,
+                'customer_name': order.customer_name,
+                'created_at': order.created_at.isoformat(),
+            }
+        }
+    )
+
+    eta = smart_eta.build_eta_payload(order)
+    return Response({
+        'message': 'Order created successfully.',
+        'order_id': order.id,
+        'order_token': access_token,
+        'total_price': str(total_price),
+        'items': items,
+        'created_at': order.created_at.isoformat(),
+        'eta': eta,
+    }, status=status.HTTP_201_CREATED)
 
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def order_detail_view(request, order_id):
-    """Get a single order by ID for tracking (public endpoint)."""
+    """Track order status. Full PII only for owner/staff/valid order token."""
     try:
-        order = Order.objects.get(id=order_id)
-        serializer = OrderSerializer(order)
-        payload = dict(serializer.data)
-        payload['eta'] = smart_eta.build_eta_payload(order)
-        return Response(payload)
+        order = Order.objects.select_related('user', 'served_by').prefetch_related('items').get(id=order_id)
     except Order.DoesNotExist:
         return Response({'error': 'Order not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+    ok, _ = authorize_order_access(request, order)
+    if ok:
+        payload = dict(OrderSerializer(order).data)
+        payload['eta'] = smart_eta.build_eta_payload(order)
+        return Response(payload)
+
+    # Public tracking: status + items only (no email / payment details)
+    public = {
+        'id': order.id,
+        'status': order.status,
+        'order_type': order.order_type,
+        'table_number': order.table_number,
+        'pickup_time': order.pickup_time,
+        'created_at': order.created_at,
+        'items': [
+            {'name': i.name, 'quantity': i.quantity, 'size': i.size}
+            for i in order.items.all()
+        ],
+        'eta': smart_eta.build_eta_payload(order),
+    }
+    return Response(public)
 
 
 @api_view(['GET'])
@@ -499,31 +619,29 @@ def eta_preview_view(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def user_cancel_order_view(request, order_id):
-    """Allow the order owner to cancel their own pending order with a reason."""
-    email = request.data.get('email')
-    cancel_reason = request.data.get('cancel_reason', '').strip()
-
-    if not email:
-        return Response({'error': 'email is required.'}, status=status.HTTP_400_BAD_REQUEST)
-
+    """Order owner (JWT or order token) cancels their own pending order."""
+    cancel_reason = normalize_text(
+        request.data.get('cancel_reason', ''),
+        max_length=500,
+        allow_empty=False,
+    )
     if not cancel_reason:
         return Response({'error': 'cancel_reason is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        user = CustomUser.objects.get(email=email)
-    except CustomUser.DoesNotExist:
-        return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-    try:
-        order = Order.objects.get(id=order_id, user=user)
+        order = Order.objects.select_related('user').get(id=order_id)
     except Order.DoesNotExist:
-        return Response({'error': 'Order not found or does not belong to this user.'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': 'Order not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+    ok, err = authorize_order_access(request, order, write=True)
+    if not ok:
+        log_security_event('order_cancel_denied', request=request, detail=f'order={order_id}')
+        return err
 
     if order.status != 'pending':
         return Response({'error': 'Only pending orders can be cancelled.'}, status=status.HTTP_400_BAD_REQUEST)
 
     with transaction.atomic():
-        # Restore stock for each order item
         for order_item in order.items.all():
             try:
                 menu_item = MenuItem.objects.get(name=order_item.name)
@@ -537,7 +655,6 @@ def user_cancel_order_view(request, order_id):
         order.void_reason = cancel_reason
         order.save(update_fields=['status', 'void_reason'])
 
-    # Notify admin channel via WebSocket
     channel_layer = get_channel_layer()
     async_to_sync(channel_layer.group_send)(
         'orders',
@@ -548,8 +665,8 @@ def user_cancel_order_view(request, order_id):
                 'status': 'cancelled',
                 'cancel_reason': cancel_reason,
                 'cancelled_by': 'user',
-                'user_email': user.email,
-                'customer_name': order.customer_name or user.first_name or 'Guest',
+                'user_email': order.user.email,
+                'customer_name': order.customer_name or order.user.first_name or 'Guest',
             }
         }
     )
@@ -562,13 +679,8 @@ def user_cancel_order_view(request, order_id):
 @permission_classes([AllowAny])
 @throttle_classes([PaymentRateThrottle])
 def user_set_payment_view(request, order_id):
-    """Customer: set payment method (and status) after placing an order."""
-    email = request.data.get('email')
+    """Customer sets payment method only — cannot self-attest 'paid' (staff confirms)."""
     payment_method = (request.data.get('payment_method') or '').strip().lower()
-    payment_status = (request.data.get('payment_status') or '').strip().lower()
-
-    if not email:
-        return Response({'error': 'email is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
     valid_methods = {c[0] for c in Order.PAYMENT_METHOD_CHOICES}
     if payment_method not in valid_methods:
@@ -578,34 +690,21 @@ def user_set_payment_view(request, order_id):
         )
 
     try:
-        user = CustomUser.objects.get(email=email)
-    except CustomUser.DoesNotExist:
-        return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-    try:
-        order = Order.objects.get(id=order_id, user=user)
+        order = Order.objects.select_related('user').get(id=order_id)
     except Order.DoesNotExist:
-        return Response({'error': 'Order not found or does not belong to this user.'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': 'Order not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+    ok, err = authorize_order_access(request, order, write=True)
+    if not ok:
+        log_security_event('order_payment_denied', request=request, detail=f'order={order_id}')
+        return err
 
     if order.status == 'cancelled':
         return Response({'error': 'Cannot set payment on a cancelled order.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    # Cash stays unpaid until counter; cashless can be marked paid in the prototype UI
-    if not payment_status:
-        payment_status = 'paid' if payment_method != 'cash' else 'unpaid'
-
-    valid_statuses = {c[0] for c in Order.PAYMENT_STATUS_CHOICES}
-    if payment_status not in valid_statuses:
-        return Response(
-            {'error': f'payment_status must be one of: {", ".join(sorted(valid_statuses))}.'},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-
-    if payment_method == 'cash':
-        payment_status = 'unpaid'
-
+    # Payment integrity: customers choose method; settlement stays unpaid until staff marks paid
     order.payment_method = payment_method
-    order.payment_status = payment_status
+    order.payment_status = 'unpaid'
     order.save(update_fields=['payment_method', 'payment_status'])
 
     channel_layer = get_channel_layer()
@@ -618,8 +717,8 @@ def user_set_payment_view(request, order_id):
                 'status': order.status,
                 'payment_method': order.payment_method,
                 'payment_status': order.payment_status,
-                'user_email': user.email,
-                'customer_name': order.customer_name or user.first_name or 'Guest',
+                'user_email': order.user.email,
+                'customer_name': order.customer_name or order.user.first_name or 'Guest',
             },
         },
     )
@@ -630,13 +729,8 @@ def user_set_payment_view(request, order_id):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def user_rate_order_view(request, order_id):
-    """Allow the user to rate a completed order (1-5 stars)."""
-    email = request.data.get('email')
+    """Rate a completed order (owner JWT or order token)."""
     rating = request.data.get('rating')
-
-    if not email:
-        return Response({'error': 'email is required.'}, status=status.HTTP_400_BAD_REQUEST)
-
     if rating is None:
         return Response({'error': 'rating is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -648,51 +742,30 @@ def user_rate_order_view(request, order_id):
         return Response({'error': 'Rating must be an integer between 1 and 5.'}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        user = CustomUser.objects.get(email=email)
-    except CustomUser.DoesNotExist:
-        return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-    try:
-        order = Order.objects.get(id=order_id, user=user)
+        order = Order.objects.select_related('user').get(id=order_id)
     except Order.DoesNotExist:
-        return Response({'error': 'Order not found or does not belong to this user.'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': 'Order not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+    ok, err = authorize_order_access(request, order, write=True)
+    if not ok:
+        log_security_event('order_rate_denied', request=request, detail=f'order={order_id}')
+        return err
 
     if order.status != 'completed':
         return Response({'error': 'Only completed orders can be rated.'}, status=status.HTTP_400_BAD_REQUEST)
 
     if order.rating is not None:
-        return Response({'error': 'Order has already been rated.'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Order already rated.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    comment = (request.data.get('comment') or request.data.get('rating_comment') or '').strip()
+    comment = normalize_text(request.data.get('rating_comment') or '', max_length=500, allow_empty=True)
+    if comment is None:
+        return Response({'error': 'Invalid rating comment.'}, status=status.HTTP_400_BAD_REQUEST)
 
     order.rating = rating
-    order.rating_comment = comment[:1000]
+    order.rating_comment = comment or ''
     order.rated_at = timezone.now()
     order.save(update_fields=['rating', 'rating_comment', 'rated_at'])
-    
-    # Broadcast rating to admin/staff if needed
-    channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)(
-        'orders',
-        {
-            'type': 'order_update',
-            'message': {
-                'order_id': order.id,
-                'status': 'completed',
-                'rating': rating,
-                'rating_comment': order.rating_comment,
-                'user_email': user.email,
-                'customer_name': order.customer_name or user.first_name or 'Guest',
-            }
-        }
-    )
-
-    return Response({
-        'message': 'Rating submitted successfully.',
-        'rating': rating,
-        'rating_comment': order.rating_comment,
-        'rated_at': order.rated_at.isoformat(),
-    })
+    return Response(OrderSerializer(order).data)
 
 
 @api_view(['PATCH'])
@@ -837,15 +910,10 @@ def admin_void_order_view(request, order_id):
 
 
 @api_view(['GET', 'PUT', 'DELETE'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def cart_view(request):
-    """Get, update or clear the current user's cart."""
-    email = request.query_params.get('email') or request.data.get('email')
-
-    if not email:
-        return Response({'error': 'Email is required.'}, status=status.HTTP_400_BAD_REQUEST)
-
-    user = _get_or_create_user_by_email(email)
+    """Get, update or clear the authenticated user's cart."""
+    user = request.user
     cart, _ = Cart.objects.get_or_create(user=user)
 
     if request.method == 'GET':
@@ -857,8 +925,12 @@ def cart_view(request):
         return Response({'message': 'Cart cleared.'}, status=status.HTTP_200_OK)
 
     # PUT - update cart
-    payload = request.data.copy()
-    payload.setdefault('email', email)
+    payload = request.data.copy() if hasattr(request.data, 'copy') else dict(request.data)
+    if hasattr(payload, 'copy'):
+        payload = payload.copy()
+    else:
+        payload = dict(payload)
+    payload['email'] = user.email
 
     serializer = CartUpsertSerializer(data=payload)
     if not serializer.is_valid():
@@ -886,13 +958,18 @@ def cart_view(request):
 @api_view(['GET'])
 @permission_classes([IsStaffOrAdmin])
 def admin_orders_view(request):
-    """Get all orders for admin dashboard."""
+    """Get recent orders for admin/staff dashboards (paginated)."""
     admin_user, err = _require_staff_actor(request)
     if err:
         return err
-    orders = Order.objects.select_related('user', 'served_by').prefetch_related('items').order_by('-created_at')
-    serializer = OrderSerializer(orders, many=True)
-    return Response(serializer.data)
+    qs = (
+        Order.objects.select_related('user', 'served_by')
+        .prefetch_related('items')
+        .order_by('-created_at')
+    )
+    page, meta = paginate_queryset(qs, request, default_limit=150, max_limit=500)
+    serializer = OrderSerializer(page, many=True)
+    return Response(paginated_response(serializer.data, meta))
 
 
 @api_view(['PATCH'])
@@ -1005,14 +1082,15 @@ def admin_orders_archived_view(request):
     admin_user, err = _require_staff_actor(request)
     if err:
         return err
-    orders = (
+    qs = (
         Order.objects.filter(is_archived=True)
         .select_related('user', 'served_by')
         .prefetch_related('items')
         .order_by('-created_at')
     )
-    serializer = OrderSerializer(orders, many=True)
-    return Response(serializer.data)
+    page, meta = paginate_queryset(qs, request, default_limit=100, max_limit=500)
+    serializer = OrderSerializer(page, many=True)
+    return Response(paginated_response(serializer.data, meta))
 
 
 @api_view(['PATCH'])
@@ -1085,6 +1163,11 @@ def admin_menu_view(request, item_id=None):
 
     if request.method == 'POST':
         data = request.data.copy()
+        if request.FILES.get('image'):
+            try:
+                validate_uploaded_image(request.FILES['image'])
+            except DjangoValidationError as exc:
+                return Response({'image': list(exc.messages)}, status=status.HTTP_400_BAD_REQUEST)
         serializer = MenuItemSerializer(data=data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
@@ -1102,6 +1185,11 @@ def admin_menu_view(request, item_id=None):
 
     if request.method == 'PUT':
         data = request.data.copy()
+        if request.FILES.get('image'):
+            try:
+                validate_uploaded_image(request.FILES['image'])
+            except DjangoValidationError as exc:
+                return Response({'image': list(exc.messages)}, status=status.HTTP_400_BAD_REQUEST)
         # Handle image clearing: if 'image' key exists but is empty string, clear the image
         if 'image' in data and data['image'] == '':
             item.image.delete(save=False)
@@ -1131,43 +1219,37 @@ def admin_tables_view(request):
         return err
     total_tables = int(request.query_params.get('total_tables', 10))
 
-    # Get all active dine-in orders (not completed, not cancelled)
-    active_orders = Order.objects.filter(
-        order_type='dine_in',
-        table_number__isnull=False,
-    ).exclude(
-        status__in=['completed', 'cancelled']
-    ).select_related('user')
+    # Active dine-in orders (not completed/cancelled) — annotate avoids N+1 item counts
+    active_orders = (
+        Order.objects.filter(
+            order_type='dine_in',
+            table_number__isnull=False,
+            is_archived=False,
+        )
+        .exclude(status__in=['completed', 'cancelled'])
+        .select_related('user')
+        .annotate(items_count=Count('items'))
+    )
 
     # Build a map: table_number -> best status
     # Priority: preparing/ready > pending
     table_map = {}
+    priority = {'ready': 3, 'preparing': 2, 'pending': 1}
     for order in active_orders:
         tn = str(order.table_number).strip()
         if not tn:
             continue
         existing = table_map.get(tn)
-        if existing is None:
-            table_map[tn] = {
-                'status': order.status,
-                'order_id': order.id,
-                'customer_name': order.customer_name or order.user.first_name or 'Guest',
-                'total_price': str(order.total_price),
-                'created_at': order.created_at.isoformat(),
-                'items_count': order.items.count(),
-            }
-        else:
-            # If we already have a record, keep the more "active" one
-            priority = {'ready': 3, 'preparing': 2, 'pending': 1}
-            if priority.get(order.status, 0) > priority.get(existing['status'], 0):
-                table_map[tn] = {
-                    'status': order.status,
-                    'order_id': order.id,
-                    'customer_name': order.customer_name or order.user.first_name or 'Guest',
-                    'total_price': str(order.total_price),
-                    'created_at': order.created_at.isoformat(),
-                    'items_count': order.items.count(),
-                }
+        payload = {
+            'status': order.status,
+            'order_id': order.id,
+            'customer_name': order.customer_name or order.user.first_name or 'Guest',
+            'total_price': str(order.total_price),
+            'created_at': order.created_at.isoformat(),
+            'items_count': order.items_count,
+        }
+        if existing is None or priority.get(order.status, 0) > priority.get(existing['status'], 0):
+            table_map[tn] = payload
 
     # Build response for all tables
     tables = []
@@ -1308,15 +1390,13 @@ def admin_notifications_view(request):
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def user_spending_view(request):
-    """Get monthly spending insights for a user."""
-    email = request.query_params.get('email')
-    if not email:
-        return Response({'error': 'email is required.'}, status=status.HTTP_400_BAD_REQUEST)
+    """Get monthly spending insights for the authenticated user."""
+    user = request.user
 
     try:
-        user = CustomUser.objects.get(email=email)
+        user = CustomUser.objects.get(pk=user.pk)
     except CustomUser.DoesNotExist:
         return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -1410,6 +1490,12 @@ def admin_staff_update_view(request, user_id):
         active_admins = CustomUser.objects.filter(role='admin', is_active=True).exclude(id=staff_user.id).count()
         if active_admins == 0:
             return Response({'error': 'Cannot deactivate the last active admin.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if request.FILES.get('avatar'):
+        try:
+            validate_uploaded_image(request.FILES['avatar'])
+        except DjangoValidationError as exc:
+            return Response({'avatar': list(exc.messages)}, status=status.HTTP_400_BAD_REQUEST)
 
     serializer = StaffUserSerializer(staff_user, data=request.data, partial=True)
     if serializer.is_valid():
@@ -2676,8 +2762,16 @@ def cancel_overdue_scheduled_orders_view(request):
 @permission_classes([IsStaffOrAdmin])
 def staff_activity_feed_view(request):
     """Get recent staff activity feed (audit log). Supports ?hours=24 filter."""
-    hours = int(request.query_params.get('hours', 24))
+    try:
+        hours = int(request.query_params.get('hours', 24))
+    except (TypeError, ValueError):
+        hours = 24
+    hours = max(1, min(hours, 168))
     since = timezone.now() - timedelta(hours=hours)
-    activities = StaffActivity.objects.filter(created_at__gte=since)[:100]
+    activities = (
+        StaffActivity.objects.filter(created_at__gte=since)
+        .select_related('user', 'performed_by', 'shift_log', 'order')
+        .order_by('-created_at')[:100]
+    )
     serializer = StaffActivitySerializer(activities, many=True)
     return Response(serializer.data)

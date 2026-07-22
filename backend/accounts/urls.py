@@ -7,6 +7,7 @@ urlpatterns = [
     path('resend-code/', views.resend_code_view, name='resend-code'),
     path('login/', views.login_view, name='login'),
     path('jwt/login/', views.jwt_login_view, name='jwt-login'),
+    path('logout/', views.logout_view, name='logout'),
     path('me/', views.me_view, name='me'),
     path('cart/', views.cart_view, name='cart'),
     path('orders/', views.order_view, name='orders'),

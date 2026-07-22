@@ -9,12 +9,13 @@ import { useLanguage } from "@/context/LanguageContext";
 import { signOut } from "next-auth/react";
 import { performLogout } from "@/lib/logoutTransition";
 import {
-  formatSmartEtaDisplay,
+  fetchEtaPreview,
   localFallbackEta,
   type SmartEta,
 } from "@/lib/smartEta";
 import { getMenuItemImage } from "@/constants";
-import { withWsToken } from "@/lib/authHeaders";
+import { withWsToken, authHeaders } from "@/lib/authHeaders";
+import QueuePositionCard from "@/components/QueuePositionCard";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
 const CART_API_URL = `${API_BASE_URL}/api/auth/cart/`;
@@ -98,7 +99,9 @@ export default function OrderPage() {
   const [lastOrderItems, setLastOrderItems] = useState(0);
   const [lastOrderId, setLastOrderId] = useState("");
   const [lastOrderNumericId, setLastOrderNumericId] = useState<number | null>(null);
+  const [lastOrderToken, setLastOrderToken] = useState<string | null>(null);
   const [lastOrderEta, setLastOrderEta] = useState<SmartEta | null>(null);
+  const [cartQueueEta, setCartQueueEta] = useState<SmartEta | null>(null);
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [paymentStep, setPaymentStep] = useState<"choose" | "confirm" | "done">("choose");
   const [selectedPayment, setSelectedPayment] = useState<"cash" | "gcash" | "gotyme" | "card" | null>(null);
@@ -280,6 +283,25 @@ export default function OrderPage() {
   const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
   const totalPrice = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
 
+  // Preview queue position while cart has items (before placing)
+  useEffect(() => {
+    if (totalItems <= 0) {
+      setCartQueueEta(null);
+      return;
+    }
+    let cancelled = false;
+    const load = async () => {
+      const eta = await fetchEtaPreview(totalItems);
+      if (!cancelled) setCartQueueEta(eta || localFallbackEta(totalItems));
+    };
+    void load();
+    const interval = setInterval(() => void load(), 30000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [totalItems]);
+
   // Prefill once from account — don't re-fill when the customer clears the field
   const didPrefillName = useRef(false);
   useEffect(() => {
@@ -329,7 +351,7 @@ export default function OrderPage() {
       try {
         const res = await fetch(ORDERS_API_URL, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: authHeaders({ "Content-Type": "application/json" }),
           body: JSON.stringify({
             email,
             total_price: totalPrice,
@@ -345,6 +367,7 @@ export default function OrderPage() {
         const data = await res.json();
         orderId = `ORD-${data.order_id.toString().padStart(4, '0')}`;
         setLastOrderNumericId(Number(data.order_id));
+        if (data.order_token) setLastOrderToken(String(data.order_token));
         setLastOrderEta((data.eta as SmartEta) || localFallbackEta(totalItems));
       } catch {
         console.warn("Backend unavailable, placing order locally.");
@@ -424,18 +447,21 @@ export default function OrderPage() {
 
   const savePaymentChoice = async (method: "cash" | "gcash" | "gotyme" | "card") => {
     if (isSavingPayment) return;
-    const paymentStatus = method === "cash" ? "unpaid" : "paid";
+    // Server keeps payment unpaid until staff confirms — never trust client "paid"
+    const paymentStatus = "unpaid";
     setIsSavingPayment(true);
     try {
       if (lastOrderNumericId != null && user?.email) {
         try {
           const res = await fetch(`${ORDERS_API_URL}${lastOrderNumericId}/payment/`, {
             method: "PATCH",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              ...authHeaders({ "Content-Type": "application/json" }),
+              ...(lastOrderToken ? { "X-Order-Token": lastOrderToken } : {}),
+            },
             body: JSON.stringify({
-              email: user.email,
               payment_method: method,
-              payment_status: paymentStatus,
+              ...(lastOrderToken ? { order_token: lastOrderToken } : {}),
             }),
           });
           if (!res.ok) throw new Error("payment save failed");
@@ -449,7 +475,10 @@ export default function OrderPage() {
       setLastPaymentStatus(paymentStatus);
       setIsVerifyingPayment(false);
       setToast({
-        message: method === "cash" ? "Pay at the counter" : "Payment successful",
+        message:
+          method === "cash"
+            ? "Pay at the counter"
+            : "Payment method saved — staff will confirm once paid",
         type: "success",
       });
       setTimeout(() => setToast(null), 2500);
@@ -626,7 +655,7 @@ export default function OrderPage() {
 
     const loadCart = async () => {
       try {
-        const response = await fetch(`${CART_API_URL}?email=${encodeURIComponent(user.email)}`);
+        const response = await fetch(`${CART_API_URL}`, { headers: authHeaders() });
         if (!response.ok) {
           return;
         }
@@ -671,7 +700,7 @@ export default function OrderPage() {
       try {
         const response = await fetch(CART_API_URL, {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: authHeaders({ "Content-Type": "application/json" }),
           body: JSON.stringify({
             email: user.email,
             items: toBackendItems(cart),
@@ -995,6 +1024,11 @@ export default function OrderPage() {
                   <p className="font-paragraph text-dark-brown/60">{t("Total")}</p>
                   <p className="text-2xl font-bold text-dark-brown">₱{totalPrice.toFixed(2)}</p>
                 </div>
+                {cartQueueEta && (
+                  <div className="mb-4">
+                    <QueuePositionCard eta={cartQueueEta} />
+                  </div>
+                )}
                 <button
                   onClick={handlePlaceOrder}
                   disabled={isPlacingOrder}
@@ -1200,10 +1234,8 @@ export default function OrderPage() {
             </div>
 
             {lastOrderEta && paymentStep !== "choose" && (
-              <div className="bg-light-brown/15 border border-light-brown/30 rounded-2xl p-3 mb-4 text-center">
-                <p className="font-paragraph text-dark-brown text-sm">
-                  Smart ETA: <span className="font-bold">{formatSmartEtaDisplay(lastOrderEta)}</span>
-                </p>
+              <div className="mb-4 text-left">
+                <QueuePositionCard eta={lastOrderEta} />
               </div>
             )}
 

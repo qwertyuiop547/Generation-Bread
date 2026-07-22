@@ -70,6 +70,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
     'channels',
     'accounts',
@@ -79,6 +80,7 @@ AUTH_USER_MODEL = 'accounts.CustomUser'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'accounts.null_byte_middleware.RejectNullByteMiddleware',
     'accounts.middleware.IPRateLimitMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
@@ -132,6 +134,11 @@ ASGI_APPLICATION = 'spylt_backend.asgi.application'
 
 # Shared Redis: required for multi-instance / high concurrency (cache + WebSockets)
 REDIS_URL = os.environ.get('REDIS_URL', '').strip()
+if not REDIS_URL and not DEBUG:
+    raise RuntimeError(
+        'REDIS_URL is required when DJANGO_DEBUG is false. '
+        'In-memory cache/channel layers cannot scale across instances.'
+    )
 if REDIS_URL:
     CACHES = {
         'default': {
@@ -153,6 +160,7 @@ if REDIS_URL:
         },
     }
 else:
+    # Local/dev only — never used in production (guarded above).
     CACHES = {
         'default': {
             'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
@@ -271,6 +279,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {'min_length': 10},
     },
     {
         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
@@ -279,6 +288,10 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+# Upload limits (menu / avatar images)
+DATA_UPLOAD_MAX_MEMORY_SIZE = 3 * 1024 * 1024
+FILE_UPLOAD_MAX_MEMORY_SIZE = 3 * 1024 * 1024
 
 
 # Internationalization
@@ -306,6 +319,7 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 MEDIA_URL = 'media/'
+# Local disk is ephemeral on Render — uploads vanish on redeploy. Use object storage for prod assets.
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
@@ -340,4 +354,38 @@ SIMPLE_JWT = {
     'USER_ID_FIELD': 'id',
     'USER_ID_CLAIM': 'user_id',
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+}
+
+# Structured logging for production ops (request errors, rate limits, health)
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{asctime} {levelname} {name} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': os.environ.get('LOG_LEVEL', 'INFO' if not DEBUG else 'DEBUG'),
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
+        'accounts': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
 }

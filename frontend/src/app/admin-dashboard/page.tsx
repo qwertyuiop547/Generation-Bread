@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { authHeaders } from "@/lib/authHeaders";
+import { unwrapListResponse } from "@/lib/apiList";
 import { signOut } from "next-auth/react";
 import { performLogout } from "@/lib/logoutTransition";
 import NotificationBell from "@/components/NotificationBell";
@@ -276,9 +277,11 @@ export default function AdminDashboardPage() {
         const localOrders: Order[] = localRaw ? JSON.parse(localRaw) : [];
         let mapped: Order[] = [];
         try {
-          const res = await fetch(`${API_BASE_URL}/api/auth/admin/orders/?admin_email=${encodeURIComponent(user.email)}`);
+          const res = await fetch(`${API_BASE_URL}/api/auth/admin/orders/?admin_email=${encodeURIComponent(user.email)}&limit=500`, {
+            headers: authHeaders(),
+          });
           if (res.ok) {
-            const data = await res.json();
+            const data = unwrapListResponse<any>(await res.json());
             mapped = data.map((d: any) => ({
               id: `ORD-${d.id.toString().padStart(4, "0")}`,
               items: d.items.map((i: any) => ({ name: i.name, price: Number(i.price), qty: i.quantity })),
