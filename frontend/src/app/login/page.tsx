@@ -35,8 +35,8 @@ function LoginPageContent() {
 
     setSubmitting(true);
     try {
-      const success = await login(email, password);
-      if (success) {
+      const result = await login(email, password);
+      if (result.ok) {
         const stored = localStorage.getItem("spylt_user");
         let defaultRedirect = "/dashboard";
         if (stored) {
@@ -52,7 +52,7 @@ function LoginPageContent() {
         const explicitRedirect = searchParams.get("redirect");
         window.location.href = explicitRedirect || defaultRedirect;
       } else {
-        setError("Invalid email or password.");
+        setError(result.error || "Invalid email or password.");
         setSubmitting(false);
       }
     } catch {

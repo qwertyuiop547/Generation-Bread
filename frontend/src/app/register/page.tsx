@@ -24,7 +24,7 @@ function RegisterPageContent() {
   const searchParams = useSearchParams();
   const redirect = searchParams.get("redirect") || "/";
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
@@ -33,18 +33,23 @@ function RegisterPageContent() {
       return;
     }
 
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters.");
+    if (password.length < 10) {
+      setError("Password must be at least 10 characters.");
       return;
     }
 
     setSubmitting(true);
-    const success = register(name, email, password);
-    if (success) {
-      const explicitRedirect = searchParams.get("redirect");
-      window.location.href = explicitRedirect || "/dashboard";
-    } else {
-      setError("An account with this email already exists.");
+    try {
+      const result = await register(name, email, password);
+      if (result.ok) {
+        const explicitRedirect = searchParams.get("redirect");
+        window.location.href = explicitRedirect || "/dashboard";
+      } else {
+        setError(result.error || "Could not create account.");
+        setSubmitting(false);
+      }
+    } catch {
+      setError("Something went wrong. Please try again.");
       setSubmitting(false);
     }
   };

@@ -13,6 +13,8 @@ export interface User {
   provider?: "local" | "google";
 }
 
+export type AuthResult = { ok: true } | { ok: false; error: string };
+
 interface AuthContextType {
   user: User | null;
   accessToken: string | null;
@@ -21,8 +23,8 @@ interface AuthContextType {
   isAuthLoading: boolean;
   isAdmin: boolean;
   isStaff: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
-  register: (name: string, email: string, password: string) => boolean;
+  login: (email: string, password: string) => Promise<AuthResult>;
+  register: (name: string, email: string, password: string) => Promise<AuthResult>;
   logout: () => void;
   updateUser: (updates: Partial<Pick<User, "name" | "image">>) => void;
   changePassword: (currentPassword: string, newPassword: string) => boolean;
@@ -38,8 +40,8 @@ const AuthContext = createContext<AuthContextType>({
   isAuthLoading: true,
   isAdmin: false,
   isStaff: false,
-  login: async () => false,
-  register: () => false,
+  login: async () => ({ ok: false, error: "Not ready." }),
+  register: async () => ({ ok: false, error: "Not ready." }),
   logout: () => {},
   updateUser: () => {},
   changePassword: () => false,
@@ -48,6 +50,67 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export const useAuth = () => useContext(AuthContext);
+
+function rememberLocalUser(entry: {
+  name: string;
+  email: string;
+  password?: string;
+  role?: string;
+  provider?: string;
+}) {
+  const usersRaw = localStorage.getItem("spylt_users") || "[]";
+  const users = JSON.parse(usersRaw) as Array<Record<string, string>>;
+  const idx = users.findIndex((u) => u.email === entry.email);
+  const next = {
+    name: entry.name,
+    email: entry.email,
+    password: entry.password ?? "",
+    role: entry.role ?? "user",
+    provider: entry.provider ?? "local",
+  };
+  if (idx === -1) users.push(next);
+  else users[idx] = { ...users[idx], ...next };
+  localStorage.setItem("spylt_users", JSON.stringify(users));
+}
+
+function findLegacyLocalAccount(email: string, password: string) {
+  try {
+    const usersRaw = localStorage.getItem("spylt_users") || "[]";
+    const users = JSON.parse(usersRaw) as Array<{
+      email?: string;
+      password?: string;
+      name?: string;
+      provider?: string;
+    }>;
+    return (
+      users.find(
+        (u) =>
+          u.email?.toLowerCase() === email.toLowerCase() &&
+          u.password === password &&
+          u.provider !== "google"
+      ) || null
+    );
+  } catch {
+    return null;
+  }
+}
+
+async function parseErrorMessage(res: Response, fallback: string) {
+  try {
+    const data = await res.json();
+    if (typeof data?.error === "string") return data.error;
+    if (typeof data?.detail === "string") return data.detail;
+    if (data?.email?.[0]) return String(data.email[0]);
+    if (data?.password?.[0]) return String(data.password[0]);
+    if (data?.name?.[0]) return String(data.name[0]);
+  } catch {
+    /* ignore */
+  }
+  if (res.status === 429) {
+    return "Too many login attempts. Please wait a minute and try again.";
+  }
+  return fallback;
+}
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -62,11 +125,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     setMounted(true);
 
-    // Check localStorage for JWT tokens
     const storedAccess = localStorage.getItem("spylt_access_token");
     const storedRefresh = localStorage.getItem("spylt_refresh_token");
     const storedUser = localStorage.getItem("spylt_user");
-    
+
     if (storedAccess && storedRefresh && storedUser) {
       try {
         setAccessToken(storedAccess);
@@ -83,7 +145,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Sync Google OAuth session → local user state and handle loading
   useEffect(() => {
-    // Don't resolve auth loading until localStorage has been checked
     if (!localResolved) return;
 
     if (status === "loading") {
@@ -91,8 +152,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
-    // Both localStorage and session are resolved — auth loading is done
     setIsAuthLoading(false);
+
+    // Never override an existing email/password session with Google.
+    if (user?.provider === "local" && accessToken) return;
 
     if (status === "authenticated" && session?.user && !user) {
       const googleUser: User = {
@@ -103,7 +166,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         provider: "google",
       };
 
-      // Check if this Google email is an admin
       const usersRaw = localStorage.getItem("spylt_users") || "[]";
       const users = JSON.parse(usersRaw);
       const existing = users.find((u: { email: string }) => u.email === googleUser.email);
@@ -111,22 +173,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         googleUser.role = "admin";
       }
 
-      // Save Google user to registered users list (if not already)
       if (!existing) {
-        users.push({ name: googleUser.name, email: googleUser.email, password: "", role: "user", provider: "google" });
+        users.push({
+          name: googleUser.name,
+          email: googleUser.email,
+          password: "",
+          role: "user",
+          provider: "google",
+        });
         localStorage.setItem("spylt_users", JSON.stringify(users));
       }
 
       setUser(googleUser);
       localStorage.setItem("spylt_user", JSON.stringify(googleUser));
     }
-  }, [status, session, user, localResolved]);
+  }, [status, session, user, localResolved, accessToken]);
 
   // Mint Django JWTs for Google NextAuth sessions (needed for cart/orders API).
   useEffect(() => {
     if (!localResolved || status !== "authenticated" || !session?.user?.email) {
       return;
     }
+    if (user?.provider === "local") return;
     if (accessToken || localStorage.getItem("spylt_access_token")) {
       return;
     }
@@ -156,7 +224,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(userData);
         localStorage.setItem("spylt_user", JSON.stringify(userData));
       } catch {
-        // Cart/orders stay local until bridge succeeds on a later retry.
+        /* Cart/orders stay local until bridge succeeds on a later retry. */
       }
     };
 
@@ -164,54 +232,160 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       cancelled = true;
     };
-  }, [status, session, localResolved, accessToken]);
+  }, [status, session, localResolved, accessToken, user?.provider]);
 
-  const register = (name: string, email: string, password: string): boolean => {
-    const usersRaw = localStorage.getItem("spylt_users") || "[]";
-    const users = JSON.parse(usersRaw);
+  const applyJwtSession = (data: {
+    access: string;
+    refresh: string;
+    user: { name: string; email: string; role: string };
+  }) => {
+    setAccessToken(data.access);
+    setRefreshToken(data.refresh);
 
-    const exists = users.find((u: { email: string }) => u.email === email);
-    if (exists) return false;
-
-    users.push({ name, email, password, role: "user" });
-    localStorage.setItem("spylt_users", JSON.stringify(users));
-
-    const userData: User = { name, email, role: "user", provider: "local" };
+    const userData: User = {
+      name: data.user.name,
+      email: data.user.email,
+      role: data.user.role as User["role"],
+      provider: "local",
+    };
     setUser(userData);
+
+    localStorage.setItem("spylt_access_token", data.access);
+    localStorage.setItem("spylt_refresh_token", data.refresh);
     localStorage.setItem("spylt_user", JSON.stringify(userData));
-    return true;
   };
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const jwtLoginRequest = async (email: string, password: string) => {
+    const res = await fetch(`${API_BASE_URL}/api/auth/jwt/login/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+    return res;
+  };
+
+  const migrateLegacyAccount = async (email: string, password: string, name: string) => {
+    const reg = await fetch(`${API_BASE_URL}/api/auth/register/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password }),
+    });
+
+    if (reg.status === 201) {
+      const data = await reg.json().catch(() => ({}));
+      if (data.demo_code) {
+        await fetch(`${API_BASE_URL}/api/auth/verify-email/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, code: data.demo_code }),
+        });
+      }
+      return true;
+    }
+
+    // Account already on server — cannot reclaim with a different password.
+    return false;
+  };
+
+  const register = async (name: string, email: string, password: string): Promise<AuthResult> => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/jwt/login/`, {
+      if (password.length < 10) {
+        return { ok: false, error: "Password must be at least 10 characters." };
+      }
+
+      const res = await fetch(`${API_BASE_URL}/api/auth/register/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ name, email, password }),
       });
 
-      if (!res.ok) return false;
+      if (!res.ok) {
+        return {
+          ok: false,
+          error: await parseErrorMessage(res, "Could not create account."),
+        };
+      }
 
-      const data = await res.json();
-      
-      setAccessToken(data.access);
-      setRefreshToken(data.refresh);
-      
-      const userData: User = {
-        name: data.user.name,
-        email: data.user.email,
-        role: data.user.role as "user" | "staff" | "admin",
-        provider: "local",
-      };
-      setUser(userData);
-      
-      localStorage.setItem("spylt_access_token", data.access);
-      localStorage.setItem("spylt_refresh_token", data.refresh);
-      localStorage.setItem("spylt_user", JSON.stringify(userData));
-      
-      return true;
+      const data = await res.json().catch(() => ({}));
+      if (data.demo_code) {
+        await fetch(`${API_BASE_URL}/api/auth/verify-email/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, code: data.demo_code }),
+        });
+      }
+
+      const loginRes = await jwtLoginRequest(email, password);
+      if (!loginRes.ok) {
+        return {
+          ok: false,
+          error: await parseErrorMessage(
+            loginRes,
+            "Account created, but sign-in failed. Try logging in."
+          ),
+        };
+      }
+
+      const loginData = await loginRes.json();
+      applyJwtSession(loginData);
+      rememberLocalUser({ name, email, password, role: loginData.user?.role, provider: "local" });
+      return { ok: true };
     } catch {
-      return false;
+      return { ok: false, error: "Unable to reach the server. Please try again." };
+    }
+  };
+
+  const login = async (email: string, password: string): Promise<AuthResult> => {
+    try {
+      let res = await jwtLoginRequest(email, password);
+
+      if (res.ok) {
+        const data = await res.json();
+        applyJwtSession(data);
+        rememberLocalUser({
+          name: data.user.name,
+          email: data.user.email,
+          password,
+          role: data.user.role,
+          provider: "local",
+        });
+        return { ok: true };
+      }
+
+      if (res.status === 429) {
+        return {
+          ok: false,
+          error: await parseErrorMessage(
+            res,
+            "Too many login attempts. Please wait a minute and try again."
+          ),
+        };
+      }
+
+      // Migrate accounts that were previously saved only in localStorage.
+      const legacy = findLegacyLocalAccount(email, password);
+      if (legacy) {
+        const migrated = await migrateLegacyAccount(
+          email,
+          password,
+          legacy.name || email.split("@")[0] || "Customer"
+        );
+        if (migrated) {
+          res = await jwtLoginRequest(email, password);
+          if (res.ok) {
+            const data = await res.json();
+            applyJwtSession(data);
+            return { ok: true };
+          }
+        }
+      }
+
+      return {
+        ok: false,
+        error: await parseErrorMessage(res, "Invalid email or password."),
+      };
+    } catch {
+      return { ok: false, error: "Unable to reach the server. Please try again." };
     }
   };
 
@@ -221,7 +395,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(updatedUser);
     localStorage.setItem("spylt_user", JSON.stringify(updatedUser));
 
-    // Also update the registered users list
     const usersRaw = localStorage.getItem("spylt_users") || "[]";
     const users = JSON.parse(usersRaw);
     const idx = users.findIndex((u: { email: string }) => u.email === user.email);
@@ -237,7 +410,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const usersRaw = localStorage.getItem("spylt_users") || "[]";
     const users = JSON.parse(usersRaw);
     const idx = users.findIndex(
-      (u: { email: string; password: string }) => u.email === user.email && u.password === currentPassword
+      (u: { email: string; password: string }) =>
+        u.email === user.email && u.password === currentPassword
     );
     if (idx === -1) return false;
     users[idx].password = newPassword;
@@ -246,7 +420,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = () => {
-    const refresh = refreshToken || (typeof window !== "undefined" ? localStorage.getItem("spylt_refresh_token") : null);
+    const refresh =
+      refreshToken ||
+      (typeof window !== "undefined" ? localStorage.getItem("spylt_refresh_token") : null);
     if (refresh) {
       fetch(`${API_BASE_URL}/api/auth/logout/`, {
         method: "POST",
@@ -264,7 +440,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const refreshAccessToken = async (): Promise<boolean> => {
     if (!refreshToken) return false;
-    
+
     try {
       const res = await fetch(`${API_BASE_URL}/api/auth/token/refresh/`, {
         method: "POST",
@@ -292,7 +468,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       ...(options.headers as Record<string, string> | undefined),
     };
 
-    const token = accessToken || (typeof window !== "undefined" ? localStorage.getItem("spylt_access_token") : null);
+    const token =
+      accessToken ||
+      (typeof window !== "undefined" ? localStorage.getItem("spylt_access_token") : null);
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
     }
@@ -302,7 +480,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       headers,
     });
 
-    // If 401 Unauthorized, try to refresh token
     if (response.status === 401 && refreshToken) {
       const refreshed = await refreshAccessToken();
       if (refreshed) {
@@ -331,8 +508,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           isAuthLoading: true,
           isAdmin: false,
           isStaff: false,
-          login: async () => false,
-          register: () => false,
+          login: async () => ({ ok: false, error: "Not ready." }),
+          register: async () => ({ ok: false, error: "Not ready." }),
           logout: () => {},
           updateUser: () => {},
           changePassword: () => false,
@@ -346,7 +523,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ user, accessToken, refreshToken, isLoggedIn: !!user, isAuthLoading, isAdmin: user?.role === "admin", isStaff: user?.role === "staff" || user?.role === "admin", login, register, logout, updateUser, changePassword, refreshAccessToken, apiFetch }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        accessToken,
+        refreshToken,
+        isLoggedIn: !!user,
+        isAuthLoading,
+        isAdmin: user?.role === "admin",
+        isStaff: user?.role === "staff" || user?.role === "admin",
+        login,
+        register,
+        logout,
+        updateUser,
+        changePassword,
+        refreshAccessToken,
+        apiFetch,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
