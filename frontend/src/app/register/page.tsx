@@ -89,7 +89,7 @@ function RegisterPageContent() {
                 </p>
                 <h2 className="text-[clamp(2.75rem,5vw,4.5rem)] font-bold uppercase leading-[0.9] tracking-[-0.03em] text-milk">
                   Create your
-                  <span className="mt-1 block text-light-brown">account.</span>
+                  <span className="mt-1 block text-brand-gold">account.</span>
                 </h2>
                 <p className="mt-5 max-w-sm font-paragraph text-base leading-relaxed text-milk/75">
                   Order faster, track deliveries, and unlock Generation Bread favorites.

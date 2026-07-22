@@ -4,7 +4,6 @@ import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
-import { useThemeColors } from "@/lib/themeColors";
 
 export type PreloaderVariant = "welcome" | "goodbye";
 
@@ -27,7 +26,14 @@ const Preloader: React.FC<PreloaderProps> = ({
 }) => {
   const isGoodbye = variant === "goodbye";
   const duration = minDuration ?? (isGoodbye ? GOODBYE_MIN_DURATION : DEFAULT_MIN_DURATION);
-  const tc = useThemeColors();
+  // Preloader is a brand splash with food photography — always warm café colors,
+  // never follow Sky theme tokens (those turn the glow/accents neon blue).
+  const tc = {
+    lightBrown: "#e3a458",
+    redBrown: "#7f3b2d",
+    midBrown: "#a26833",
+    milk: "#faeade",
+  };
 
   const dialogRef = useRef<HTMLDialogElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -368,7 +374,7 @@ const Preloader: React.FC<PreloaderProps> = ({
             priority
             fetchPriority="high"
             unoptimized
-            className={`absolute inset-0 h-full w-full object-cover scale-100 ${
+            className={`absolute inset-0 h-full w-full object-cover scale-100 theme-lock-media ${
               isGoodbye
                 ? "object-center brightness-[0.95] saturate-[1.05]"
                 : "object-center brightness-[1.05] saturate-[1.1]"
@@ -419,7 +425,7 @@ const Preloader: React.FC<PreloaderProps> = ({
                   </span>
                 </span>
                 <span className="mt-1 block overflow-hidden">
-                  <span className="preloader-word inline-block text-[clamp(2.6rem,10vw,5rem)] text-light-brown drop-shadow-[0_2px_24px_rgba(0,0,0,0.35)]">
+                  <span className="preloader-word inline-block text-[clamp(2.6rem,10vw,5rem)] drop-shadow-[0_2px_24px_rgba(0,0,0,0.35)]" style={{ color: tc.lightBrown }}>
                     You
                   </span>
                 </span>
@@ -429,13 +435,20 @@ const Preloader: React.FC<PreloaderProps> = ({
                 <div className="absolute inset-0 overflow-hidden rounded-full">
                   <div
                     ref={barFillRef}
-                    className="h-full w-0 rounded-full bg-gradient-to-r from-transparent via-light-brown to-transparent"
+                    className="h-full w-0 rounded-full"
+                    style={{
+                      background: `linear-gradient(90deg, transparent, ${tc.lightBrown}, transparent)`,
+                    }}
                   />
                 </div>
                 <div
                   ref={barGlowRef}
-                  className="pointer-events-none absolute top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-milk opacity-0 shadow-[0_0_10px_3px_rgba(227,164,88,0.65)]"
-                  style={{ left: 0 }}
+                  className="pointer-events-none absolute top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full opacity-0"
+                  style={{
+                    left: 0,
+                    backgroundColor: tc.milk,
+                    boxShadow: `0 0 10px 3px ${tc.lightBrown}a6`,
+                  }}
                 />
               </div>
 
@@ -462,7 +475,7 @@ const Preloader: React.FC<PreloaderProps> = ({
                   </span>
                 </span>
                 <span className="mt-1 block overflow-hidden">
-                  <span className="preloader-word inline-block text-[clamp(2.4rem,9vw,4.75rem)] text-light-brown drop-shadow-[0_2px_24px_rgba(0,0,0,0.35)]">
+                  <span className="preloader-word inline-block text-[clamp(2.4rem,9vw,4.75rem)] drop-shadow-[0_2px_24px_rgba(0,0,0,0.35)]" style={{ color: tc.lightBrown }}>
                     Bread
                   </span>
                 </span>
@@ -472,13 +485,20 @@ const Preloader: React.FC<PreloaderProps> = ({
                 <div className="absolute inset-0 overflow-hidden rounded-full">
                   <div
                     ref={barFillRef}
-                    className="h-full w-0 rounded-full bg-gradient-to-r from-mid-brown via-light-brown to-milk"
+                    className="h-full w-0 rounded-full"
+                    style={{
+                      background: `linear-gradient(90deg, ${tc.midBrown}, ${tc.lightBrown}, ${tc.milk})`,
+                    }}
                   />
                 </div>
                 <div
                   ref={barGlowRef}
-                  className="pointer-events-none absolute top-1/2 h-3 w-3 -translate-y-1/2 rounded-full bg-milk opacity-0 shadow-[0_0_12px_4px_rgba(227,164,88,0.75)]"
-                  style={{ left: 0 }}
+                  className="pointer-events-none absolute top-1/2 h-3 w-3 -translate-y-1/2 rounded-full opacity-0"
+                  style={{
+                    left: 0,
+                    backgroundColor: tc.milk,
+                    boxShadow: `0 0 12px 4px ${tc.lightBrown}bf`,
+                  }}
                 />
               </div>
 

@@ -19,7 +19,7 @@ function applyTheme(theme: ThemeId) {
   document.documentElement.setAttribute("data-theme", theme);
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) {
-    meta.setAttribute("content", theme === "sky" ? "#0c4a6e" : "#523122");
+    meta.setAttribute("content", theme === "sky" ? "#1e3a5f" : "#523122");
   }
 }
 

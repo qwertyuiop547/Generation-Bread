@@ -37,35 +37,35 @@ body {
   transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-/* Sky blue + white goods theme — remaps brand tokens app-wide */
+/* Soft coastal café theme — muted navy + sky, not neon cyan */
 html[data-theme="sky"] {
   --color-black: #0f172a;
-  --color-main-bg: #0c4a6e;
-  --color-dark-brown: #0c4a6e;
-  --color-dark-brown-hover: #083554;
-  --color-mid-brown: #0284c7;
-  --color-light-brown: #38bdf8;
-  --color-red-brown: #0369a1;
-  --color-yellow-brown: #0ea5e9;
-  --color-milk-yellow: #e0f2fe;
+  --color-main-bg: #1e3a5f;
+  --color-dark-brown: #1e3a5f;
+  --color-dark-brown-hover: #152a45;
+  --color-mid-brown: #3d7ea6;
+  --color-light-brown: #7eb8d4;
+  --color-red-brown: #2d6a8a;
+  --color-yellow-brown: #5ba3c4;
+  --color-milk-yellow: #e8f4f8;
   --color-red: #dc2626;
-  --color-milk: #f8fafc;
+  --color-milk: #f7fafc;
   --color-white: #ffffff;
 }
 
 html[data-theme="sky"],
 html[data-theme="sky"] body {
-  background-color: #f0f9ff;
-  color: #0c4a6e;
+  background-color: #f3f8fb;
+  color: #1e3a5f;
 }
 
 html[data-theme="sky"] .message-content {
-  background-color: #0369a1;
+  background-color: #1e3a5f;
 }
 
 html[data-theme="sky"] .footer-section,
 html[data-theme="sky"] footer {
-  background-color: #0c4a6e;
+  background-color: #1e3a5f;
 }
 
 .footer-stage {
@@ -76,8 +76,8 @@ html[data-theme="sky"] footer {
 
 html[data-theme="sky"] .footer-stage {
   background:
-    radial-gradient(ellipse 80% 45% at 50% 0%, rgba(56, 189, 248, 0.28), transparent 55%),
-    #0c4a6e;
+    radial-gradient(ellipse 80% 45% at 50% 0%, rgba(126, 184, 212, 0.22), transparent 55%),
+    #152a45;
 }
 
 /* Theme-aware app surfaces (dashboard / auth) — UI only, not photos/videos */
@@ -97,18 +97,29 @@ html[data-theme="sky"] .footer-stage {
 }
 
 html[data-theme="sky"] .app-canvas {
-  background-color: #f0f9ff;
+  background-color: #f3f8fb;
 }
 html[data-theme="sky"] .app-header-bar {
-  background-color: rgba(248, 250, 252, 0.92);
+  background-color: rgba(247, 250, 252, 0.94);
 }
 html[data-theme="sky"] .app-panel {
-  background-color: rgba(255, 255, 255, 0.95);
-  border-color: rgba(14, 165, 233, 0.28);
+  background-color: rgba(255, 255, 255, 0.96);
+  border-color: rgba(61, 126, 166, 0.22);
 }
 html[data-theme="sky"] .app-chip {
   background-color: #ffffff;
-  border-color: rgba(14, 165, 233, 0.28);
+  border-color: rgba(61, 126, 166, 0.22);
+}
+
+/*
+ * Warm gold accent locked to café brand — use on food/photo overlays so Sky
+ * theme never turns product hero text neon blue.
+ */
+.text-brand-gold {
+  color: #e3a458 !important;
+}
+.bg-brand-gold {
+  background-color: #e3a458 !important;
 }
 
 /*

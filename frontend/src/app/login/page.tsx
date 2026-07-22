@@ -124,7 +124,7 @@ function LoginPageContent() {
               </p>
               <h2 className="text-[clamp(2.75rem,5vw,4.5rem)] font-bold uppercase leading-[0.9] tracking-[-0.03em] text-milk">
                 Fresh bakes.
-                <span className="mt-1 block text-light-brown">Cheese loaded.</span>
+                <span className="mt-1 block text-brand-gold">Cheese loaded.</span>
               </h2>
               <p className="mt-5 max-w-sm font-paragraph text-base leading-relaxed text-milk/75">
                 Sign in to order, track, and enjoy Generation Bread&apos;s best sellers.
@@ -173,7 +173,7 @@ function LoginPageContent() {
                 Tacloban City
               </p>
               <p className="text-2xl font-bold uppercase leading-none tracking-tight text-milk">
-                Fresh bakes. <span className="text-light-brown">Cheese loaded.</span>
+                Fresh bakes. <span className="text-brand-gold">Cheese loaded.</span>
               </p>
             </div>
           </div>
