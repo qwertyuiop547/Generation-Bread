@@ -43,7 +43,8 @@ body {
  * (prices, highlights, stars) so the bakery brand doesn't look neon blue.
  */
 html[data-theme="sky"] {
-  --color-black: #0f172a;
+  /* Keep true black — never remap --color-black (breaks bg-black overlays like preloader). */
+  --color-black: #000000;
   --color-main-bg: #1a3352;
   --color-dark-brown: #1a3352;
   --color-dark-brown-hover: #12243a;

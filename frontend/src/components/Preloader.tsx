@@ -358,7 +358,8 @@ const Preloader: React.FC<PreloaderProps> = ({
     >
       <div
         ref={panelRef}
-        className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden bg-black will-change-transform"
+        className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden will-change-transform"
+        style={{ backgroundColor: "#000000" }}
         role="status"
         aria-live="polite"
       >
@@ -380,14 +381,25 @@ const Preloader: React.FC<PreloaderProps> = ({
                 : "object-center brightness-[1.05] saturate-[1.1]"
             }`}
           />
-          {/* Light wash — product stays visible; readability comes from local scrim */}
+          {/* Literal black scrims — never use bg-black (Sky remaps --color-black to navy). */}
           <div
-            className={`absolute inset-0 ${
-              isGoodbye ? "bg-black/45" : "bg-black/38"
-            }`}
+            className="absolute inset-0"
+            style={{ backgroundColor: isGoodbye ? "rgba(0,0,0,0.45)" : "rgba(0,0,0,0.38)" }}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/25 to-black/55" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_48%,rgba(0,0,0,0.55)_0%,transparent_70%)]" />
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.25) 45%, rgba(0,0,0,0.55) 100%)",
+            }}
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(ellipse 70% 55% at 50% 48%, rgba(0,0,0,0.55) 0%, transparent 70%)",
+            }}
+          />
         </div>
 
         <div
@@ -414,24 +426,36 @@ const Preloader: React.FC<PreloaderProps> = ({
         >
           {isGoodbye ? (
             <>
-              <p className="preloader-eyebrow mb-6 font-paragraph text-[0.65rem] sm:text-xs uppercase tracking-[0.42em] text-milk/70">
+              <p
+                className="preloader-eyebrow mb-6 font-paragraph text-[0.65rem] sm:text-xs uppercase tracking-[0.42em]"
+                style={{ color: "rgba(250,234,222,0.7)" }}
+              >
                 Generation Bread
               </p>
 
               <h1 className="text-center font-bold uppercase leading-[0.88] tracking-[-0.03em]">
                 <span className="block overflow-hidden">
-                  <span className="preloader-word inline-block text-[clamp(2.6rem,10vw,5rem)] text-milk drop-shadow-[0_2px_24px_rgba(0,0,0,0.35)]">
+                  <span
+                    className="preloader-word inline-block text-[clamp(2.6rem,10vw,5rem)] drop-shadow-[0_2px_24px_rgba(0,0,0,0.35)]"
+                    style={{ color: tc.milk }}
+                  >
                     Thank
                   </span>
                 </span>
                 <span className="mt-1 block overflow-hidden">
-                  <span className="preloader-word inline-block text-[clamp(2.6rem,10vw,5rem)] drop-shadow-[0_2px_24px_rgba(0,0,0,0.35)]" style={{ color: tc.lightBrown }}>
+                  <span
+                    className="preloader-word inline-block text-[clamp(2.6rem,10vw,5rem)] drop-shadow-[0_2px_24px_rgba(0,0,0,0.35)]"
+                    style={{ color: tc.lightBrown }}
+                  >
                     You
                   </span>
                 </span>
               </h1>
 
-              <div className="preloader-bar-track relative mt-9 h-[2px] w-full max-w-[11rem] origin-center overflow-visible rounded-full bg-milk/12">
+              <div
+                className="preloader-bar-track relative mt-9 h-[2px] w-full max-w-[11rem] origin-center overflow-visible rounded-full"
+                style={{ backgroundColor: "rgba(250,234,222,0.12)" }}
+              >
                 <div className="absolute inset-0 overflow-hidden rounded-full">
                   <div
                     ref={barFillRef}
@@ -454,34 +478,47 @@ const Preloader: React.FC<PreloaderProps> = ({
 
               <p
                 ref={tagRef}
-                className="mt-8 max-w-[16rem] text-center font-paragraph text-sm leading-relaxed tracking-wide text-milk/55 sm:max-w-xs sm:text-base"
+                className="mt-8 max-w-[16rem] text-center font-paragraph text-sm leading-relaxed tracking-wide sm:max-w-xs sm:text-base"
+                style={{ color: "rgba(250,234,222,0.55)" }}
               >
                 Salamat for visiting.
-                <span className="mt-1.5 block text-milk/40">
+                <span className="mt-1.5 block" style={{ color: "rgba(250,234,222,0.4)" }}>
                   Come back hungry · Tacloban City
                 </span>
               </p>
             </>
           ) : (
             <>
-              <p className="preloader-eyebrow mb-5 font-paragraph text-[0.65rem] sm:text-xs uppercase tracking-[0.45em] text-milk/65">
+              <p
+                className="preloader-eyebrow mb-5 font-paragraph text-[0.65rem] sm:text-xs uppercase tracking-[0.45em]"
+                style={{ color: "rgba(250,234,222,0.65)" }}
+              >
                 Cheese loaded
               </p>
 
               <h1 className="text-center font-bold uppercase leading-[0.88] tracking-[-0.03em]">
                 <span className="block overflow-hidden">
-                  <span className="preloader-word inline-block text-[clamp(2.4rem,9vw,4.75rem)] text-milk drop-shadow-[0_2px_24px_rgba(0,0,0,0.35)]">
+                  <span
+                    className="preloader-word inline-block text-[clamp(2.4rem,9vw,4.75rem)] drop-shadow-[0_2px_24px_rgba(0,0,0,0.35)]"
+                    style={{ color: tc.milk }}
+                  >
                     Generation
                   </span>
                 </span>
                 <span className="mt-1 block overflow-hidden">
-                  <span className="preloader-word inline-block text-[clamp(2.4rem,9vw,4.75rem)] drop-shadow-[0_2px_24px_rgba(0,0,0,0.35)]" style={{ color: tc.lightBrown }}>
+                  <span
+                    className="preloader-word inline-block text-[clamp(2.4rem,9vw,4.75rem)] drop-shadow-[0_2px_24px_rgba(0,0,0,0.35)]"
+                    style={{ color: tc.lightBrown }}
+                  >
                     Bread
                   </span>
                 </span>
               </h1>
 
-              <div className="preloader-bar-track relative mt-9 h-[3px] w-full max-w-[15rem] origin-left overflow-visible rounded-full bg-milk/12">
+              <div
+                className="preloader-bar-track relative mt-9 h-[3px] w-full max-w-[15rem] origin-left overflow-visible rounded-full"
+                style={{ backgroundColor: "rgba(250,234,222,0.12)" }}
+              >
                 <div className="absolute inset-0 overflow-hidden rounded-full">
                   <div
                     ref={barFillRef}
@@ -504,7 +541,8 @@ const Preloader: React.FC<PreloaderProps> = ({
 
               <p
                 ref={tagRef}
-                className="mt-7 font-paragraph text-center text-sm tracking-wide text-milk/50"
+                className="mt-7 font-paragraph text-center text-sm tracking-wide"
+                style={{ color: "rgba(250,234,222,0.5)" }}
               >
                 Tacloban City
               </p>
