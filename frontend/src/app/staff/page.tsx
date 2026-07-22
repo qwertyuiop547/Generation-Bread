@@ -98,6 +98,7 @@ export default function StaffDashboardPage() {
   const [isLate, setIsLate] = useState(false);
   const [isOnBreak, setIsOnBreak] = useState(false);
   const [canClockIn, setCanClockIn] = useState(false);
+  const [shiftStatusLoaded, setShiftStatusLoaded] = useState(false);
   const [shiftStart, setShiftStart] = useState<string | null>(null);
   const [shiftEnd, setShiftEnd] = useState<string | null>(null);
   const [currentShift, setCurrentShift] = useState<any>(null);
@@ -276,7 +277,11 @@ export default function StaffDashboardPage() {
   // Fetch shift status
   useEffect(() => {
     if (!mounted || !isLoggedIn || !isStaff || !user?.email) return;
-    if (!accessToken && !getAccessToken()) return;
+    if (!accessToken && !getAccessToken()) {
+      setShiftStatusLoaded(true);
+      setCanClockIn(false);
+      return;
+    }
     const fetchShiftStatus = async () => {
       try {
         const res = await fetch(`${API_BASE_URL}/api/auth/shift/status/?email=${encodeURIComponent(user.email)}`, { headers: authHeaders() });
@@ -294,7 +299,11 @@ export default function StaffDashboardPage() {
         } else if (res.status === 401 || res.status === 403) {
           setCanClockIn(false);
         }
-      } catch {}
+      } catch {
+        /* ignore */
+      } finally {
+        setShiftStatusLoaded(true);
+      }
     };
     fetchShiftStatus();
     const interval = setInterval(fetchShiftStatus, 30000);
@@ -726,6 +735,33 @@ export default function StaffDashboardPage() {
   const pendingCount = orders.filter(o => o.status === "pending").length;
   const readyCount = orders.filter(o => o.status === "ready").length;
 
+  const formatShiftClock = (isoOrTime: string | null) => {
+    if (!isoOrTime) return "";
+    // "07:30:00" from API
+    if (/^\d{2}:\d{2}/.test(isoOrTime)) {
+      const [hh, mm] = isoOrTime.split(":");
+      const h = Number(hh);
+      const suffix = h >= 12 ? "PM" : "AM";
+      const h12 = ((h + 11) % 12) + 1;
+      return `${h12}:${mm} ${suffix}`;
+    }
+    return isoOrTime;
+  };
+
+  const shiftStatusLabel = (() => {
+    if (isPending) return "Pending Approval";
+    if (isLate) return "Late";
+    if (isOnBreak) return "On Break";
+    if (isClockedIn) return "On Shift";
+    if (!shiftStatusLoaded) return "Checking shift…";
+    if (!accessToken && !getAccessToken()) return "Sign in required";
+    if (!canClockIn && shiftStart && shiftEnd) {
+      return `Outside hours (${formatShiftClock(shiftStart)} – ${formatShiftClock(shiftEnd)})`;
+    }
+    if (!canClockIn) return "Clock-in unavailable";
+    return "Off Shift";
+  })();
+
   const occupiedTables = tables.filter(t => t.table_status === "occupied").length;
 
   // Show spinner only while auth is loading AND we don't have a confirmed staff user from localStorage
@@ -948,7 +984,7 @@ export default function StaffDashboardPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <p className={`text-sm font-bold uppercase ${isPending ? "text-blue-600" : isLate ? "text-orange-700" : isOnBreak ? "text-amber-600" : isClockedIn ? "text-emerald-700" : !canClockIn ? "text-dark-brown/50" : "text-dark-brown/50"}`}>
-                      {isPending ? "Pending Approval" : isLate ? "Late" : isOnBreak ? "On Break" : isClockedIn ? "On Shift" : !canClockIn ? "Shift Closed" : "Off Shift"}
+                      {shiftStatusLabel}
                     </p>
                     {isPending && (
                       <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500 text-white text-[10px] font-bold uppercase animate-pulse">
@@ -989,11 +1025,15 @@ export default function StaffDashboardPage() {
                     </div>
                   ) : (
                     <div className="mt-1">
-                      {!canClockIn && shiftStart && shiftEnd ? (
+                      {!shiftStatusLoaded ? (
+                        <p className="text-xs text-dark-brown/40 font-paragraph">Loading shift status…</p>
+                      ) : !accessToken && !getAccessToken() ? (
+                        <p className="text-xs text-red-brown/80 font-paragraph">Sign in again to load your shift status.</p>
+                      ) : !canClockIn && shiftStart && shiftEnd ? (
                         <div className="flex flex-col gap-0.5 mt-1.5">
                           <p className="text-xs text-red-600/80 font-bold uppercase tracking-wide">Outside Shift Hours</p>
                           <p className="text-[11px] text-dark-brown/60 font-paragraph bg-red-100/50 inline-block px-2 py-0.5 rounded-md border border-red-200/50 w-fit">
-                            Shift opens: <span className="font-bold text-red-700/80">{(() => { try { const s = new Date(`1970-01-01T${shiftStart}`); const e = new Date(`1970-01-01T${shiftEnd}`); return `${s.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} – ${e.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`; } catch { return `${shiftStart} – ${shiftEnd}`; } })()}</span>
+                            Shift window: <span className="font-bold text-red-700/80">{formatShiftClock(shiftStart)} – {formatShiftClock(shiftEnd)}</span>
                           </p>
                         </div>
                       ) : (
