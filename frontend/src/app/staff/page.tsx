@@ -1511,7 +1511,7 @@ export default function StaffDashboardPage() {
         </div>
       )}
 
-      {/* Toast — above theme toggle; full-width on mobile so message isn't clipped */}
+      {/* Toast — full-width on mobile so message isn't clipped */}
       {toast && (
         <div className={`fixed bottom-6 left-4 right-4 sm:left-auto sm:right-6 sm:max-w-sm z-[110] flex items-center gap-2 px-5 py-3 rounded-2xl shadow-lg font-bold text-xs uppercase tracking-wider transition-all ${
           toast.type === "success" ? "bg-emerald-600 text-white" : "bg-red-600 text-white"
