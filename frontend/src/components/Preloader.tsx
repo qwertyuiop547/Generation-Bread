@@ -366,6 +366,7 @@ const Preloader: React.FC<PreloaderProps> = ({
             width={1200}
             height={1200}
             priority
+            fetchPriority="high"
             unoptimized
             className={`absolute inset-0 h-full w-full object-cover scale-100 ${
               isGoodbye

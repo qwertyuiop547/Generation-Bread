@@ -74,6 +74,7 @@ function LoginPageContent() {
               width={1600}
               height={1600}
               priority
+              fetchPriority="high"
               className="absolute inset-0 h-full w-full object-cover object-center"
               unoptimized
             />
@@ -117,6 +118,7 @@ function LoginPageContent() {
                 width={1200}
                 height={1200}
                 priority
+                fetchPriority="high"
                 className="absolute inset-0 h-full w-full object-cover object-center"
                 unoptimized
               />

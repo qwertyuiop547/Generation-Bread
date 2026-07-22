@@ -122,9 +122,16 @@ export default function OrderPage() {
   const [customerName, setCustomerName] = useState("");
   const [pickupTime, setPickupTime] = useState("");
 
-  const { isLoggedIn, user } = useAuth();
+  const { isLoggedIn, user, accessToken } = useAuth();
   const router = useRouter();
   const { t, language, toggleLanguage } = useLanguage();
+
+  // Re-enable backend cart sync once a JWT is available (e.g. after Google bridge).
+  React.useEffect(() => {
+    if (accessToken) {
+      setIsBackendCartSyncEnabled(true);
+    }
+  }, [accessToken]);
 
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [customizingItem, setCustomizingItem] = useState<MenuItem | null>(null);
@@ -637,7 +644,7 @@ export default function OrderPage() {
     }
   }, [isLoggedIn]);
 
-  // Load cart from backend when user is logged in.
+  // Load cart from backend when user is logged in (requires JWT).
   React.useEffect(() => {
     if (!isLoggedIn || !user?.email) {
       setIsCartInitialized(false);
@@ -650,13 +657,22 @@ export default function OrderPage() {
       return;
     }
 
+    // Wait for Google JWT bridge / email-password login before hitting protected cart API.
+    if (!accessToken) {
+      setIsCartInitialized(true);
+      return;
+    }
+
     let isCancelled = false;
     setIsCartInitialized(false);
 
     const loadCart = async () => {
       try {
-        const response = await fetch(`${CART_API_URL}`, { headers: authHeaders() });
+        const response = await fetch(CART_API_URL, { headers: authHeaders() });
         if (!response.ok) {
+          if (response.status !== 401) {
+            setIsBackendCartSyncEnabled(false);
+          }
           return;
         }
 
@@ -688,11 +704,11 @@ export default function OrderPage() {
     return () => {
       isCancelled = true;
     };
-  }, [isLoggedIn, user?.email, restoredCartFromLoginRedirect]);
+  }, [isLoggedIn, user?.email, accessToken, restoredCartFromLoginRedirect]);
 
   // Autosave cart to backend so it persists across refreshes and devices.
   React.useEffect(() => {
-    if (!isLoggedIn || !user?.email || !isCartInitialized || !isBackendCartSyncEnabled) {
+    if (!isLoggedIn || !user?.email || !isCartInitialized || !isBackendCartSyncEnabled || !accessToken) {
       return;
     }
 
@@ -708,6 +724,10 @@ export default function OrderPage() {
         });
 
         if (!response.ok) {
+          // 401 often means JWT not ready yet — keep sync enabled for retry.
+          if (response.status === 401) {
+            return;
+          }
           throw new Error(`Failed to save cart: ${response.status}`);
         }
       } catch {
@@ -719,7 +739,7 @@ export default function OrderPage() {
     return () => {
       window.clearTimeout(timeoutId);
     };
-  }, [cart, isLoggedIn, user?.email, isCartInitialized, isBackendCartSyncEnabled]);
+  }, [cart, isLoggedIn, user?.email, isCartInitialized, isBackendCartSyncEnabled, accessToken]);
 
   return (
     <div className="min-h-screen app-canvas relative overflow-hidden pb-28">

@@ -25,10 +25,15 @@ export default function Home() {
   const { isLoggedIn, isAuthLoading } = useAuth();
   const [isVideoLoaded, setIsVideoLoaded] = useState(false);
   const [isPreloaderDone, setIsPreloaderDone] = useState(false);
-  const [introVariant] = useState<PreloaderVariant>(() =>
-    consumeLogoutGoodbye() ? "goodbye" : "welcome"
-  );
+  // Resolve goodbye flag only after mount — sessionStorage differs on SSR vs client.
+  const [clientReady, setClientReady] = useState(false);
+  const [introVariant, setIntroVariant] = useState<PreloaderVariant>("welcome");
   const smootherRef = useRef<ScrollSmoother | null>(null);
+
+  useEffect(() => {
+    setIntroVariant(consumeLogoutGoodbye() ? "goodbye" : "welcome");
+    setClientReady(true);
+  }, []);
 
   useEffect(() => {
     window.history.scrollRestoration = "manual";
@@ -92,15 +97,18 @@ export default function Home() {
     };
   }, []);
 
+  // Same shell on server + first client paint to avoid hydration mismatch.
+  if (!clientReady) {
+    return <main className="min-h-screen bg-black" aria-busy="true" />;
+  }
+
   // Guests: mount home immediately so mobile hero video can preload.
   // Possible session: keep a blank shell until auth resolves, then redirect.
   if (isAuthLoading) {
-    const maybeSession =
-      typeof window !== "undefined" &&
-      !!(
-        localStorage.getItem("spylt_user") ||
-        localStorage.getItem("spylt_access_token")
-      );
+    const maybeSession = !!(
+      localStorage.getItem("spylt_user") ||
+      localStorage.getItem("spylt_access_token")
+    );
     if (maybeSession) {
       return <main className="min-h-screen bg-dark-brown" />;
     }

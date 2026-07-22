@@ -277,3 +277,40 @@ class SqlInjectionDefenseTests(APITestCase):
             with self.assertRaises(UnsafeSQLError):
                 execute_parameterized(cursor, '', [])
 
+
+class GoogleAuthBridgeTests(APITestCase):
+    def setUp(self):
+        self.url = '/api/auth/google/'
+        self.bridge_secret = 'test-bridge-secret'
+
+    def test_bridge_mints_jwt_for_google_email(self):
+        from django.test import override_settings
+
+        with override_settings(AUTH_BRIDGE_SECRET=self.bridge_secret):
+            response = self.client.post(
+                self.url,
+                {'email': 'google-user@test.com', 'name': 'Google User'},
+                format='json',
+                HTTP_X_AUTH_BRIDGE_SECRET=self.bridge_secret,
+            )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('access', response.data)
+        self.assertIn('refresh', response.data)
+        self.assertEqual(response.data['user']['email'], 'google-user@test.com')
+        self.assertTrue(
+            CustomUser.objects.filter(email='google-user@test.com', is_email_verified=True).exists()
+        )
+
+    def test_bridge_rejects_missing_secret(self):
+        from django.test import override_settings
+
+        with override_settings(AUTH_BRIDGE_SECRET=self.bridge_secret):
+            response = self.client.post(
+                self.url,
+                {'email': 'google-user@test.com', 'name': 'Google User'},
+                format='json',
+            )
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+

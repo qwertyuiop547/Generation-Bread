@@ -246,6 +246,8 @@ const NutritionSection = () => {
               height={1200}
               alt="Generation Bread ube cheese pandesal"
               className="nutrition-product-img theme-lock-media"
+              loading="lazy"
+              sizes="(max-width: 768px) 90vw, 480px"
               unoptimized
             />
           </div>

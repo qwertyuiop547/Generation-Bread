@@ -1,6 +1,10 @@
 # pyre-unsafe
 import csv
+import json
 import logging
+import urllib.error
+import urllib.parse
+import urllib.request
 from django.utils import timezone
 from datetime import datetime, timedelta
 import secrets
@@ -41,7 +45,6 @@ from .security_audit import log_security_event
 from .uploads import validate_uploaded_image
 from .permissions import IsStaffOrAdmin, IsAdminRole
 from django.core.exceptions import ValidationError as DjangoValidationError
-from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
 from .serializers import (
     RegisterSerializer,
@@ -185,12 +188,147 @@ def _get_or_create_user_by_email(email):
         )
 
 
+def _get_or_create_google_user(email, name=''):
+    """Create or update a user authenticated via Google / NextAuth bridge."""
+    email = normalize_email(email)
+    if not email:
+        raise ValueError('Invalid email.')
+    display_name = (name or '').strip()[:150] or 'Google User'
+    try:
+        user = CustomUser.objects.get(email=email)
+        updated_fields = []
+        if display_name and user.first_name in ('', 'Guest', 'Google User'):
+            user.first_name = display_name
+            updated_fields.append('first_name')
+        if not user.is_email_verified:
+            user.is_email_verified = True
+            updated_fields.append('is_email_verified')
+        if updated_fields:
+            user.save(update_fields=updated_fields)
+        return user
+    except CustomUser.DoesNotExist:
+        return CustomUser.objects.create_user(
+            username=email,
+            email=email,
+            password=secrets.token_urlsafe(32),
+            first_name=display_name,
+            is_email_verified=True,
+        )
+
+
+def _verify_google_id_token(id_token):
+    """Verify a Google ID token via Google's tokeninfo endpoint."""
+    if not id_token or not isinstance(id_token, str):
+        return None, 'id_token is required.'
+
+    url = 'https://oauth2.googleapis.com/tokeninfo?' + urllib.parse.urlencode(
+        {'id_token': id_token}
+    )
+    try:
+        with urllib.request.urlopen(url, timeout=10) as resp:
+            payload = json.loads(resp.read().decode('utf-8'))
+    except urllib.error.HTTPError:
+        return None, 'Invalid Google token.'
+    except Exception:
+        return None, 'Unable to verify Google token.'
+
+    client_ids = [
+        cid.strip()
+        for cid in (getattr(settings, 'GOOGLE_CLIENT_ID', '') or '').split(',')
+        if cid.strip()
+    ]
+    aud = payload.get('aud')
+    if client_ids and aud not in client_ids:
+        return None, 'Invalid Google token audience.'
+
+    if str(payload.get('email_verified', '')).lower() not in ('true', '1'):
+        return None, 'Google email is not verified.'
+
+    email = normalize_email(payload.get('email'))
+    if not email:
+        return None, 'Google token missing email.'
+
+    return {
+        'email': email,
+        'name': payload.get('name') or payload.get('given_name') or '',
+    }, None
+
+
+def _valid_auth_bridge(request):
+    expected = (getattr(settings, 'AUTH_BRIDGE_SECRET', None) or '').strip()
+    if not expected:
+        return False
+    provided = (
+        request.headers.get('X-Auth-Bridge-Secret')
+        or request.data.get('bridge_secret')
+        or ''
+    ).strip()
+    if not provided:
+        return False
+    try:
+        return secrets.compare_digest(provided, expected)
+    except (TypeError, ValueError):
+        return False
+
+
 def _require_email(value):
     """Return (email, error_response). error_response is None when email is valid."""
     email = normalize_email(value)
     if not email:
         return None, Response({'error': 'Invalid email.'}, status=status.HTTP_400_BAD_REQUEST)
     return email, None
+
+
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([AllowAny])
+@throttle_classes([LoginRateThrottle])
+def google_login_view(request):
+    """
+    Mint Django JWTs for Google / NextAuth users.
+
+    Accepts either:
+    - Google id_token (verified with Google), or
+    - email + name with X-Auth-Bridge-Secret (server-only Next.js bridge).
+    """
+    id_token = request.data.get('id_token')
+    if id_token:
+        info, err = _verify_google_id_token(id_token)
+        if err:
+            log_security_event('google_login_invalid_token', request=request, detail=err)
+            return Response({'error': err}, status=status.HTTP_401_UNAUTHORIZED)
+        email = info['email']
+        name = info.get('name') or ''
+    else:
+        if not _valid_auth_bridge(request):
+            log_security_event('google_bridge_rejected', request=request)
+            return Response({'error': 'Unauthorized.'}, status=status.HTTP_401_UNAUTHORIZED)
+        email, email_err = _require_email(request.data.get('email'))
+        if email_err:
+            return email_err
+        name = request.data.get('name') or ''
+
+    try:
+        user = _get_or_create_google_user(email, name)
+    except ValueError as exc:
+        return Response({'error': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+
+    if not user.is_active:
+        return Response({'error': 'Account is inactive.'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    log_security_event('google_login_success', request=request, user=user)
+    refresh = RefreshToken.for_user(user)
+
+    return Response({
+        'access': str(refresh.access_token),
+        'refresh': str(refresh),
+        'user': {
+            'id': user.id,
+            'email': user.email,
+            'name': user.first_name,
+            'role': user.role,
+        },
+    })
 
 
 @api_view(['POST'])

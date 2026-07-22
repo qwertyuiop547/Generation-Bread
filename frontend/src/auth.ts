@@ -21,6 +21,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.email = user.email;
         token.picture = user.image;
       }
+      // Keep Google id_token for optional backend verification (server-side only).
+      if (account?.provider === "google" && account.id_token) {
+        token.googleIdToken = account.id_token;
+      }
       return token;
     },
     async session({ session, token }) {

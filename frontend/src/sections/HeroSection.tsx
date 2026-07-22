@@ -247,12 +247,23 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onLoaded, triggerAnimation })
   return (
     <section ref={sectionRef} className="bg-[#111111]">
       <div className="hero-container">
+        {/* Priority still under video — stable LCP after preloader unmounts */}
+        <Image
+          src={HERO_STILL}
+          alt=""
+          fill
+          priority
+          fetchPriority="high"
+          sizes="100vw"
+          className="theme-lock-media pointer-events-none absolute inset-0 h-full w-full object-cover object-[center_40%]"
+        />
         {useMobileFallback ? (
           <Image
             src={HERO_STILL}
             alt="Generation Bread cheese roll"
             fill
             priority
+            sizes="100vw"
             className="theme-lock-media absolute inset-0 w-full h-full object-cover object-[center_40%] md:hidden"
           />
         ) : (

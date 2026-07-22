@@ -90,7 +90,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsAuthLoading(true);
       return;
     }
-    
+
     // Both localStorage and session are resolved — auth loading is done
     setIsAuthLoading(false);
 
@@ -121,6 +121,50 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.setItem("spylt_user", JSON.stringify(googleUser));
     }
   }, [status, session, user, localResolved]);
+
+  // Mint Django JWTs for Google NextAuth sessions (needed for cart/orders API).
+  useEffect(() => {
+    if (!localResolved || status !== "authenticated" || !session?.user?.email) {
+      return;
+    }
+    if (accessToken || localStorage.getItem("spylt_access_token")) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const exchangeGoogleJwt = async () => {
+      try {
+        const res = await fetch("/api/auth/django-jwt", { method: "POST" });
+        if (!res.ok || cancelled) return;
+
+        const data = await res.json();
+        if (!data.access || !data.refresh || cancelled) return;
+
+        setAccessToken(data.access);
+        setRefreshToken(data.refresh);
+        localStorage.setItem("spylt_access_token", data.access);
+        localStorage.setItem("spylt_refresh_token", data.refresh);
+
+        const userData: User = {
+          name: data.user?.name || session.user?.name || "Google User",
+          email: data.user?.email || session.user?.email || "",
+          role: (data.user?.role as User["role"]) || "user",
+          image: session.user?.image || undefined,
+          provider: "google",
+        };
+        setUser(userData);
+        localStorage.setItem("spylt_user", JSON.stringify(userData));
+      } catch {
+        // Cart/orders stay local until bridge succeeds on a later retry.
+      }
+    };
+
+    void exchangeGoogleJwt();
+    return () => {
+      cancelled = true;
+    };
+  }, [status, session, localResolved, accessToken]);
 
   const register = (name: string, email: string, password: string): boolean => {
     const usersRaw = localStorage.getItem("spylt_users") || "[]";

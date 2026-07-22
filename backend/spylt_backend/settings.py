@@ -340,6 +340,17 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER or 'noreply@example.com')
 
+# Shared with Next.js (AUTH_BRIDGE_SECRET or AUTH_SECRET) so Google NextAuth
+# sessions can mint Django JWTs via POST /api/auth/google/ without exposing
+# the bridge to the browser.
+AUTH_BRIDGE_SECRET = (
+    os.environ.get('AUTH_BRIDGE_SECRET')
+    or os.environ.get('AUTH_SECRET')
+    or os.environ.get('NEXTAUTH_SECRET')
+    or ''
+).strip()
+GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '').strip()
+
 # JWT Configuration
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
