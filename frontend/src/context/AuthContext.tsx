@@ -147,7 +147,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (!localResolved) return;
 
-    if (status === "loading") {
+    const hasLocalJwt =
+      !!(accessToken && user) ||
+      !!(
+        typeof window !== "undefined" &&
+        localStorage.getItem("spylt_access_token") &&
+        localStorage.getItem("spylt_user")
+      );
+
+    // Don't block the app on NextAuth when email/password JWT is already ready.
+    if (status === "loading" && !hasLocalJwt) {
       setIsAuthLoading(true);
       return;
     }

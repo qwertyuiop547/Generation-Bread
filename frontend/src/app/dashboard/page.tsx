@@ -76,8 +76,21 @@ export default function DashboardPage() {
   const [spendingSummary, setSpendingSummary] = useState<{ total_spent: number; avg_monthly: number; top_month: { month: string; total: number; orders: number } | null; months_tracked: number } | null>(null);
   const [chartReady, setChartReady] = useState(false);
   const [introDone, setIntroDone] = useState(false);
+  const [skipIntro, setSkipIntro] = useState(false);
   const [orderEtas, setOrderEtas] = useState<Record<string, SmartEta>>({});
   const [showSpending, setShowSpending] = useState(false);
+
+  useEffect(() => {
+    try {
+      if (sessionStorage.getItem("gb_skip_intro") === "1") {
+        sessionStorage.removeItem("gb_skip_intro");
+        setSkipIntro(true);
+        setIntroDone(true);
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
 
   useEffect(() => {
     if (toastMessage) {
@@ -940,6 +953,8 @@ export default function DashboardPage() {
     <PageIntro
       waitForLoad
       isLoaded={dashboardReady}
+      skip={skipIntro}
+      minDuration={skipIntro ? 0 : undefined}
       onFinish={() => setIntroDone(true)}
     >
     {dashboardReady ? (

@@ -10,6 +10,10 @@ interface PageIntroProps {
   isLoaded?: boolean;
   onFinish?: () => void;
   variant?: PreloaderVariant;
+  /** Skip preloader entirely (e.g. right after sign-in). */
+  skip?: boolean;
+  /** Override Preloader minimum duration */
+  minDuration?: number;
 }
 
 export default function PageIntro({
@@ -18,14 +22,22 @@ export default function PageIntro({
   isLoaded = true,
   onFinish,
   variant = "welcome",
+  skip = false,
+  minDuration,
 }: PageIntroProps) {
-  const [done, setDone] = useState(false);
+  const [done, setDone] = useState(skip);
   const ready = waitForLoad ? isLoaded : true;
 
   const handleFinish = useCallback(() => {
     setDone(true);
     onFinish?.();
   }, [onFinish]);
+
+  useEffect(() => {
+    if (!skip) return;
+    setDone(true);
+    onFinish?.();
+  }, [skip, onFinish]);
 
   // Absolute failsafe: never leave the page inert / unclickable
   useEffect(() => {
@@ -57,6 +69,7 @@ export default function PageIntro({
           variant={variant}
           isLoaded={ready}
           onFinish={handleFinish}
+          minDuration={minDuration}
         />
       )}
       <div
