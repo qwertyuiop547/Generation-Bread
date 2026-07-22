@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { authHeaders } from "@/lib/authHeaders";
+import { authHeaders, getAccessToken } from "@/lib/authHeaders";
 import { unwrapListResponse } from "@/lib/apiList";
 import { useLanguage } from "@/context/LanguageContext";
 import { signOut } from "next-auth/react";
@@ -386,7 +386,7 @@ function MonthlyCalendarGrid({
 }
 
 export default function AdminPage() {
-  const { isLoggedIn, isAuthLoading, isAdmin, isStaff, user, logout } = useAuth();
+  const { isLoggedIn, isAuthLoading, isAdmin, isStaff, user, logout, accessToken } = useAuth();
   const { language, toggleLanguage, t } = useLanguage();
   const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
@@ -592,6 +592,10 @@ export default function AdminPage() {
 
       let mapped: Order[] = [];
       try {
+        if (!getAccessToken()) {
+          setOrders(localOrders);
+          return;
+        }
         const url = `${API_BASE_URL}/api/auth/admin/orders/?admin_email=${encodeURIComponent(user.email)}&limit=500`;
         const res = await fetch(url, { headers: authHeaders() });
         if (res.ok) {
@@ -622,6 +626,18 @@ export default function AdminPage() {
             paymentMethod: d.payment_method || "",
             paymentStatus: d.payment_status || "unpaid",
           }));
+        } else if (res.status === 401 || res.status === 403) {
+          setToast({
+            message: "Session expired — sign in again to see kitchen orders.",
+            type: "error",
+          });
+          setTimeout(() => setToast(null), 4000);
+        } else if (res.status === 429) {
+          setToast({
+            message: "Too many requests — kitchen list will retry shortly.",
+            type: "error",
+          });
+          setTimeout(() => setToast(null), 4000);
         }
       } catch (backendErr) {
         // ignore backend failure
@@ -637,7 +653,10 @@ export default function AdminPage() {
     }
   }, [user?.email]);
 
-  useStaffOrdersRealtime(mounted && isLoggedIn && isAdmin && !!user?.email, fetchOrders);
+  useStaffOrdersRealtime(
+    mounted && isLoggedIn && isAdmin && !!user?.email && !!accessToken,
+    fetchOrders
+  );
 
   useEffect(() => {
     const usersRaw = localStorage.getItem("spylt_users") || "[]";

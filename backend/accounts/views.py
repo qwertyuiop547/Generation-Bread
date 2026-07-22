@@ -279,6 +279,18 @@ def _require_email(value):
     return email, None
 
 
+def _safe_group_send(group, payload):
+    """Broadcast to Channels without failing the HTTP request if Redis blips."""
+    try:
+        channel_layer = get_channel_layer()
+        if channel_layer is None:
+            logger.warning('channel_layer_missing group=%s', group)
+            return
+        async_to_sync(channel_layer.group_send)(group, payload)
+    except Exception:
+        logger.exception('channel_group_send_failed group=%s', group)
+
+
 @csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -670,8 +682,7 @@ def order_view(request):
 
         OrderStatusLog.objects.create(order=order, status='pending')
 
-    channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)(
+    _safe_group_send(
         'orders',
         {
             'type': 'order_update',

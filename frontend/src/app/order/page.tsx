@@ -353,54 +353,45 @@ export default function OrderPage() {
     try {
       setIsPlacingOrder(true);
       const email = user?.email || "guest@test.com";
-      let orderId = "";
 
-      try {
-        const res = await fetch(ORDERS_API_URL, {
-          method: "POST",
-          headers: authHeaders({ "Content-Type": "application/json" }),
-          body: JSON.stringify({
-            email,
-            total_price: totalPrice,
-            items: toBackendItems(cart),
-            order_type: orderType,
-            table_number: orderType === "Dine-In" ? tableNumber : null,
-            pickup_time: orderType === "Scheduled" ? pickupTime : null,
-            customer_name: orderType !== "Dine-In" ? customerName : (user?.name || "Guest"),
-          }),
-        });
+      const res = await fetch(ORDERS_API_URL, {
+        method: "POST",
+        headers: authHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify({
+          email,
+          total_price: totalPrice,
+          items: toBackendItems(cart),
+          order_type: orderType,
+          table_number: orderType === "Dine-In" ? tableNumber : null,
+          pickup_time: orderType === "Scheduled" ? pickupTime : null,
+          customer_name: orderType !== "Dine-In" ? customerName : (user?.name || "Guest"),
+        }),
+      });
 
-        if (!res.ok) throw new Error("Backend error");
-        const data = await res.json();
-        orderId = `ORD-${data.order_id.toString().padStart(4, '0')}`;
-        setLastOrderNumericId(Number(data.order_id));
-        if (data.order_token) setLastOrderToken(String(data.order_token));
-        setLastOrderEta((data.eta as SmartEta) || localFallbackEta(totalItems));
-      } catch {
-        console.warn("Backend unavailable, placing order locally.");
-        const localNumericId = Math.floor(Math.random() * 10000);
-        orderId = `ORD-${localNumericId.toString().padStart(4, '0')}`;
-        setLastOrderNumericId(localNumericId);
-        setLastOrderEta(localFallbackEta(totalItems));
-        const localOrders = JSON.parse(localStorage.getItem("spylt_local_orders") || "[]");
-        localOrders.unshift({
-          id: orderId,
-          items: cart.map(i => ({ name: i.name, price: i.price, qty: i.qty })),
-          total: totalPrice,
-          totalItems,
-          date: new Date().toISOString(),
-          userEmail: email,
-          userName: orderType !== "Dine-In" ? customerName : (user?.name || "Guest"),
-          status: "pending",
-          orderType,
-          tableNumber: orderType === "Dine-In" ? tableNumber : null,
-          pickupTime: orderType === "Scheduled" ? pickupTime : null,
-          paymentMethod: "",
-          paymentStatus: "unpaid",
-        });
-        localStorage.setItem("spylt_local_orders", JSON.stringify(localOrders));
+      if (!res.ok) {
+        let detail = "Failed to place order. Try again.";
+        if (res.status === 429) {
+          detail = "Too many orders just now. Please wait a moment and try again.";
+        } else if (res.status === 401) {
+          detail = "Session expired. Please sign in again.";
+        } else {
+          try {
+            const errBody = await res.json();
+            if (typeof errBody?.error === "string") detail = errBody.error;
+          } catch {
+            /* ignore */
+          }
+        }
+        setToast({ message: detail, type: "error" });
+        setTimeout(() => setToast(null), 4000);
+        return;
       }
 
+      const data = await res.json();
+      const orderId = `ORD-${data.order_id.toString().padStart(4, "0")}`;
+      setLastOrderNumericId(Number(data.order_id));
+      if (data.order_token) setLastOrderToken(String(data.order_token));
+      setLastOrderEta((data.eta as SmartEta) || localFallbackEta(totalItems));
       setLastOrderPrice(totalPrice);
       setLastOrderItems(totalItems);
       setLastOrderId(orderId);
@@ -413,8 +404,11 @@ export default function OrderPage() {
       setShowOrderModal(true);
     } catch (err) {
       console.error(err);
-      setToast({ message: "Failed to place order. Try again.", type: "error" });
-      setTimeout(() => setToast(null), 3000);
+      setToast({
+        message: "Unable to reach the server. Order was not sent to kitchen. Try again.",
+        type: "error",
+      });
+      setTimeout(() => setToast(null), 4000);
     } finally {
       setIsPlacingOrder(false);
     }

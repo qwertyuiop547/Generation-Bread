@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { authHeaders } from "@/lib/authHeaders";
+import { authHeaders, getAccessToken } from "@/lib/authHeaders";
 import { unwrapListResponse } from "@/lib/apiList";
 import { useLanguage } from "@/context/LanguageContext";
 import { signOut } from "next-auth/react";
@@ -80,7 +80,7 @@ const STATUS_DOTS: Record<string, string> = {
 };
 
 export default function StaffDashboardPage() {
-  const { isLoggedIn, isAuthLoading, isStaff, user } = useAuth();
+  const { isLoggedIn, isAuthLoading, isStaff, user, accessToken } = useAuth();
   const { language, toggleLanguage, t } = useLanguage();
   const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
@@ -153,6 +153,10 @@ export default function StaffDashboardPage() {
       const localOrders: Order[] = localOrdersRaw ? JSON.parse(localOrdersRaw) : [];
       let mapped: Order[] = [];
       try {
+        if (!getAccessToken()) {
+          setOrders(localOrders);
+          return;
+        }
         const res = await fetch(`${API_BASE_URL}/api/auth/admin/orders/?admin_email=${encodeURIComponent(user.email)}&limit=500`, { headers: authHeaders() });
         if (res.ok) {
           const data = unwrapListResponse<any>(await res.json());
@@ -172,13 +176,22 @@ export default function StaffDashboardPage() {
             paymentMethod: d.payment_method || "",
             paymentStatus: d.payment_status || "unpaid",
           }));
+        } else if (res.status === 401 || res.status === 403) {
+          setToast({
+            message: "Session expired — sign in again to see kitchen orders.",
+            type: "error",
+          });
+          setTimeout(() => setToast(null), 4000);
         }
       } catch { }
       setOrders([...mapped, ...localOrders].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
     } catch { setOrders([]); }
   }, [user?.email]);
 
-  useStaffOrdersRealtime(mounted && isLoggedIn && isStaff && !!user?.email, fetchOrders);
+  useStaffOrdersRealtime(
+    mounted && isLoggedIn && isStaff && !!user?.email && !!accessToken,
+    fetchOrders
+  );
 
   // Fetch staff contacts
   useEffect(() => {

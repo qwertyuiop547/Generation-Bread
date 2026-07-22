@@ -41,6 +41,8 @@ class IPRateLimitMiddleware:
         "/api/auth/verify-email/",
         "/api/auth/resend-code/",
         "/api/auth/logout/",
+        "/api/auth/admin/orders",
+        "/api/auth/orders",
     )
 
     def __init__(self, get_response):

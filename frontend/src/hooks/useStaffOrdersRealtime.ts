@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { withWsToken } from "@/lib/authHeaders";
+import { getAccessToken, withWsToken } from "@/lib/authHeaders";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
 
 /**
  * Realtime kitchen board: new orders + status changes without refresh.
- * Falls back to a slow poll if the WebSocket drops.
+ * Keeps a slow safety poll even while the WebSocket is open (missed broadcasts).
  */
 export function useStaffOrdersRealtime(enabled: boolean, onEvent: () => void) {
   const onEventRef = useRef(onEvent);
@@ -26,19 +26,27 @@ export function useStaffOrdersRealtime(enabled: boolean, onEvent: () => void) {
       onEventRef.current();
     };
 
-    const startPollFallback = () => {
-      if (pollId) return;
-      pollId = setInterval(refresh, 15000);
+    const startPoll = (ms: number) => {
+      if (pollId) clearInterval(pollId);
+      pollId = setInterval(refresh, ms);
     };
 
-    const stopPollFallback = () => {
+    const stopPoll = () => {
       if (!pollId) return;
       clearInterval(pollId);
       pollId = null;
     };
 
+    // Always fetch once on mount, even before WS connects.
+    refresh();
+    startPoll(20000);
+
     const connect = () => {
       if (closedByCleanup) return;
+      if (!getAccessToken()) {
+        startPoll(12000);
+        return;
+      }
 
       const wsProtocol = API_BASE_URL.startsWith("https") ? "wss://" : "ws://";
       const wsHost = API_BASE_URL.replace(/^https?:\/\//, "");
@@ -47,13 +55,14 @@ export function useStaffOrdersRealtime(enabled: boolean, onEvent: () => void) {
       try {
         ws = new WebSocket(wsUrl);
       } catch {
-        startPollFallback();
+        startPoll(12000);
         return;
       }
 
       ws.onopen = () => {
         attempt = 0;
-        stopPollFallback();
+        // Keep a slower safety poll in case channel broadcasts are missed.
+        startPoll(25000);
         refresh();
       };
 
@@ -67,7 +76,7 @@ export function useStaffOrdersRealtime(enabled: boolean, onEvent: () => void) {
 
       ws.onclose = () => {
         if (closedByCleanup) return;
-        startPollFallback();
+        startPoll(12000);
         const delay = Math.min(10000, 1000 * 2 ** attempt);
         attempt += 1;
         reconnectId = setTimeout(connect, delay);
@@ -78,7 +87,7 @@ export function useStaffOrdersRealtime(enabled: boolean, onEvent: () => void) {
 
     return () => {
       closedByCleanup = true;
-      stopPollFallback();
+      stopPoll();
       if (reconnectId) clearTimeout(reconnectId);
       if (!ws) return;
       if (ws.readyState === WebSocket.CONNECTING) {
