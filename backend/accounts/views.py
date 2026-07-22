@@ -1744,8 +1744,8 @@ def shift_status_view(request):
     is_approved = open_shift is not None and open_shift.is_approved
 
     # Determine if staff can clock in (within shift hours and not already clocked in)
-    can_clock_in = True
-    if not open_shift and user.shift_start and user.shift_end:
+    can_clock_in = open_shift is None
+    if can_clock_in and user.shift_start and user.shift_end:
         from django.conf import settings
         from zoneinfo import ZoneInfo
         local_tz = ZoneInfo(settings.TIME_ZONE)

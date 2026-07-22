@@ -97,7 +97,7 @@ export default function StaffDashboardPage() {
   const [isPending, setIsPending] = useState(false);
   const [isLate, setIsLate] = useState(false);
   const [isOnBreak, setIsOnBreak] = useState(false);
-  const [canClockIn, setCanClockIn] = useState(true);
+  const [canClockIn, setCanClockIn] = useState(false);
   const [shiftStart, setShiftStart] = useState<string | null>(null);
   const [shiftEnd, setShiftEnd] = useState<string | null>(null);
   const [currentShift, setCurrentShift] = useState<any>(null);
@@ -276,27 +276,30 @@ export default function StaffDashboardPage() {
   // Fetch shift status
   useEffect(() => {
     if (!mounted || !isLoggedIn || !isStaff || !user?.email) return;
+    if (!accessToken && !getAccessToken()) return;
     const fetchShiftStatus = async () => {
       try {
         const res = await fetch(`${API_BASE_URL}/api/auth/shift/status/?email=${encodeURIComponent(user.email)}`, { headers: authHeaders() });
         if (res.ok) {
           const data = await res.json();
-          setIsClockedIn(data.is_clocked_in);
+          setIsClockedIn(!!data.is_clocked_in);
           setIsPending(data.is_pending || false);
           setIsLate(data.current_shift?.attendance_mark === 'late' || false);
           setIsOnBreak(data.is_on_break || false);
-          setCanClockIn(data.can_clock_in !== false);
+          setCanClockIn(data.can_clock_in === true);
           setShiftStart(data.shift_start || null);
           setShiftEnd(data.shift_end || null);
           setCurrentShift(data.current_shift);
           setRecentShifts(data.recent_shifts || []);
+        } else if (res.status === 401 || res.status === 403) {
+          setCanClockIn(false);
         }
       } catch {}
     };
     fetchShiftStatus();
     const interval = setInterval(fetchShiftStatus, 30000);
     return () => clearInterval(interval);
-  }, [mounted, isLoggedIn, isStaff, user?.email]);
+  }, [mounted, isLoggedIn, isStaff, user?.email, accessToken]);
 
   // Elapsed time ticker when clocked in
   useEffect(() => {
@@ -316,32 +319,67 @@ export default function StaffDashboardPage() {
 
   const handleClockIn = async () => {
     if (!user?.email) return;
+    if (!getAccessToken()) {
+      showToast("Session expired — please sign in again to clock in.", "error");
+      return;
+    }
     try {
       const res = await fetch(`${API_BASE_URL}/api/auth/shift/clock-in/`, {
         method: "POST",
         headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ email: user.email }),
       });
-      let data: { error?: string; retry_after?: number; id?: number } = {};
+      let data: { error?: string; detail?: string; retry_after?: number; id?: number } = {};
       try {
         data = await res.json();
       } catch {
         /* ignore */
       }
+      const message =
+        (typeof data.error === "string" && data.error) ||
+        (typeof data.detail === "string" && data.detail) ||
+        "Failed to clock in";
       if (!res.ok) {
-        if (res.status === 429) {
-          showToast(data.error || "Too many requests — wait a moment, then clock in again.", "error");
+        if (res.status === 401 || res.status === 403) {
+          showToast("Session expired — please sign in again to clock in.", "error");
           return;
         }
-        showToast(data.error || "Failed to clock in", "error");
+        if (res.status === 429) {
+          showToast(message.includes("Too many") ? message : "Too many requests — wait a moment, then clock in again.", "error");
+          return;
+        }
+        if (/already clocked in/i.test(message)) {
+          // Sync UI: staff is already on shift / pending approval.
+          try {
+            const st = await fetch(`${API_BASE_URL}/api/auth/shift/status/?email=${encodeURIComponent(user.email)}`, { headers: authHeaders() });
+            if (st.ok) {
+              const statusData = await st.json();
+              setIsClockedIn(!!statusData.is_clocked_in);
+              setIsPending(statusData.is_pending || false);
+              setIsLate(statusData.current_shift?.attendance_mark === "late" || false);
+              setIsOnBreak(statusData.is_on_break || false);
+              setCanClockIn(statusData.can_clock_in === true);
+              setCurrentShift(statusData.current_shift);
+              setRecentShifts(statusData.recent_shifts || []);
+            }
+          } catch {
+            /* ignore */
+          }
+          showToast("You're already clocked in. Waiting for admin approval if still pending.", "success");
+          return;
+        }
+        showToast(message, "error");
         return;
       }
       setIsClockedIn(true);
       setIsPending(true);
+      setCanClockIn(false);
       setCurrentShift(data);
       setRecentShifts(prev => [data, ...prev.filter(s => s.id !== data.id)].slice(0, 5));
       showToast("Clock-in submitted! Waiting for admin approval.", "success");
-    } catch { showToast("Failed to clock in", "error"); }
+    } catch {
+      showToast("Unable to reach the server. Check connection and try again.", "error");
+    }
   };
 
   const handleClockOut = async () => {
@@ -843,6 +881,16 @@ export default function StaffDashboardPage() {
             )}
           </button>
         </div>
+
+        {!accessToken && !getAccessToken() && (
+          <div className="mb-6 rounded-2xl border border-red-brown/30 bg-red-brown/10 px-4 py-3 text-sm text-red-brown font-paragraph">
+            Session expired for kitchen actions.{" "}
+            <Link href="/login?redirect=/staff" className="font-bold underline underline-offset-2">
+              Sign in again
+            </Link>{" "}
+            to clock in and manage orders.
+          </div>
+        )}
 
         {/* Stat Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
