@@ -3551,7 +3551,7 @@ export default function AdminPage() {
                     />
                   </div>
                 </div>
-                <p className="text-[10px] text-dark-brown/40 mt-1">Default: 7:30 AM – 5:00 PM · Used for late arrival & overtime tracking</p>
+                <p className="text-[10px] text-dark-brown/40 mt-1">Default: 7:30 AM – 8:30 PM · Used for late arrival & overtime tracking</p>
               </div>
 
               {/* Bio */}
