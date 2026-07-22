@@ -15,7 +15,7 @@ import {
 import { GB_EASE } from "@/lib/motion";
 import OrderProgress from "@/components/OrderProgress";
 import QueuePositionCard from "@/components/QueuePositionCard";
-import { withWsToken } from "@/lib/authHeaders";
+import { getAccessToken, withWsToken } from "@/lib/authHeaders";
 import BrandLogo from "@/components/BrandLogo";
 import { notifyOrderReady } from "@/lib/orderReadyAlerts";
 
@@ -166,25 +166,43 @@ function TrackPageContent() {
     }
   }, [mounted, isAuthLoading, isLoggedIn, router]);
 
-  // WebSocket for real-time updates (status changes from staff/admin)
+  // Realtime updates: global order events + local WS + HTTP poll (mobile-safe)
   useEffect(() => {
     if (!user?.email) return;
 
-    const wsProtocol = API_BASE_URL.startsWith("https") ? "wss://" : "ws://";
-    const wsHost = API_BASE_URL.replace(/^https?:\/\//, "");
-    const wsUrl = withWsToken(`${wsProtocol}${wsHost}/ws/orders/${user.email}/`);
-
-    const ws = new WebSocket(wsUrl);
-
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
+    const applyStatus = (
+      orderId: number,
+      newStatus: TrackedOrder["status"],
+      extras?: Partial<TrackedOrder>
+    ) => {
       const current = trackedOrderRef.current;
       if (!current) return;
-
-      const orderIdFormatted = `ORD-${data.order_id.toString().padStart(4, "0")}`;
+      const orderIdFormatted = `ORD-${orderId.toString().padStart(4, "0")}`;
       if (orderIdFormatted !== current.id) return;
 
+      setTrackedOrder((prev) => (prev ? { ...prev, status: newStatus, ...extras } : prev));
+      void refreshOrderEta(orderIdFormatted, newStatus, current.totalItems);
+      void notifyOrderReady(orderId, newStatus);
+      setToast({
+        title: "Order Updated",
+        desc: `Your order is now ${newStatus.toUpperCase()}`,
+      });
+    };
+
+    const onGlobal = (event: Event) => {
+      const data = (event as CustomEvent).detail as {
+        type?: string;
+        order_id?: number;
+        status?: string;
+        payment_method?: string;
+        payment_status?: string;
+      };
+      if (!data?.order_id) return;
       if (data.type === "order_payment_update") {
+        const current = trackedOrderRef.current;
+        if (!current) return;
+        const orderIdFormatted = `ORD-${data.order_id.toString().padStart(4, "0")}`;
+        if (orderIdFormatted !== current.id) return;
         setTrackedOrder((prev) =>
           prev
             ? {
@@ -202,21 +220,55 @@ function TrackPageContent() {
         }
         return;
       }
-
-      if (data.type !== "order_status_update") return;
-
-      const newStatus = data.status as TrackedOrder["status"];
-      setTrackedOrder((prev) => (prev ? { ...prev, status: newStatus } : prev));
-      void refreshOrderEta(orderIdFormatted, newStatus, current.totalItems);
-      void notifyOrderReady(data.order_id, newStatus);
-      setToast({
-        title: "Order Updated",
-        desc: `Your order is now ${newStatus.toUpperCase()}`,
-      });
+      if (data.type === "order_status_update" && data.status) {
+        applyStatus(data.order_id, data.status as TrackedOrder["status"]);
+      }
     };
 
-    return () => ws.close();
-  }, [user?.email, refreshOrderEta]);
+    window.addEventListener("gb:order-status", onGlobal as EventListener);
+
+    let ws: WebSocket | null = null;
+    if (getAccessToken()) {
+      const wsProtocol = API_BASE_URL.startsWith("https") ? "wss://" : "ws://";
+      const wsHost = API_BASE_URL.replace(/^https?:\/\//, "");
+      const wsUrl = withWsToken(
+        `${wsProtocol}${wsHost}/ws/orders/${encodeURIComponent(user.email)}/`
+      );
+      ws = new WebSocket(wsUrl);
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.type === "order_payment_update") {
+            onGlobal(new CustomEvent("gb:order-status", { detail: data }));
+            return;
+          }
+          if (data.type === "order_status_update") {
+            applyStatus(data.order_id, data.status);
+          }
+        } catch {
+          /* ignore */
+        }
+      };
+    }
+
+    const pollId = window.setInterval(() => {
+      const current = trackedOrderRef.current;
+      if (!current) return;
+      if (["cancelled", "completed"].includes(current.status)) return;
+      void fetchOrder(current.id);
+    }, 8000);
+
+    return () => {
+      window.removeEventListener("gb:order-status", onGlobal as EventListener);
+      window.clearInterval(pollId);
+      if (!ws) return;
+      if (ws.readyState === WebSocket.CONNECTING) {
+        ws.onopen = () => ws?.close();
+        return;
+      }
+      if (ws.readyState === WebSocket.OPEN) ws.close();
+    };
+  }, [user?.email, refreshOrderEta, fetchOrder]);
 
   // Refresh smart ETA while order is still in progress
   useEffect(() => {

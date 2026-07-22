@@ -9,6 +9,7 @@ import {
   requestOrderAlertPermission,
   setOrderAlertsEnabled,
   stopOrderReadyVibrate,
+  unlockOrderReadyVibrate,
 } from "@/lib/orderReadyAlerts";
 
 type BannerDetail = { title: string; body: string; orderLabel: string };
@@ -65,6 +66,7 @@ export default function OrderReadyAlertUI() {
   const enable = useCallback(async () => {
     setBusy(true);
     try {
+      unlockOrderReadyVibrate();
       const ok = await requestOrderAlertPermission();
       setEnabled(ok);
       setPermission(notificationPermission());

@@ -20,7 +20,6 @@ import BrandLogo from "@/components/BrandLogo";
 import { useThemeColors, withAlpha } from "@/lib/themeColors";
 import QueuePositionCard from "@/components/QueuePositionCard";
 import { fetchOrderEta, type SmartEta } from "@/lib/smartEta";
-import { notifyOrderReady } from "@/lib/orderReadyAlerts";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
 
@@ -45,7 +44,7 @@ interface Order {
 }
 
 export default function DashboardPage() {
-  const { isLoggedIn, isAuthLoading, user, logout } = useAuth();
+  const { isLoggedIn, isAuthLoading, user, logout, accessToken } = useAuth();
   const router = useRouter();
   const { language, toggleLanguage, t } = useLanguage();
   const tc = useThemeColors();
@@ -197,19 +196,18 @@ export default function DashboardPage() {
     return () => clearTimeout(timer);
   }, [currentPage, mounted]);
 
+  // Dashboard also listens to app-wide order events (WS + poll fallback).
   useEffect(() => {
-    if (!user?.email) return;
-
-    const wsProtocol = API_BASE_URL.startsWith("https") ? "wss://" : "ws://";
-    const wsHost = API_BASE_URL.replace(/^https?:\/\//, "");
-    const wsUrl = withWsToken(
-      `${wsProtocol}${wsHost}/ws/orders/${encodeURIComponent(user.email)}/`
-    );
-
-    const ws = new WebSocket(wsUrl);
-
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
+    const onGlobal = (event: Event) => {
+      const data = (event as CustomEvent).detail as {
+        type?: string;
+        order_id?: number;
+        status?: string;
+        payment_method?: string;
+        payment_status?: string;
+        rating?: number | null;
+      };
+      if (!data?.order_id) return;
       const orderIdFormatted = `ORD-${data.order_id.toString().padStart(4, "0")}`;
 
       if (data.type === "order_payment_update") {
@@ -235,31 +233,53 @@ export default function DashboardPage() {
         return;
       }
 
-      if (data.type === "order_status_update") {
+      if (data.type === "order_status_update" && data.status) {
         if (data.status === "completed" && !data.rating) {
           setRateOrderId(orderIdFormatted);
         }
-
-        void notifyOrderReady(data.order_id, data.status);
-
         setOrders((prev) => {
           const exists = prev.some((o) => o.id === orderIdFormatted);
           if (exists) {
             setToastMessage({
               title: "Order Updated",
-              desc: `Your order ${orderIdFormatted} is now ${data.status.toUpperCase()}`,
+              desc: `Your order ${orderIdFormatted} is now ${String(data.status).toUpperCase()}`,
               type: "success",
             });
           }
           return prev.map((o) =>
-            o.id === orderIdFormatted ? { ...o, status: data.status, rating: data.rating || o.rating } : o
+            o.id === orderIdFormatted
+              ? { ...o, status: data.status as Order["status"], rating: data.rating || o.rating }
+              : o
           );
         });
       }
     };
 
+    window.addEventListener("gb:order-status", onGlobal as EventListener);
+    return () => window.removeEventListener("gb:order-status", onGlobal as EventListener);
+  }, []);
+
+  useEffect(() => {
+    if (!user?.email || !accessToken) return;
+
+    const wsProtocol = API_BASE_URL.startsWith("https") ? "wss://" : "ws://";
+    const wsHost = API_BASE_URL.replace(/^https?:\/\//, "");
+    const wsUrl = withWsToken(
+      `${wsProtocol}${wsHost}/ws/orders/${encodeURIComponent(user.email)}/`
+    );
+
+    const ws = new WebSocket(wsUrl);
+
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        window.dispatchEvent(new CustomEvent("gb:order-status", { detail: data }));
+      } catch {
+        /* ignore */
+      }
+    };
+
     return () => {
-      // Avoid noisy "closed before established" warnings during React dev remounts.
       if (ws.readyState === WebSocket.CONNECTING) {
         ws.onopen = () => ws.close();
         return;
@@ -268,7 +288,7 @@ export default function DashboardPage() {
         ws.close();
       }
     };
-  }, [user?.email]);
+  }, [user?.email, accessToken]);
 
   useEffect(() => {
     if (!mounted || spendingData.length === 0) {

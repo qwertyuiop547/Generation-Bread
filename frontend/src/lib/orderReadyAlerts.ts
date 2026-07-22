@@ -36,6 +36,7 @@ export async function requestOrderAlertPermission(): Promise<boolean> {
   }
 
   setOrderAlertsEnabled(true);
+  unlockOrderReadyVibrate();
   await registerOrderAlertServiceWorker();
   return true;
 }
@@ -51,25 +52,20 @@ export async function registerOrderAlertServiceWorker(): Promise<ServiceWorkerRe
 
 /** ~20s of repeating buzz/pause (Android Vibration API). */
 const VIBRATE_READY_MS = 20_000;
-const VIBRATE_PULSE_MS = 450;
-const VIBRATE_GAP_MS = 250;
+const VIBRATE_CHUNK_MS = 4_000;
 
-function buildVibratePattern(totalMs: number): number[] {
-  const pattern: number[] = [];
-  let elapsed = 0;
-  while (elapsed < totalMs) {
-    const pulse = Math.min(VIBRATE_PULSE_MS, totalMs - elapsed);
-    pattern.push(pulse);
-    elapsed += pulse;
-    if (elapsed >= totalMs) break;
-    const gap = Math.min(VIBRATE_GAP_MS, totalMs - elapsed);
-    pattern.push(gap);
-    elapsed += gap;
-  }
-  return pattern;
+let vibrateRestartTimers: number[] = [];
+
+function buildVibrateChunk(): number[] {
+  // Short repeating chunk — some mobile browsers truncate very long patterns.
+  return [450, 200, 450, 200, 450, 200, 450, 200, 450, 200, 450, 300];
 }
 
 export function stopOrderReadyVibrate(): void {
+  if (typeof window !== "undefined") {
+    for (const id of vibrateRestartTimers) window.clearTimeout(id);
+  }
+  vibrateRestartTimers = [];
   if (typeof navigator === "undefined" || typeof navigator.vibrate !== "function") return;
   try {
     navigator.vibrate(0);
@@ -78,11 +74,34 @@ export function stopOrderReadyVibrate(): void {
   }
 }
 
-function vibrateReadyPattern(): void {
+/** Call from a user tap (Enable alerts) so Android allows later vibrate. */
+export function unlockOrderReadyVibrate(): void {
   if (typeof navigator === "undefined" || typeof navigator.vibrate !== "function") return;
   try {
-    // Keep vibrating for ~20s so the customer notices on mobile.
-    navigator.vibrate(buildVibratePattern(VIBRATE_READY_MS));
+    navigator.vibrate(30);
+  } catch {
+    // ignore
+  }
+}
+
+function vibrateReadyPattern(): void {
+  if (typeof navigator === "undefined" || typeof navigator.vibrate !== "function") return;
+  stopOrderReadyVibrate();
+  try {
+    const bump = () => {
+      try {
+        navigator.vibrate(buildVibrateChunk());
+      } catch {
+        // ignore
+      }
+    };
+    bump();
+    const restarts = Math.ceil(VIBRATE_READY_MS / VIBRATE_CHUNK_MS) - 1;
+    for (let i = 1; i <= restarts; i += 1) {
+      vibrateRestartTimers.push(
+        window.setTimeout(bump, i * VIBRATE_CHUNK_MS) as unknown as number
+      );
+    }
   } catch {
     // ignore
   }

@@ -1151,17 +1151,16 @@ def admin_order_status_view(request, order_id):
     )
 
     # Trigger WebSocket notification (customer + kitchen board)
-    channel_layer = get_channel_layer()
     group_name = f"user_orders_{order.user.email.replace('@', '_').replace('.', '_')}"
-    async_to_sync(channel_layer.group_send)(
+    _safe_group_send(
         group_name,
         {
             'type': 'order_status_update',
             'order_id': order.id,
-            'status': new_status
-        }
+            'status': new_status,
+        },
     )
-    async_to_sync(channel_layer.group_send)(
+    _safe_group_send(
         'orders',
         {
             'type': 'order_update',
@@ -1170,8 +1169,8 @@ def admin_order_status_view(request, order_id):
                 'status': new_status,
                 'user_email': order.user.email,
                 'customer_name': order.customer_name or order.user.first_name or 'Guest',
-            }
-        }
+            },
+        },
     )
 
     serializer = OrderSerializer(order)
