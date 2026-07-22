@@ -26,7 +26,7 @@ class CustomUser(AbstractUser):
     )
     position = models.CharField(max_length=20, choices=POSITION_CHOICES, blank=True, default='', help_text='Staff role / position')
     shift_start = models.TimeField(blank=True, null=True, default=datetime.time(7, 30), help_text='Scheduled shift start time (default: 7:30 AM)')
-    shift_end = models.TimeField(blank=True, null=True, default=datetime.time(17, 0), help_text='Scheduled shift end time (default: 5:00 PM)')
+    shift_end = models.TimeField(blank=True, null=True, default=datetime.time(20, 30), help_text='Scheduled shift end time (default: 8:30 PM)')
     bio = models.TextField(blank=True, default='', help_text='Short bio or notes about this staff member')
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True, help_text='Staff profile photo')
     is_email_verified = models.BooleanField(default=False)

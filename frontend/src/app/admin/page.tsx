@@ -435,7 +435,7 @@ export default function AdminPage() {
   const [shiftFormStaff, setShiftFormStaff] = useState("");
   const [shiftFormDate, setShiftFormDate] = useState("");
   const [shiftFormStart, setShiftFormStart] = useState("09:00");
-  const [shiftFormEnd, setShiftFormEnd] = useState("17:00");
+  const [shiftFormEnd, setShiftFormEnd] = useState("20:30");
   const [shiftFormStation, setShiftFormStation] = useState("barista");
   const [shiftFormLoading, setShiftFormLoading] = useState(false);
   const [shiftExportLoading, setShiftExportLoading] = useState(false);
