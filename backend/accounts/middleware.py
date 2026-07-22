@@ -43,6 +43,8 @@ class IPRateLimitMiddleware:
         "/api/auth/logout/",
         "/api/auth/admin/orders",
         "/api/auth/orders",
+        # Staff shift actions must not get blocked by kitchen/dashboard polling noise.
+        "/api/auth/shift/",
     )
 
     def __init__(self, get_response):

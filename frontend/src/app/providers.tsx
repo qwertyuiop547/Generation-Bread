@@ -19,7 +19,8 @@ export default function Providers({ children }: { children: ReactNode }) {
             <CustomerOrderReadyAlerts />
             <OrderReadyAlertUI />
             {children}
-            <div className="pointer-events-none fixed bottom-4 right-4 z-[100] sm:bottom-6 sm:right-6">
+            {/* Keep below toasts (z-[110]+) so error banners are never covered on mobile. */}
+            <div className="pointer-events-none fixed bottom-4 left-4 z-40 sm:bottom-6 sm:left-6">
               <div className="pointer-events-auto">
                 <ThemeToggle compact />
               </div>

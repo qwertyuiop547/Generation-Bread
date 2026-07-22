@@ -322,8 +322,20 @@ export default function StaffDashboardPage() {
         headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ email: user.email }),
       });
-      const data = await res.json();
-      if (!res.ok) { showToast(data.error || "Failed to clock in", "error"); return; }
+      let data: { error?: string; retry_after?: number; id?: number } = {};
+      try {
+        data = await res.json();
+      } catch {
+        /* ignore */
+      }
+      if (!res.ok) {
+        if (res.status === 429) {
+          showToast(data.error || "Too many requests — wait a moment, then clock in again.", "error");
+          return;
+        }
+        showToast(data.error || "Failed to clock in", "error");
+        return;
+      }
       setIsClockedIn(true);
       setIsPending(true);
       setCurrentShift(data);
@@ -1381,15 +1393,15 @@ export default function StaffDashboardPage() {
         </div>
       )}
 
-      {/* Toast */}
+      {/* Toast — above theme toggle; full-width on mobile so message isn't clipped */}
       {toast && (
-        <div className={`fixed bottom-6 right-6 z-[60] flex items-center gap-2 px-5 py-3 rounded-2xl shadow-lg font-bold text-xs uppercase tracking-wider transition-all ${
+        <div className={`fixed bottom-6 left-4 right-4 sm:left-auto sm:right-6 sm:max-w-sm z-[110] flex items-center gap-2 px-5 py-3 rounded-2xl shadow-lg font-bold text-xs uppercase tracking-wider transition-all ${
           toast.type === "success" ? "bg-emerald-600 text-white" : "bg-red-600 text-white"
         }`}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
             {toast.type === "success" ? <polyline points="20 6 9 17 4 12" /> : <><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></>}
           </svg>
-          {toast.message}
+          <span className="break-words normal-case tracking-normal sm:uppercase sm:tracking-wider">{toast.message}</span>
         </div>
       )}
     </div>
