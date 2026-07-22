@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { authHeaders } from "@/lib/authHeaders";
 import { signOut } from "next-auth/react";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
 
@@ -499,6 +500,37 @@ const handleChangePassword = (e: React.FormEvent) => {
                 <p className="font-bold text-dark-brown text-lg capitalize">{user.provider || "local"}</p>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Appearance / Theme Settings */}
+        <div className="app-panel border rounded-3xl p-6 md:p-8 shadow-lg mb-6 md:mb-8">
+          <h3 className="text-xl md:text-2xl font-bold text-dark-brown uppercase tracking-tight mb-6 flex items-center gap-3">
+            <div className="w-8 h-8 bg-light-brown/20 rounded-xl flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-dark-brown">
+                <circle cx="12" cy="12" r="4" />
+                <path d="M12 2v2" />
+                <path d="M12 20v2" />
+                <path d="m4.93 4.93 1.41 1.41" />
+                <path d="m17.66 17.66 1.41 1.41" />
+                <path d="M2 12h2" />
+                <path d="M20 12h2" />
+                <path d="m6.34 17.66-1.41 1.41" />
+                <path d="m19.07 4.93-1.41 1.41" />
+              </svg>
+            </div>
+            Settings
+          </h3>
+
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <p className="font-paragraph text-dark-brown/50 text-sm">Color Theme</p>
+              <p className="font-bold text-dark-brown text-lg">Warm or Sky</p>
+              <p className="font-paragraph text-dark-brown/45 text-xs mt-1">
+                Choose the look of the café app across all pages.
+              </p>
+            </div>
+            <ThemeToggle className="self-start sm:self-auto" />
           </div>
         </div>
 
