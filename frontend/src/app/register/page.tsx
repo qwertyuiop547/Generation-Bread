@@ -138,7 +138,7 @@ function RegisterPageContent() {
                   Join the table
                 </p>
                 <p className="text-2xl font-bold uppercase leading-none tracking-tight text-milk">
-                  Create your <span className="text-light-brown">account.</span>
+                  Create your <span className="text-brand-gold">account.</span>
                 </p>
               </div>
             </div>
