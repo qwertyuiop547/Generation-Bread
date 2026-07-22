@@ -447,26 +447,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const refreshAccessToken = async (): Promise<boolean> => {
-    if (!refreshToken) return false;
+    const refresh =
+      refreshToken ||
+      (typeof window !== "undefined" ? localStorage.getItem("spylt_refresh_token") : null);
+    if (!refresh) return false;
 
     try {
       const res = await fetch(`${API_BASE_URL}/api/auth/token/refresh/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refresh: refreshToken }),
+        body: JSON.stringify({ refresh }),
       });
 
       if (!res.ok) {
-        logout();
+        // Drop dead JWTs but keep the local user session so checkout can continue
+        // via email/AllowAny fallback instead of kicking them to login mid-order.
+        setAccessToken(null);
+        setRefreshToken(null);
+        localStorage.removeItem("spylt_access_token");
+        localStorage.removeItem("spylt_refresh_token");
         return false;
       }
 
       const data = await res.json();
       setAccessToken(data.access);
       localStorage.setItem("spylt_access_token", data.access);
+      if (data.refresh) {
+        setRefreshToken(data.refresh);
+        localStorage.setItem("spylt_refresh_token", data.refresh);
+      }
       return true;
     } catch {
-      logout();
+      setAccessToken(null);
+      setRefreshToken(null);
+      localStorage.removeItem("spylt_access_token");
+      localStorage.removeItem("spylt_refresh_token");
       return false;
     }
   };

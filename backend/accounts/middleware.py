@@ -43,6 +43,10 @@ class IPRateLimitMiddleware:
         "/api/auth/logout/",
         "/api/auth/admin/orders",
         "/api/auth/orders",
+        # Customer checkout path — cart/menu/ETA must stay reachable on shared mobile IPs.
+        "/api/auth/cart",
+        "/api/auth/menu",
+        "/api/auth/eta",
         # Staff shift actions must not get blocked by kitchen/dashboard polling noise.
         "/api/auth/shift/",
     )

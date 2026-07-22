@@ -180,9 +180,17 @@ function TrackPageContent() {
       const orderIdFormatted = `ORD-${orderId.toString().padStart(4, "0")}`;
       if (orderIdFormatted !== current.id) return;
 
+      const prevStatus = current.status;
       setTrackedOrder((prev) => (prev ? { ...prev, status: newStatus, ...extras } : prev));
       void refreshOrderEta(orderIdFormatted, newStatus, current.totalItems);
       void notifyOrderReady(orderId, newStatus);
+      if (newStatus === "completed" && prevStatus !== "completed") {
+        window.dispatchEvent(
+          new CustomEvent("gb:order-completed", {
+            detail: { orderId, orderLabel: orderIdFormatted },
+          })
+        );
+      }
       setToast({
         title: "Order Updated",
         desc: `Your order is now ${newStatus.toUpperCase()}`,

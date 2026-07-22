@@ -603,6 +603,33 @@ export default function StaffDashboardPage() {
   }, { scope: containerRef, dependencies: [mounted, isAuthLoading, isLoggedIn, isStaff] });
 
   const updateStatus = async (orderId: string, newStatus: string) => {
+    const celebrateCard = () => {
+      if (newStatus !== "completed") return;
+      const card = document.querySelector<HTMLElement>(`[data-order-card="${orderId}"]`);
+      if (!card) return;
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      gsap.fromTo(
+        card,
+        { scale: 1, boxShadow: "0 10px 30px rgba(42,24,16,0.08)" },
+        {
+          scale: 1.02,
+          boxShadow: "0 16px 40px rgba(16,185,129,0.28)",
+          duration: 0.35,
+          yoyo: true,
+          repeat: 1,
+          ease: "power2.inOut",
+        }
+      );
+      const badge = card.querySelector<HTMLElement>("[data-status-badge]");
+      if (badge) {
+        gsap.fromTo(
+          badge,
+          { scale: 0.85 },
+          { scale: 1, duration: 0.45, ease: "back.out(2)" }
+        );
+      }
+    };
+
     try {
       const localOrdersRaw = localStorage.getItem("spylt_local_orders");
       if (localOrdersRaw) {
@@ -612,6 +639,7 @@ export default function StaffDashboardPage() {
           localOrders[localOrderIndex].status = newStatus;
           localStorage.setItem("spylt_local_orders", JSON.stringify(localOrders));
           setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus as Order["status"] } : o));
+          celebrateCard();
           return;
         }
       }
@@ -624,9 +652,11 @@ export default function StaffDashboardPage() {
       });
       if (res.ok) {
         setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus as Order["status"] } : o));
+        celebrateCard();
       }
     } catch (err) {
       setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus as Order["status"] } : o));
+      celebrateCard();
     }
   };
 
@@ -1145,12 +1175,12 @@ export default function StaffDashboardPage() {
                 </div>
               ) : (
                 displayedOrders.map(order => (
-                  <div key={order.id} className="paginated-order app-panel border rounded-3xl p-5 shadow-lg hover:shadow-xl transition-all">
+                  <div key={order.id} data-order-card={order.id} className="paginated-order app-panel border rounded-3xl p-5 shadow-lg hover:shadow-xl transition-all">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-3">
                       <div className="flex items-center gap-3">
                         <span className={`w-3 h-3 rounded-full ${STATUS_DOTS[order.status]}`}></span>
                         <p className="font-bold text-dark-brown uppercase text-sm">{order.id}</p>
-                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border ${STATUS_COLORS[order.status]}`}>{order.status}</span>
+                        <span data-status-badge className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border ${STATUS_COLORS[order.status]}`}>{order.status}</span>
                         {order.orderType && (
                           <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${order.orderType === "Dine-In" ? "bg-light-brown/20 text-dark-brown"
                               : order.orderType === "Scheduled" ? "bg-blue-100 text-blue-800"

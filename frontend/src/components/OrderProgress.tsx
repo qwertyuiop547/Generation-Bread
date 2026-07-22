@@ -130,10 +130,13 @@ export default function OrderProgress({
   const statusTitleRef = useRef<HTMLHeadingElement>(null);
   const statusBadgeRef = useRef<HTMLSpanElement>(null);
   const statusBannerRef = useRef<HTMLDivElement>(null);
+  const completeStampRef = useRef<HTMLDivElement>(null);
   const prevStepRef = useRef<number>(-1);
+  const prevStatusRef = useRef<OrderProgressStatus | null>(null);
 
   useEffect(() => {
     prevStepRef.current = -1;
+    prevStatusRef.current = null;
   }, []);
 
   useGSAP(
@@ -142,14 +145,18 @@ export default function OrderProgress({
 
       const step = currentStep;
       const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      const progressPct = step === 0 ? 33 : step === 1 ? 66 : 100;
+      const progressPct = isCompleted ? 100 : step === 0 ? 33 : step === 1 ? 66 : 100;
       const prev = prevStepRef.current;
+      const prevStatus = prevStatusRef.current;
       const isAdvance = step > prev;
       const isFirstPaint = prev < 0;
+      const justCompleted = isCompleted && prevStatus !== null && prevStatus !== "completed";
       prevStepRef.current = step;
+      prevStatusRef.current = status;
 
       if (prefersReduced) {
         if (progressFillRef.current) gsap.set(progressFillRef.current, { width: `${progressPct}%` });
+        if (completeStampRef.current && isCompleted) gsap.set(completeStampRef.current, { autoAlpha: 1, scale: 1 });
         return;
       }
 
@@ -160,7 +167,7 @@ export default function OrderProgress({
           progressFillRef.current,
           {
             width: `${progressPct}%`,
-            duration: isFirstPaint ? 0.55 : isAdvance ? 0.9 : 0.45,
+            duration: isFirstPaint ? 0.55 : isAdvance || justCompleted ? 0.95 : 0.45,
             ease: GB_EASE.inOut,
           },
           0
@@ -192,7 +199,7 @@ export default function OrderProgress({
           tl.fromTo(node, { scale: 1.12 }, { scale: 1, duration: 0.5 }, 0.12);
         }
 
-        if (i === step) {
+        if (i === step && !justCompleted) {
           tl.fromTo(
             node,
             { scale: isFirstPaint ? 0.92 : 0.78 },
@@ -215,6 +222,20 @@ export default function OrderProgress({
             isFirstPaint ? 0.15 : 0.32
           );
         }
+
+        // Completion: every step pops to "done" with warm pulse
+        if (justCompleted) {
+          tl.fromTo(
+            node,
+            { scale: 0.88 },
+            {
+              scale: 1,
+              duration: 0.45,
+              ease: "back.out(1.8)",
+            },
+            0.15 + i * 0.08
+          );
+        }
       });
 
       stepLabelRefs.current.forEach((label, i) => {
@@ -228,11 +249,37 @@ export default function OrderProgress({
           statusBannerRef.current,
           { autoAlpha: 0, y: 14, scale: 0.98 },
           { autoAlpha: 1, y: 0, scale: 1, duration: 0.55 },
-          isAdvance ? 0.45 : 0.1
+          isAdvance || justCompleted ? 0.45 : 0.1
         );
       }
+
+      if (completeStampRef.current) {
+        if (justCompleted) {
+          tl.fromTo(
+            completeStampRef.current,
+            { autoAlpha: 0, scale: 0.4, rotation: -12 },
+            {
+              autoAlpha: 1,
+              scale: 1,
+              rotation: -6,
+              duration: 0.65,
+              ease: "back.out(2)",
+            },
+            0.55
+          );
+          tl.to(
+            completeStampRef.current,
+            { scale: 1.06, duration: 0.28, yoyo: true, repeat: 1, ease: GB_EASE.inOut },
+            1.1
+          );
+        } else if (isCompleted) {
+          gsap.set(completeStampRef.current, { autoAlpha: 1, scale: 1, rotation: -6 });
+        } else {
+          gsap.set(completeStampRef.current, { autoAlpha: 0, scale: 0.4 });
+        }
+      }
     },
-    { scope: rootRef, dependencies: [currentStep, status] }
+    { scope: rootRef, dependencies: [currentStep, status, isCompleted] }
   );
 
   if (isCancelled) {
@@ -251,8 +298,16 @@ export default function OrderProgress({
   return (
     <div
       ref={rootRef}
-      className={`app-panel border rounded-3xl shadow-lg ${pad} ${className}`}
+      className={`app-panel relative overflow-hidden border rounded-3xl shadow-lg ${pad} ${className}`}
     >
+      <div
+        ref={completeStampRef}
+        className="pointer-events-none absolute -right-2 top-4 z-20 rotate-[-6deg] rounded-xl border-2 border-[#2a1810]/80 bg-[#e3a458]/25 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-[#2a1810] opacity-0 md:right-4 md:top-6"
+        aria-hidden
+      >
+        Complete
+      </div>
+
       <div className="mb-5 flex flex-wrap items-center justify-between gap-2 md:mb-6">
         <div>
           <p className="font-paragraph text-[10px] uppercase tracking-[0.28em] text-dark-brown/45">
@@ -262,17 +317,19 @@ export default function OrderProgress({
             ref={statusTitleRef}
             className="mt-1 text-lg font-bold uppercase tracking-tight text-dark-brown md:text-xl"
           >
-            {STEP_META[STEPS[Math.min(currentStep, STEPS.length - 1)]].label}
+            {isCompleted ? "Completed" : STEP_META[STEPS[Math.min(currentStep, STEPS.length - 1)]].label}
           </h3>
         </div>
         <span
           ref={statusBadgeRef}
           className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold uppercase ${
-            status === "ready" || isCompleted
-              ? "bg-light-brown/40 text-dark-brown"
-              : status === "preparing"
-                ? "bg-yellow-brown/25 text-dark-brown"
-                : "bg-dark-brown/10 text-dark-brown"
+            isCompleted
+              ? "bg-emerald-100 text-emerald-800"
+              : status === "ready"
+                ? "bg-light-brown/40 text-dark-brown"
+                : status === "preparing"
+                  ? "bg-yellow-brown/25 text-dark-brown"
+                  : "bg-dark-brown/10 text-dark-brown"
           }`}
         >
           {status}
@@ -282,7 +339,11 @@ export default function OrderProgress({
       <div className="mb-5 h-2 overflow-hidden rounded-full bg-dark-brown/10 md:mb-6">
         <div
           ref={progressFillRef}
-          className="h-full origin-left rounded-full bg-gradient-to-r from-light-brown to-mid-brown will-change-[width]"
+          className={`h-full origin-left rounded-full will-change-[width] ${
+            isCompleted
+              ? "bg-gradient-to-r from-light-brown via-mid-brown to-emerald-600"
+              : "bg-gradient-to-r from-light-brown to-mid-brown"
+          }`}
           style={{ width: "0%" }}
         />
       </div>
@@ -292,8 +353,8 @@ export default function OrderProgress({
 
         <div className="relative z-10 grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-2">
           {STEPS.map((step, i) => {
-            const done = i < currentStep;
-            const active = i === currentStep;
+            const done = isCompleted || i < currentStep;
+            const active = !isCompleted && i === currentStep;
             return (
               <div key={step} className="flex items-center gap-3 md:flex-col md:items-center md:text-center">
                 <div
@@ -301,14 +362,16 @@ export default function OrderProgress({
                     stepNodeRefs.current[i] = el;
                   }}
                   className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 will-change-transform md:h-12 md:w-12 ${
-                    active
-                      ? "border-light-brown bg-light-brown text-dark-brown shadow-[0_0_0_6px_rgba(227,164,88,0.22)]"
-                      : done
-                        ? "border-dark-brown bg-dark-brown text-milk"
-                        : "border-light-brown/50 app-chip text-dark-brown/35"
+                    isCompleted
+                      ? "border-emerald-700 bg-emerald-700 text-white shadow-[0_0_0_6px_rgba(16,185,129,0.18)]"
+                      : active
+                        ? "border-light-brown bg-light-brown text-dark-brown shadow-[0_0_0_6px_rgba(227,164,88,0.22)]"
+                        : done
+                          ? "border-dark-brown bg-dark-brown text-milk"
+                          : "border-light-brown/50 app-chip text-dark-brown/35"
                   }`}
                 >
-                  {done ? <CheckIcon /> : STEP_META[step].icon}
+                  {done || isCompleted ? <CheckIcon /> : STEP_META[step].icon}
                 </div>
                 <div
                   ref={(el) => {
@@ -318,17 +381,17 @@ export default function OrderProgress({
                 >
                   <p
                     className={`text-sm font-bold uppercase tracking-tight ${
-                      active || done ? "text-dark-brown" : "text-dark-brown/40"
+                      active || done || isCompleted ? "text-dark-brown" : "text-dark-brown/40"
                     }`}
                   >
                     {STEP_META[step].label}
                   </p>
                   <p
                     className={`font-paragraph text-xs leading-snug md:mt-0.5 ${
-                      active ? "text-dark-brown/70" : done ? "text-dark-brown/55" : "text-dark-brown/35"
+                      active ? "text-dark-brown/70" : done || isCompleted ? "text-dark-brown/55" : "text-dark-brown/35"
                     }`}
                   >
-                    {STEP_META[step].desc}
+                    {isCompleted && i === STEPS.length - 1 ? "Enjoy your order" : STEP_META[step].desc}
                   </p>
                 </div>
               </div>
@@ -340,7 +403,11 @@ export default function OrderProgress({
       {(status === "ready" || isCompleted) && (
         <div
           ref={statusBannerRef}
-          className="mt-5 rounded-2xl border border-light-brown/30 bg-gradient-to-r from-light-brown/20 to-yellow-brown/10 px-4 py-3.5 text-center md:mt-6"
+          className={`mt-5 rounded-2xl border px-4 py-3.5 text-center md:mt-6 ${
+            isCompleted
+              ? "border-emerald-200/80 bg-gradient-to-r from-emerald-50 to-light-brown/20"
+              : "border-light-brown/30 bg-gradient-to-r from-light-brown/20 to-yellow-brown/10"
+          }`}
         >
           <p className="text-sm font-bold uppercase tracking-wide text-dark-brown">
             {isCompleted ? "Order completed" : ready.bannerTitle}

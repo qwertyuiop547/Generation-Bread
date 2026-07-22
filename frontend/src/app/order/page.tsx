@@ -122,7 +122,7 @@ export default function OrderPage() {
   const [customerName, setCustomerName] = useState("");
   const [pickupTime, setPickupTime] = useState("");
 
-  const { isLoggedIn, user, accessToken } = useAuth();
+  const { isLoggedIn, user, accessToken, apiFetch } = useAuth();
   const router = useRouter();
   const { t, language, toggleLanguage } = useLanguage();
 
@@ -353,20 +353,31 @@ export default function OrderPage() {
     try {
       setIsPlacingOrder(true);
       const email = user?.email || "guest@test.com";
+      const orderPayload = {
+        email,
+        total_price: totalPrice,
+        items: toBackendItems(cart),
+        order_type: orderType,
+        table_number: orderType === "Dine-In" ? tableNumber : null,
+        pickup_time: orderType === "Scheduled" ? pickupTime : null,
+        customer_name: orderType !== "Dine-In" ? customerName : (user?.name || "Guest"),
+      };
 
-      const res = await fetch(ORDERS_API_URL, {
+      // Prefer JWT (with refresh). Expired Bearer tokens used to 401 even on AllowAny.
+      let res = await apiFetch(ORDERS_API_URL, {
         method: "POST",
-        headers: authHeaders({ "Content-Type": "application/json" }),
-        body: JSON.stringify({
-          email,
-          total_price: totalPrice,
-          items: toBackendItems(cart),
-          order_type: orderType,
-          table_number: orderType === "Dine-In" ? tableNumber : null,
-          pickup_time: orderType === "Scheduled" ? pickupTime : null,
-          customer_name: orderType !== "Dine-In" ? customerName : (user?.name || "Guest"),
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(orderPayload),
       });
+
+      // Fallback: place order without Authorization so email identity still works.
+      if (res.status === 401) {
+        res = await fetch(ORDERS_API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(orderPayload),
+        });
+      }
 
       if (!res.ok) {
         let detail = "Failed to place order. Try again.";
@@ -680,7 +691,8 @@ export default function OrderPage() {
         }));
 
         if (!isCancelled) {
-          setCart(mapped);
+          // Never wipe a non-empty local cart with an empty backend cart (common after Google JWT arrives).
+          setCart((prev) => (mapped.length > 0 ? mapped : prev.length > 0 ? prev : mapped));
           setIsBackendCartSyncEnabled(true);
         }
       } catch {
@@ -886,8 +898,8 @@ export default function OrderPage() {
       </div>
 
       {/* Floating Cart Summary */}
-      {totalItems > 0 && (
-        <div className="fixed bottom-0 left-0 w-full z-50 px-5 pb-5">
+      {totalItems > 0 && !showCart && (
+        <div className="fixed bottom-0 left-0 w-full z-50 px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
           <div className="max-w-2xl mx-auto bg-dark-brown/95 backdrop-blur-xl text-milk rounded-2xl shadow-2xl p-4 md:p-5 flex items-center justify-between border border-white/10">
             <div>
               <p className="font-bold text-lg">{totalItems} item{totalItems > 1 ? "s" : ""}</p>
@@ -905,17 +917,17 @@ export default function OrderPage() {
 
       {/* Cart Slide-Over */}
       {showCart && (
-        <div className="fixed inset-0 z-50">
+        <div className="fixed inset-0 z-[60]">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowCart(false)}></div>
-          <div className="absolute right-0 top-0 h-full w-full max-w-md bg-milk shadow-2xl flex flex-col">
+          <div className="absolute right-0 top-0 h-full w-full max-w-md bg-milk shadow-2xl flex flex-col pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
             {/* Cart Header */}
-            <div className="flex items-center justify-between p-5 border-b border-dark-brown/10">
+            <div className="flex items-center justify-between p-5 border-b border-dark-brown/10 shrink-0">
               <h2 className="text-2xl font-bold text-dark-brown uppercase tracking-tight">{t("Your Cart")}</h2>
               <button onClick={() => setShowCart(false)} className="text-dark-brown hover:text-light-brown transition-colors text-2xl font-bold">✕</button>
             </div>
 
-            {/* Cart Items */}
-            <div className="flex-1 overflow-y-auto p-5">
+            {/* Cart Items + order details (scrollable) */}
+            <div className="flex-1 overflow-y-auto p-5 min-h-0">
               {cart.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-center">
                   <p className="text-5xl mb-4">🛒</p>
@@ -955,61 +967,42 @@ export default function OrderPage() {
                       </div>
                     </div>
                   ))}
-                </div>
-              )}
-            </div>
 
-            {/* Cart Footer */}
-            {cart.length > 0 && (
-              <div className="p-5 border-t border-dark-brown/10 mb-4 overflow-y-auto max-h-[50vh]">
-                
-                {/* Order Type UI */}
-                <div className="bg-dark-brown/5 rounded-2xl p-4 mb-4 border border-dark-brown/10">
-                  <div className="flex bg-dark-brown/10 rounded-xl p-1 mb-4">
-                    <button
-                      onClick={() => setOrderType("Dine-In")}
-                      className={`flex-1 py-1.5 md:py-2 font-bold text-[10px] md:text-sm rounded-lg transition-all ${orderType === "Dine-In" ? "bg-white text-dark-brown shadow-sm" : "text-dark-brown/50 hover:text-dark-brown"}`}
-                    >
-                      {t("Dine-In")}
-                    </button>
-                    <button
-                      onClick={() => setOrderType("Takeout")}
-                      className={`flex-1 py-1.5 md:py-2 font-bold text-[10px] md:text-sm rounded-lg transition-all ${orderType === "Takeout" ? "bg-white text-dark-brown shadow-sm" : "text-dark-brown/50 hover:text-dark-brown"}`}
-                    >
-                      {t("Takeout")}
-                    </button>
-                    <button
-                      onClick={() => setOrderType("Scheduled")}
-                      className={`flex-1 py-1.5 md:py-2 font-bold text-[10px] md:text-sm rounded-lg transition-all ${orderType === "Scheduled" ? "bg-white text-dark-brown shadow-sm" : "text-dark-brown/50 hover:text-dark-brown"}`}
-                    >
-                      {t("Pre-Order")}
-                    </button>
-                  </div>
+                  {/* Order Type UI — scrolls with items so Place Order stays pinned */}
+                  <div className="bg-dark-brown/5 rounded-2xl p-4 border border-dark-brown/10">
+                    <div className="flex bg-dark-brown/10 rounded-xl p-1 mb-4">
+                      <button
+                        onClick={() => setOrderType("Dine-In")}
+                        className={`flex-1 py-1.5 md:py-2 font-bold text-[10px] md:text-sm rounded-lg transition-all ${orderType === "Dine-In" ? "bg-white text-dark-brown shadow-sm" : "text-dark-brown/50 hover:text-dark-brown"}`}
+                      >
+                        {t("Dine-In")}
+                      </button>
+                      <button
+                        onClick={() => setOrderType("Takeout")}
+                        className={`flex-1 py-1.5 md:py-2 font-bold text-[10px] md:text-sm rounded-lg transition-all ${orderType === "Takeout" ? "bg-white text-dark-brown shadow-sm" : "text-dark-brown/50 hover:text-dark-brown"}`}
+                      >
+                        {t("Takeout")}
+                      </button>
+                      <button
+                        onClick={() => setOrderType("Scheduled")}
+                        className={`flex-1 py-1.5 md:py-2 font-bold text-[10px] md:text-sm rounded-lg transition-all ${orderType === "Scheduled" ? "bg-white text-dark-brown shadow-sm" : "text-dark-brown/50 hover:text-dark-brown"}`}
+                      >
+                        {t("Pre-Order")}
+                      </button>
+                    </div>
                   
-                  {orderType === "Dine-In" ? (
-                    <div>
-                      <label className="block font-bold text-dark-brown text-sm mb-1 ml-1 cursor-pointer">{t("Table Number")}</label>
-                      <input 
-                        type="text" 
-                        value={tableNumber} 
-                        onChange={e => setTableNumber(e.target.value)} 
-                        placeholder="e.g. 5"
-                        className="w-full bg-white border border-dark-brown/20 rounded-xl px-4 py-3 text-dark-brown font-paragraph focus:outline-none focus:border-light-brown shadow-inner"
-                      />
-                    </div>
-                  ) : orderType === "Takeout" ? (
-                    <div>
-                      <label className="block font-bold text-dark-brown text-sm mb-1 ml-1 cursor-pointer">{t("Customer Name")}</label>
-                      <input 
-                        type="text" 
-                        value={customerName} 
-                        onChange={e => setCustomerName(e.target.value)} 
-                        placeholder="..."
-                        className="w-full bg-white border border-dark-brown/20 rounded-xl px-4 py-3 text-dark-brown font-paragraph focus:outline-none focus:border-light-brown shadow-inner"
-                      />
-                    </div>
-                  ) : (
-                    <div className="flex flex-col gap-3">
+                    {orderType === "Dine-In" ? (
+                      <div>
+                        <label className="block font-bold text-dark-brown text-sm mb-1 ml-1 cursor-pointer">{t("Table Number")}</label>
+                        <input 
+                          type="text" 
+                          value={tableNumber} 
+                          onChange={e => setTableNumber(e.target.value)} 
+                          placeholder="e.g. 5"
+                          className="w-full bg-white border border-dark-brown/20 rounded-xl px-4 py-3 text-dark-brown font-paragraph focus:outline-none focus:border-light-brown shadow-inner"
+                        />
+                      </div>
+                    ) : orderType === "Takeout" ? (
                       <div>
                         <label className="block font-bold text-dark-brown text-sm mb-1 ml-1 cursor-pointer">{t("Customer Name")}</label>
                         <input 
@@ -1020,29 +1013,46 @@ export default function OrderPage() {
                           className="w-full bg-white border border-dark-brown/20 rounded-xl px-4 py-3 text-dark-brown font-paragraph focus:outline-none focus:border-light-brown shadow-inner"
                         />
                       </div>
-                      <div>
-                        <label className="block font-bold text-dark-brown text-sm mb-1 ml-1 cursor-pointer">{t("Pickup Date & Time")}</label>
-                        <input 
-                          type="datetime-local" 
-                          value={pickupTime} 
-                          onChange={e => setPickupTime(e.target.value)} 
-                          min={new Date().toISOString().slice(0, 16)}
-                          className="w-full bg-white border border-dark-brown/20 rounded-xl px-4 py-3 text-dark-brown font-paragraph focus:outline-none focus:border-light-brown shadow-inner cursor-pointer"
-                        />
+                    ) : (
+                      <div className="flex flex-col gap-3">
+                        <div>
+                          <label className="block font-bold text-dark-brown text-sm mb-1 ml-1 cursor-pointer">{t("Customer Name")}</label>
+                          <input 
+                            type="text" 
+                            value={customerName} 
+                            onChange={e => setCustomerName(e.target.value)} 
+                            placeholder="..."
+                            className="w-full bg-white border border-dark-brown/20 rounded-xl px-4 py-3 text-dark-brown font-paragraph focus:outline-none focus:border-light-brown shadow-inner"
+                          />
+                        </div>
+                        <div>
+                          <label className="block font-bold text-dark-brown text-sm mb-1 ml-1 cursor-pointer">{t("Pickup Date & Time")}</label>
+                          <input 
+                            type="datetime-local" 
+                            value={pickupTime} 
+                            onChange={e => setPickupTime(e.target.value)} 
+                            min={new Date().toISOString().slice(0, 16)}
+                            className="w-full bg-white border border-dark-brown/20 rounded-xl px-4 py-3 text-dark-brown font-paragraph focus:outline-none focus:border-light-brown shadow-inner cursor-pointer"
+                          />
+                        </div>
                       </div>
-                    </div>
+                    )}
+                  </div>
+
+                  {cartQueueEta && (
+                    <QueuePositionCard eta={cartQueueEta} />
                   )}
                 </div>
+              )}
+            </div>
 
+            {/* Sticky checkout footer — always visible on mobile */}
+            {cart.length > 0 && (
+              <div className="shrink-0 p-5 border-t border-dark-brown/10 bg-milk">
                 <div className="flex justify-between items-center mb-4">
                   <p className="font-paragraph text-dark-brown/60">{t("Total")}</p>
                   <p className="text-2xl font-bold text-dark-brown">₱{totalPrice.toFixed(2)}</p>
                 </div>
-                {cartQueueEta && (
-                  <div className="mb-4">
-                    <QueuePositionCard eta={cartQueueEta} />
-                  </div>
-                )}
                 <button
                   onClick={handlePlaceOrder}
                   disabled={isPlacingOrder}

@@ -10,9 +10,10 @@ from datetime import datetime, timedelta
 import secrets
 from rest_framework import status
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.decorators import api_view, permission_classes, throttle_classes
+from rest_framework.decorators import api_view, permission_classes, throttle_classes, authentication_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from .optional_jwt import OptionalJWTAuthentication
 from django.core.cache import cache
 from django.core.mail import send_mail
 from django.conf import settings
@@ -568,6 +569,7 @@ def logout_view(request):
 
 
 @api_view(['GET', 'POST'])
+@authentication_classes([OptionalJWTAuthentication])
 @permission_classes([AllowAny])
 @throttle_classes([OrderCreateRateThrottle])
 def order_view(request):
@@ -825,6 +827,7 @@ def user_cancel_order_view(request, order_id):
 
 
 @api_view(['PATCH'])
+@authentication_classes([OptionalJWTAuthentication])
 @permission_classes([AllowAny])
 @throttle_classes([PaymentRateThrottle])
 def user_set_payment_view(request, order_id):

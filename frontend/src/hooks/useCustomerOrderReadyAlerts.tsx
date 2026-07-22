@@ -26,6 +26,18 @@ function dispatchOrderEvent(detail: CustomerOrderStatusEvent) {
   window.dispatchEvent(new CustomEvent("gb:order-status", { detail }));
 }
 
+function dispatchOrderCompleted(orderId: number) {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(
+    new CustomEvent("gb:order-completed", {
+      detail: {
+        orderId,
+        orderLabel: `ORD-${String(orderId).padStart(4, "0")}`,
+      },
+    })
+  );
+}
+
 /**
  * Keeps a customer WebSocket open app-wide + HTTP poll fallback so order status
  * and ready alerts (vibrate + notification) work on mobile even if WS drops.
@@ -54,9 +66,13 @@ export function useCustomerOrderReadyAlerts() {
 
     const handlePayload = (data: CustomerOrderStatusEvent) => {
       if (!data?.order_id) return;
+      const key = String(data.order_id);
+      const prev = lastStatusRef.current[key];
       dispatchOrderEvent(data);
       if (data.type === "order_status_update" && data.status) {
-        const key = String(data.order_id);
+        if (data.status === "completed" && prev && prev !== "completed") {
+          dispatchOrderCompleted(data.order_id);
+        }
         lastStatusRef.current[key] = data.status;
         void notifyOrderReady(data.order_id, data.status);
       }
