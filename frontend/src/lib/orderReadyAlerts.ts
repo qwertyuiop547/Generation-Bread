@@ -49,11 +49,40 @@ export async function registerOrderAlertServiceWorker(): Promise<ServiceWorkerRe
   }
 }
 
+/** ~20s of repeating buzz/pause (Android Vibration API). */
+const VIBRATE_READY_MS = 20_000;
+const VIBRATE_PULSE_MS = 450;
+const VIBRATE_GAP_MS = 250;
+
+function buildVibratePattern(totalMs: number): number[] {
+  const pattern: number[] = [];
+  let elapsed = 0;
+  while (elapsed < totalMs) {
+    const pulse = Math.min(VIBRATE_PULSE_MS, totalMs - elapsed);
+    pattern.push(pulse);
+    elapsed += pulse;
+    if (elapsed >= totalMs) break;
+    const gap = Math.min(VIBRATE_GAP_MS, totalMs - elapsed);
+    pattern.push(gap);
+    elapsed += gap;
+  }
+  return pattern;
+}
+
+export function stopOrderReadyVibrate(): void {
+  if (typeof navigator === "undefined" || typeof navigator.vibrate !== "function") return;
+  try {
+    navigator.vibrate(0);
+  } catch {
+    // ignore
+  }
+}
+
 function vibrateReadyPattern(): void {
   if (typeof navigator === "undefined" || typeof navigator.vibrate !== "function") return;
   try {
-    // Pattern: buzz — pause — buzz — pause — long buzz (feels like “order ready”)
-    navigator.vibrate([200, 100, 200, 100, 400]);
+    // Keep vibrating for ~20s so the customer notices on mobile.
+    navigator.vibrate(buildVibratePattern(VIBRATE_READY_MS));
   } catch {
     // ignore
   }

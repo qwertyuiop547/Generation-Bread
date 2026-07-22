@@ -8,6 +8,7 @@ import {
   notificationPermission,
   requestOrderAlertPermission,
   setOrderAlertsEnabled,
+  stopOrderReadyVibrate,
 } from "@/lib/orderReadyAlerts";
 
 type BannerDetail = { title: string; body: string; orderLabel: string };
@@ -49,9 +50,17 @@ export default function OrderReadyAlertUI() {
 
   useEffect(() => {
     if (!banner) return;
-    const t = setTimeout(() => setBanner(null), 12000);
+    const t = setTimeout(() => {
+      stopOrderReadyVibrate();
+      setBanner(null);
+    }, 20000);
     return () => clearTimeout(t);
   }, [banner]);
+
+  const dismissBanner = useCallback(() => {
+    stopOrderReadyVibrate();
+    setBanner(null);
+  }, []);
 
   const enable = useCallback(async () => {
     setBusy(true);
@@ -155,7 +164,7 @@ export default function OrderReadyAlertUI() {
                 <Link
                   href={`/track?order=${encodeURIComponent(banner.orderLabel)}`}
                   className="inline-flex mt-2 text-[11px] font-bold uppercase tracking-wider text-yellow-brown"
-                  onClick={() => setBanner(null)}
+                  onClick={dismissBanner}
                 >
                   Open tracker →
                 </Link>
@@ -163,7 +172,7 @@ export default function OrderReadyAlertUI() {
               <button
                 type="button"
                 aria-label="Dismiss"
-                onClick={() => setBanner(null)}
+                onClick={dismissBanner}
                 className="text-milk/50 hover:text-milk text-lg leading-none px-1"
               >
                 ×
