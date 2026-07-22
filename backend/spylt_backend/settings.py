@@ -81,9 +81,10 @@ AUTH_USER_MODEL = 'accounts.CustomUser'
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'accounts.null_byte_middleware.RejectNullByteMiddleware',
+    # CORS must run before IP rate limiting so preflight/429 responses still get ACAO.
+    'corsheaders.middleware.CorsMiddleware',
     'accounts.middleware.IPRateLimitMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',

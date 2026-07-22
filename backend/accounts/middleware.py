@@ -33,6 +33,14 @@ class IPRateLimitMiddleware:
         "/health",
         "/healthz",
         "/api/health",
+        # Auth must stay reachable from mobile (CORS preflight + login).
+        "/api/auth/jwt/login/",
+        "/api/auth/token/refresh/",
+        "/api/auth/google/",
+        "/api/auth/register/",
+        "/api/auth/verify-email/",
+        "/api/auth/resend-code/",
+        "/api/auth/logout/",
     )
 
     def __init__(self, get_response):
@@ -41,6 +49,10 @@ class IPRateLimitMiddleware:
         self.window = int(getattr(settings, "RATE_LIMIT_IP_WINDOW", 60))
 
     def __call__(self, request):
+        # Never throttle CORS preflight — browsers treat OPTIONS 429 as "Failed to fetch".
+        if request.method == "OPTIONS":
+            return self.get_response(request)
+
         path = request.path or ""
         if any(path.startswith(prefix) for prefix in self.SKIP_PREFIXES):
             return self.get_response(request)

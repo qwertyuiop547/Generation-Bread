@@ -331,7 +331,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       rememberLocalUser({ name, email, password, role: loginData.user?.role, provider: "local" });
       return { ok: true };
     } catch {
-      return { ok: false, error: "Unable to reach the server. Please try again." };
+      return {
+        ok: false,
+        error:
+          "Unable to reach the server. Check your connection, wait a few seconds if the API is waking up, then try again.",
+      };
     }
   };
 
@@ -385,7 +389,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         error: await parseErrorMessage(res, "Invalid email or password."),
       };
     } catch {
-      return { ok: false, error: "Unable to reach the server. Please try again." };
+      return {
+        ok: false,
+        error:
+          "Unable to reach the server. Check your connection, wait a few seconds if the API is waking up, then try again.",
+      };
     }
   };
 
