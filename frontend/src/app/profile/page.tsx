@@ -527,7 +527,7 @@ const handleChangePassword = (e: React.FormEvent) => {
               <p className="font-paragraph text-dark-brown/50 text-sm">Color Theme</p>
               <p className="font-bold text-dark-brown text-lg">Warm or Sky</p>
               <p className="font-paragraph text-dark-brown/45 text-xs mt-1">
-                Choose the look of the café app across all pages.
+                Warm = café cream. Sky = cool navy surfaces with gold accents.
               </p>
             </div>
             <ThemeToggle className="self-start sm:self-auto" />

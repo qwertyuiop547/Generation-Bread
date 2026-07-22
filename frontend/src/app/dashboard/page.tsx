@@ -969,7 +969,7 @@ export default function DashboardPage() {
       />
 
       {/* Light header — same family as rest of app */}
-      <header className="dashboard-header sticky top-0 z-40 border-b border-dark-brown/10 bg-[#f6ebe0]/90 backdrop-blur-xl pt-[env(safe-area-inset-top)]">
+      <header className="dashboard-header sticky top-0 z-40 border-b border-dark-brown/10 app-header-bar backdrop-blur-xl pt-[env(safe-area-inset-top)]">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-5 sm:py-3.5 md:px-10 md:py-4">
           <Link href="/" className="dashboard-nav-item min-w-0 shrink-0">
             <BrandLogo
@@ -1019,7 +1019,7 @@ export default function DashboardPage() {
         {showMobileMenu && (
           <div
             ref={mobileMenuRef}
-            className="mobile-nav-menu absolute top-full right-0 z-50 flex w-full flex-col items-center gap-2.5 border-b border-dark-brown/10 bg-[#f6ebe0] px-4 py-4 shadow-lg will-change-transform sm:gap-3 sm:py-5 md:hidden"
+            className="mobile-nav-menu absolute top-full right-0 z-50 flex w-full flex-col items-center gap-2.5 border-b border-dark-brown/10 theme-sheet px-4 py-4 shadow-lg will-change-transform sm:gap-3 sm:py-5 md:hidden"
           >
             {mostOrderedDrink && (
               <button

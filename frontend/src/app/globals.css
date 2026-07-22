@@ -37,35 +37,40 @@ body {
   transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-/* Soft coastal café theme — muted navy + sky, not neon cyan */
+/*
+ * Sky theme = cool café morning.
+ * Navy chrome + soft blue-white surfaces, but gold accents stay warm
+ * (prices, highlights, stars) so the bakery brand doesn't look neon blue.
+ */
 html[data-theme="sky"] {
   --color-black: #0f172a;
-  --color-main-bg: #1e3a5f;
-  --color-dark-brown: #1e3a5f;
-  --color-dark-brown-hover: #152a45;
-  --color-mid-brown: #3d7ea6;
-  --color-light-brown: #7eb8d4;
-  --color-red-brown: #2d6a8a;
-  --color-yellow-brown: #5ba3c4;
-  --color-milk-yellow: #e8f4f8;
-  --color-red: #dc2626;
-  --color-milk: #f7fafc;
+  --color-main-bg: #1a3352;
+  --color-dark-brown: #1a3352;
+  --color-dark-brown-hover: #12243a;
+  /* Keep café gold accents — do NOT remap these to cyan */
+  --color-mid-brown: #b0793a;
+  --color-light-brown: #e3a458;
+  --color-red-brown: #7f3b2d;
+  --color-yellow-brown: #c4924a;
+  --color-milk-yellow: #e8eef5;
+  --color-red: #b91c1c;
+  --color-milk: #f4f7fb;
   --color-white: #ffffff;
 }
 
 html[data-theme="sky"],
 html[data-theme="sky"] body {
-  background-color: #f3f8fb;
-  color: #1e3a5f;
+  background-color: #eef3f8;
+  color: #1a3352;
 }
 
 html[data-theme="sky"] .message-content {
-  background-color: #1e3a5f;
+  background-color: #1a3352;
 }
 
 html[data-theme="sky"] .footer-section,
 html[data-theme="sky"] footer {
-  background-color: #1e3a5f;
+  background-color: #1a3352;
 }
 
 .footer-stage {
@@ -76,8 +81,8 @@ html[data-theme="sky"] footer {
 
 html[data-theme="sky"] .footer-stage {
   background:
-    radial-gradient(ellipse 80% 45% at 50% 0%, rgba(126, 184, 212, 0.22), transparent 55%),
-    #152a45;
+    radial-gradient(ellipse 80% 45% at 50% 0%, rgba(227, 164, 88, 0.18), transparent 55%),
+    #12243a;
 }
 
 /* Theme-aware app surfaces (dashboard / auth) — UI only, not photos/videos */
@@ -97,18 +102,30 @@ html[data-theme="sky"] .footer-stage {
 }
 
 html[data-theme="sky"] .app-canvas {
-  background-color: #f3f8fb;
+  background:
+    radial-gradient(ellipse 90% 50% at 0% -10%, rgba(26, 51, 82, 0.06), transparent 55%),
+    radial-gradient(ellipse 60% 40% at 100% 0%, rgba(227, 164, 88, 0.08), transparent 50%),
+    #eef3f8;
 }
 html[data-theme="sky"] .app-header-bar {
-  background-color: rgba(247, 250, 252, 0.94);
+  background-color: rgba(244, 247, 251, 0.92);
 }
 html[data-theme="sky"] .app-panel {
-  background-color: rgba(255, 255, 255, 0.96);
-  border-color: rgba(61, 126, 166, 0.22);
+  background-color: rgba(255, 255, 255, 0.94);
+  border-color: rgba(26, 51, 82, 0.12);
 }
 html[data-theme="sky"] .app-chip {
   background-color: #ffffff;
-  border-color: rgba(61, 126, 166, 0.22);
+  border-color: rgba(26, 51, 82, 0.12);
+}
+
+/* Auth / dashboard sheets that were hardcoded cream */
+html[data-theme="sky"] .theme-sheet {
+  background-color: #f4f7fb !important;
+}
+html[data-theme="warm"] .theme-sheet,
+.theme-sheet {
+  background-color: #f6ebe0;
 }
 
 /*

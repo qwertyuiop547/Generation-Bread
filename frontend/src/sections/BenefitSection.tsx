@@ -18,10 +18,10 @@ const WARM_STICKERS = [
 ] as const;
 
 const SKY_STICKERS = [
-  { title: "Fresh Bakes", color: "#f0f9ff", bg: "#38bdf8", borderColor: "#0c4a6e", className: "first-title" },
-  { title: "Tacloban City", color: "#0c4a6e", bg: "#f8fafc", borderColor: "#0c4a6e", className: "second-title" },
-  { title: "Dine & Pickup", color: "#f0f9ff", bg: "#0369a1", borderColor: "#0c4a6e", className: "third-title" },
-  { title: "Soft & Siksik", color: "#0f172a", bg: "#7dd3fc", borderColor: "#0c4a6e", className: "fourth-title" },
+  { title: "Fresh Bakes", color: "#f4f7fb", bg: "#1a3352", borderColor: "#0f172a", className: "first-title" },
+  { title: "Tacloban City", color: "#1a3352", bg: "#f4f7fb", borderColor: "#1a3352", className: "second-title" },
+  { title: "Dine & Pickup", color: "#f4f7fb", bg: "#b0793a", borderColor: "#0f172a", className: "third-title" },
+  { title: "Soft & Siksik", color: "#1a3352", bg: "#e3a458", borderColor: "#1a3352", className: "fourth-title" },
 ] as const;
 
 const BenefitSection = () => {

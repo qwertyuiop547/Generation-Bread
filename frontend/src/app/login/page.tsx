@@ -178,7 +178,7 @@ function LoginPageContent() {
             </div>
           </div>
 
-          <div className="relative z-10 -mt-5 flex flex-1 flex-col rounded-t-[1.75rem] bg-[#f6ebe0] px-5 pb-8 pt-6 shadow-[0_-12px_40px_rgba(42,24,16,0.18)] sm:px-8 md:px-12 lg:mt-0 lg:rounded-none lg:bg-transparent lg:px-16 lg:pb-10 lg:pt-8 lg:shadow-none xl:px-20">
+          <div className="relative z-10 -mt-5 flex flex-1 flex-col rounded-t-[1.75rem] theme-sheet px-5 pb-8 pt-6 shadow-[0_-12px_40px_rgba(42,24,16,0.18)] sm:px-8 md:px-12 lg:mt-0 lg:rounded-none lg:bg-transparent lg:px-16 lg:pb-10 lg:pt-8 lg:shadow-none xl:px-20">
             <div className="mx-auto mb-5 h-1 w-10 rounded-full bg-dark-brown/15 lg:hidden" aria-hidden />
 
             <div className="mb-2 hidden justify-end lg:flex">
