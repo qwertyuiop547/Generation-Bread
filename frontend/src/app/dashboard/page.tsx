@@ -1053,6 +1053,14 @@ export default function DashboardPage() {
                 >
                   {t("Scan QR")}
                 </Link>
+                {activeOrders.length === 0 && (
+                  <Link
+                    href="/track"
+                    className="text-sm font-bold uppercase tracking-wide text-dark-brown/45 transition-colors hover:text-dark-brown"
+                  >
+                    {t("Track Order")}
+                  </Link>
+                )}
               </div>
             </div>
 
@@ -1152,42 +1160,6 @@ export default function DashboardPage() {
             </div>
           </section>
         )}
-
-        {/* Actions */}
-        <section className="dashboard-stagger-item mb-8 md:mb-10">
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-3">
-            <Link
-              href="/order"
-              className="group flex items-center justify-between rounded-2xl bg-dark-brown px-5 py-4 text-milk transition-colors hover:bg-dark-brown-hover sm:py-5"
-            >
-              <div>
-                <p className="text-sm font-bold uppercase tracking-tight">{t("Order Now")}</p>
-                <p className="mt-0.5 font-paragraph text-xs text-milk/50">{t("Browse the menu") || "Browse the menu"}</p>
-              </div>
-              <span className="text-milk/40 transition-transform group-hover:translate-x-0.5" aria-hidden>→</span>
-            </Link>
-            <Link
-              href="/scan"
-              className="group flex items-center justify-between rounded-2xl bg-light-brown px-5 py-4 text-dark-brown transition-colors hover:bg-mid-brown hover:text-milk sm:py-5"
-            >
-              <div>
-                <p className="text-sm font-bold uppercase tracking-tight">{t("Scan QR")}</p>
-                <p className="mt-0.5 font-paragraph text-xs text-dark-brown/55 group-hover:text-milk/60">{t("Table ordering") || "Table ordering"}</p>
-              </div>
-              <span className="opacity-40 transition-transform group-hover:translate-x-0.5" aria-hidden>→</span>
-            </Link>
-            <Link
-              href="/track"
-              className="group flex items-center justify-between rounded-2xl border border-dark-brown/10 bg-milk/70 px-5 py-4 text-dark-brown transition-colors hover:border-dark-brown/20 hover:bg-milk sm:py-5"
-            >
-              <div>
-                <p className="text-sm font-bold uppercase tracking-tight">{t("Track Order")}</p>
-                <p className="mt-0.5 font-paragraph text-xs text-dark-brown/45">{t("Live status") || "Live status"}</p>
-              </div>
-              <span className="text-dark-brown/30 transition-transform group-hover:translate-x-0.5" aria-hidden>→</span>
-            </Link>
-          </div>
-        </section>
 
         {/* Stats */}
         <section className="dashboard-stagger-item mb-8 border-y border-dark-brown/10 py-5 md:mb-10 md:py-6">
