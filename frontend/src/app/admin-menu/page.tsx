@@ -838,13 +838,13 @@ export default function AdminMenuPage() {
             </div>
 
             <form onSubmit={handleSave} className="relative flex min-h-0 flex-1 flex-col">
-              <div className="flex-1 space-y-5 overflow-y-auto overscroll-contain px-5 pb-4 pt-2 sm:px-6">
-                {/* Live mini card preview */}
+              {/* Pinned live preview — stays visible while the form scrolls (esp. mobile) */}
+              <div className="menu-form-block relative z-10 shrink-0 border-b border-dark-brown/8 bg-[#fff8f1]/95 px-5 pb-3 pt-1 shadow-[0_10px_24px_-18px_rgba(82,49,34,0.55)] backdrop-blur-sm sm:px-6">
                 <div
-                  className="menu-form-block overflow-hidden rounded-2xl border border-dark-brown/8 shadow-[0_12px_40px_-18px_rgba(82,49,34,0.45)]"
+                  className="overflow-hidden rounded-2xl border border-dark-brown/8 shadow-[0_12px_40px_-18px_rgba(82,49,34,0.45)]"
                   style={{ backgroundColor: safeBg }}
                 >
-                  <div className="relative aspect-[16/10] bg-black/10">
+                  <div className="relative aspect-[5/2] bg-black/10 sm:aspect-[16/10]">
                     {imagePreview ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
@@ -858,7 +858,7 @@ export default function AdminMenuPage() {
                         <span className="text-[11px] font-bold uppercase tracking-wider">Photo preview</span>
                       </div>
                     )}
-                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/55 to-transparent px-3.5 pb-3 pt-8">
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/55 to-transparent px-3.5 pb-2.5 pt-6 sm:pb-3 sm:pt-8">
                       <p className="truncate text-sm font-bold uppercase tracking-wide text-milk">
                         {formData.name.trim() || "Untitled item"}
                       </p>
@@ -868,7 +868,9 @@ export default function AdminMenuPage() {
                     </div>
                   </div>
                 </div>
+              </div>
 
+              <div className="flex-1 space-y-5 overflow-y-auto overscroll-contain px-5 pb-4 pt-4 sm:px-6">
                 {/* Category segmented control */}
                 <div className="menu-form-block grid grid-cols-2 gap-1 rounded-2xl bg-dark-brown/[0.06] p-1">
                   {([
