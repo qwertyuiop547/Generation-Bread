@@ -9,7 +9,10 @@ logger = logging.getLogger(__name__)
 
 
 def get_client_ip(request):
-    """Prefer first X-Forwarded-For hop when behind Cloudflare / Render."""
+    """Prefer real client IP when behind Cloudflare / Render."""
+    cf = request.META.get("HTTP_CF_CONNECTING_IP")
+    if cf:
+        return cf.strip()
     forwarded = request.META.get("HTTP_X_FORWARDED_FOR")
     if forwarded:
         return forwarded.split(",")[0].strip()
@@ -18,11 +21,14 @@ def get_client_ip(request):
 
 class IPRateLimitMiddleware:
     """
-    Limit total HTTP requests per client IP.
+    Limit total HTTP requests per client IP (anonymous / public traffic).
 
-    Uses cache.add + incr so counters stay mostly race-safe under concurrency.
+    Authenticated JWT requests are exempt — admin/staff dashboards poll heavily
+    and mobile carrier CGNAT would otherwise false-positive with 429s.
+    Abuse on auth'd routes is still covered by DRF UserRateThrottle.
+
     Defaults (overridable via settings):
-      RATE_LIMIT_IP_REQUESTS = 120
+      RATE_LIMIT_IP_REQUESTS = 1200
       RATE_LIMIT_IP_WINDOW = 60  (seconds)
     """
 
@@ -48,20 +54,24 @@ class IPRateLimitMiddleware:
         "/api/auth/eta",
         # Staff shift actions must not get blocked by kitchen/dashboard polling noise.
         "/api/auth/shift/",
-        # Admin APIs are already JWT/role-gated. Do not block menu CRUD / notifications /
-        # dashboard polls on shared mobile carrier IPs (CGNAT) — that caused false 429s
-        # like "Too many requests" when adding menu items from a phone.
+        # Admin APIs are already JWT/role-gated.
         "/api/auth/admin/",
+        "/api/auth/me/",
     )
 
     def __init__(self, get_response):
         self.get_response = get_response
-        self.max_requests = int(getattr(settings, "RATE_LIMIT_IP_REQUESTS", 120))
+        self.max_requests = int(getattr(settings, "RATE_LIMIT_IP_REQUESTS", 1200))
         self.window = int(getattr(settings, "RATE_LIMIT_IP_WINDOW", 60))
 
     def __call__(self, request):
         # Never throttle CORS preflight — browsers treat OPTIONS 429 as "Failed to fetch".
         if request.method == "OPTIONS":
+            return self.get_response(request)
+
+        # JWT sessions (admin/staff/customer) — do not compete on shared carrier IPs.
+        auth = request.META.get("HTTP_AUTHORIZATION") or ""
+        if auth.startswith("Bearer "):
             return self.get_response(request)
 
         path = request.path or ""

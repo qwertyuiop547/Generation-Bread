@@ -445,6 +445,7 @@ export default function AdminPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const menuTlRef = useRef<gsap.core.Timeline | null>(null);
+  const lastCancelOverdueAtRef = useRef(0);
 
   const toggleMobileMenu = () => {
     if (isMobileMenuOpen) {
