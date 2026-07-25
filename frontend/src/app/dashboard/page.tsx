@@ -15,7 +15,6 @@ import {
 } from "recharts";
 import PageIntro from "@/components/PageIntro";
 import { performLogout } from "@/lib/logoutTransition";
-import { withWsToken, authHeaders } from "@/lib/authHeaders";
 import { unwrapListResponse } from "@/lib/apiList";
 import BrandLogo from "@/components/BrandLogo";
 import { useThemeColors, withAlpha } from "@/lib/themeColors";
@@ -45,7 +44,7 @@ interface Order {
 }
 
 export default function DashboardPage() {
-  const { isLoggedIn, isAuthLoading, user, logout, accessToken } = useAuth();
+  const { isLoggedIn, isAuthLoading, user, logout, accessToken, apiFetch } = useAuth();
   const router = useRouter();
   const { language, toggleLanguage, t } = useLanguage();
   const tc = useThemeColors();
@@ -274,37 +273,6 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
-    if (!user?.email || !accessToken) return;
-
-    const wsProtocol = API_BASE_URL.startsWith("https") ? "wss://" : "ws://";
-    const wsHost = API_BASE_URL.replace(/^https?:\/\//, "");
-    const wsUrl = withWsToken(
-      `${wsProtocol}${wsHost}/ws/orders/${encodeURIComponent(user.email)}/`
-    );
-
-    const ws = new WebSocket(wsUrl);
-
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        window.dispatchEvent(new CustomEvent("gb:order-status", { detail: data }));
-      } catch {
-        /* ignore */
-      }
-    };
-
-    return () => {
-      if (ws.readyState === WebSocket.CONNECTING) {
-        ws.onopen = () => ws.close();
-        return;
-      }
-      if (ws.readyState === WebSocket.OPEN) {
-        ws.close();
-      }
-    };
-  }, [user?.email, accessToken]);
-
-  useEffect(() => {
     if (!mounted || spendingData.length === 0) {
       setChartReady(false);
       return;
@@ -343,9 +311,7 @@ export default function DashboardPage() {
         
         let mappedOrders: Order[] = [];
         try {
-          const res = await fetch(`${API_BASE_URL}/api/auth/orders/?limit=200`, {
-            headers: authHeaders(),
-          });
+          const res = await apiFetch(`${API_BASE_URL}/api/auth/orders/?limit=200`);
           if (res.ok) {
             const data = unwrapListResponse<any>(await res.json());
             // Map Django order structure to our frontend structure
@@ -409,7 +375,7 @@ export default function DashboardPage() {
     };
 
     fetchOrders();
-  }, [user]);
+  }, [user, apiFetch]);
 
   // Live queue position for active customer orders (incl. ready-for-pickup)
   useEffect(() => {
@@ -670,9 +636,9 @@ export default function DashboardPage() {
 
     // Call backend to cancel the order (notifies admin via WebSocket)
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/orders/${numericId}/cancel/`, {
+      const res = await apiFetch(`${API_BASE_URL}/api/auth/orders/${numericId}/cancel/`, {
         method: "POST",
-        headers: authHeaders({ "Content-Type": "application/json" }),
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ cancel_reason: finalReason }),
       });
       if (!res.ok) {
@@ -705,9 +671,9 @@ export default function DashboardPage() {
     setIsSubmittingRating(true);
     const numericId = parseInt(rateOrderId.replace("ORD-", ""), 10);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/orders/${numericId}/rate/`, {
+      const res = await apiFetch(`${API_BASE_URL}/api/auth/orders/${numericId}/rate/`, {
         method: "POST",
-        headers: authHeaders({ "Content-Type": "application/json" }),
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ rating: ratingValue, rating_comment: ratingComment.trim() }),
       });
       if (res.ok) {

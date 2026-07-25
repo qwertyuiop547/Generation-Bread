@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from "react";
 import { useSession } from "next-auth/react";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
@@ -119,6 +119,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [mounted, setMounted] = useState(false);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
   const { data: session, status } = useSession();
+  const refreshInFlightRef = useRef<Promise<boolean> | null>(null);
 
   const [localResolved, setLocalResolved] = useState(false);
 
@@ -456,43 +457,53 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const refreshAccessToken = async (): Promise<boolean> => {
+    if (refreshInFlightRef.current) {
+      return refreshInFlightRef.current;
+    }
+
     const refresh =
       refreshToken ||
       (typeof window !== "undefined" ? localStorage.getItem("spylt_refresh_token") : null);
     if (!refresh) return false;
 
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/token/refresh/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refresh }),
-      });
+    refreshInFlightRef.current = (async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/auth/token/refresh/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ refresh }),
+        });
 
-      if (!res.ok) {
-        // Drop dead JWTs but keep the local user session so checkout can continue
-        // via email/AllowAny fallback instead of kicking them to login mid-order.
+        if (!res.ok) {
+          // Drop dead JWTs but keep the local user session so checkout can continue
+          // via email/AllowAny fallback instead of kicking them to login mid-order.
+          setAccessToken(null);
+          setRefreshToken(null);
+          localStorage.removeItem("spylt_access_token");
+          localStorage.removeItem("spylt_refresh_token");
+          return false;
+        }
+
+        const data = await res.json();
+        setAccessToken(data.access);
+        localStorage.setItem("spylt_access_token", data.access);
+        if (data.refresh) {
+          setRefreshToken(data.refresh);
+          localStorage.setItem("spylt_refresh_token", data.refresh);
+        }
+        return true;
+      } catch {
         setAccessToken(null);
         setRefreshToken(null);
         localStorage.removeItem("spylt_access_token");
         localStorage.removeItem("spylt_refresh_token");
         return false;
+      } finally {
+        refreshInFlightRef.current = null;
       }
+    })();
 
-      const data = await res.json();
-      setAccessToken(data.access);
-      localStorage.setItem("spylt_access_token", data.access);
-      if (data.refresh) {
-        setRefreshToken(data.refresh);
-        localStorage.setItem("spylt_refresh_token", data.refresh);
-      }
-      return true;
-    } catch {
-      setAccessToken(null);
-      setRefreshToken(null);
-      localStorage.removeItem("spylt_access_token");
-      localStorage.removeItem("spylt_refresh_token");
-      return false;
-    }
+    return refreshInFlightRef.current;
   };
 
   const apiFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
@@ -512,7 +523,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       headers,
     });
 
-    if (response.status === 401 && refreshToken) {
+    const hasRefresh =
+      !!(
+        refreshToken ||
+        (typeof window !== "undefined" && localStorage.getItem("spylt_refresh_token"))
+      );
+
+    if (response.status === 401 && hasRefresh) {
       const refreshed = await refreshAccessToken();
       if (refreshed) {
         const newToken = localStorage.getItem("spylt_access_token");

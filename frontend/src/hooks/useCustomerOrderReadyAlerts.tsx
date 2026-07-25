@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { authHeaders, getAccessToken, withWsToken } from "@/lib/authHeaders";
+import { getAccessToken, withWsToken } from "@/lib/authHeaders";
 import { unwrapListResponse } from "@/lib/apiList";
 import {
   areOrderAlertsEnabled,
@@ -43,7 +43,8 @@ function dispatchOrderCompleted(orderId: number) {
  * and ready alerts (vibrate + notification) work on mobile even if WS drops.
  */
 export function useCustomerOrderReadyAlerts() {
-  const { user, accessToken, isLoggedIn, isStaff, isAdmin, isAuthLoading } = useAuth();
+  const { user, accessToken, isLoggedIn, isStaff, isAdmin, isAuthLoading, apiFetch, refreshAccessToken } =
+    useAuth();
   const enabled =
     isLoggedIn && !isAuthLoading && !!user?.email && !isStaff && !isAdmin && !!accessToken;
   const lastStatusRef = useRef<Record<string, string>>({});
@@ -63,6 +64,7 @@ export function useCustomerOrderReadyAlerts() {
     let pollId: ReturnType<typeof setInterval> | null = null;
     let closedByCleanup = false;
     let attempt = 0;
+    let authFailed = false;
 
     const handlePayload = (data: CustomerOrderStatusEvent) => {
       if (!data?.order_id) return;
@@ -78,12 +80,25 @@ export function useCustomerOrderReadyAlerts() {
       }
     };
 
+    const ensureToken = async (): Promise<string | null> => {
+      let token = getAccessToken();
+      if (token) return token;
+      const ok = await refreshAccessToken();
+      if (!ok) {
+        authFailed = true;
+        return null;
+      }
+      return getAccessToken();
+    };
+
     const pollOrders = async () => {
-      if (!getAccessToken()) return;
+      if (authFailed || closedByCleanup) return;
       try {
-        const res = await fetch(`${API_BASE_URL}/api/auth/orders/?limit=30`, {
-          headers: authHeaders(),
-        });
+        const res = await apiFetch(`${API_BASE_URL}/api/auth/orders/?limit=30`);
+        if (res.status === 401) {
+          authFailed = true;
+          return;
+        }
         if (!res.ok) return;
         const rows = unwrapListResponse<{
           id: number;
@@ -113,16 +128,17 @@ export function useCustomerOrderReadyAlerts() {
       }
     };
 
-    const connect = () => {
-      if (closedByCleanup) return;
-      if (!getAccessToken()) {
-        return;
-      }
+    const connect = async () => {
+      if (closedByCleanup || authFailed) return;
+
+      const token = await ensureToken();
+      if (!token) return;
 
       const wsProtocol = API_BASE_URL.startsWith("https") ? "wss://" : "ws://";
       const wsHost = API_BASE_URL.replace(/^https?:\/\//, "");
       const wsUrl = withWsToken(
-        `${wsProtocol}${wsHost}/ws/orders/${encodeURIComponent(user.email)}/`
+        `${wsProtocol}${wsHost}/ws/orders/${encodeURIComponent(user.email)}/`,
+        token
       );
 
       try {
@@ -147,17 +163,32 @@ export function useCustomerOrderReadyAlerts() {
         }
       };
 
-      ws.onclose = () => {
-        if (closedByCleanup) return;
+      ws.onclose = (event) => {
+        if (closedByCleanup || authFailed) return;
+        // 4401 = unauthorized from our consumer — refresh once then stop if still dead.
+        if (event.code === 4401 || event.code === 4403) {
+          void (async () => {
+            const ok = await refreshAccessToken();
+            if (!ok) {
+              authFailed = true;
+              return;
+            }
+            if (closedByCleanup) return;
+            attempt = 0;
+            reconnectId = setTimeout(() => void connect(), 800);
+          })();
+          return;
+        }
         const delay = Math.min(12000, 1000 * 2 ** attempt);
         attempt += 1;
-        reconnectId = setTimeout(connect, delay);
+        if (attempt > 8) return;
+        reconnectId = setTimeout(() => void connect(), delay);
       };
     };
 
     void pollOrders();
     pollId = setInterval(() => void pollOrders(), 10000);
-    connect();
+    void connect();
 
     return () => {
       closedByCleanup = true;
@@ -170,7 +201,7 @@ export function useCustomerOrderReadyAlerts() {
       }
       if (ws.readyState === WebSocket.OPEN) ws.close();
     };
-  }, [enabled, user?.email, accessToken]);
+  }, [enabled, user?.email, accessToken, apiFetch, refreshAccessToken]);
 }
 
 /** Mount-once wrapper for Providers. */
