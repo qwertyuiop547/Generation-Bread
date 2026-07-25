@@ -1049,53 +1049,82 @@ export default function DashboardPage() {
       <main className="relative z-10 mx-auto w-full max-w-5xl px-4 py-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-5 sm:py-8 md:px-10 md:py-12">
         {/* Welcome hero card */}
         <section className="dashboard-stagger-item mb-7 md:mb-10">
-          <div className="relative overflow-hidden rounded-3xl border border-dark-brown/10 bg-[#2a1810] p-6 text-milk shadow-2xl sm:p-8 md:p-10">
+          <div className="relative overflow-hidden rounded-3xl border border-dark-brown/10 bg-milk p-6 shadow-xl sm:p-8 md:p-10">
+            {/* Warm cream gradient wash */}
             <div
-              className="pointer-events-none absolute inset-0 opacity-60"
+              className="pointer-events-none absolute inset-0"
               style={{
                 background:
-                  "radial-gradient(ellipse 80% 60% at 20% 20%, rgba(227,164,88,0.35), transparent 55%), radial-gradient(ellipse 60% 50% at 100% 100%, rgba(82,49,34,0.35), transparent 50%), linear-gradient(135deg, rgba(42,24,16,0.9), rgba(82,49,34,0.85))",
+                  "radial-gradient(ellipse 70% 50% at 15% 15%, rgba(227,164,88,0.18), transparent 50%), radial-gradient(ellipse 50% 60% at 95% 80%, rgba(82,49,34,0.06), transparent 50%), linear-gradient(135deg, #fffcf8 0%, #fef7ef 100%)",
               }}
             />
-            <div className="relative z-10">
-              <p className="mb-3 font-paragraph text-[0.65rem] uppercase tracking-[0.35em] text-milk/60 sm:text-[0.7rem]">
-                {t("Account") || "Account"}
-              </p>
-              <h1 className="max-w-full break-words text-[clamp(2rem,9vw,3.75rem)] font-bold uppercase leading-[0.92] tracking-[-0.03em] text-milk">
-                {t("Welcome") || "Welcome"}
+            {/* Decorative floating bread image */}
+            <div className="pointer-events-none absolute -bottom-8 -right-4 z-0 opacity-90 sm:-bottom-12 sm:-right-8 md:-bottom-16 md:-right-10">
+              <img
+                src="/images/generation-bread-ube-cheese-pandesal.png"
+                alt=""
+                className="h-40 w-auto rotate-[-6deg] select-none drop-shadow-2xl sm:h-52 md:h-64"
+                draggable={false}
+              />
+            </div>
+            <div className="relative z-10 max-w-lg">
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-light-brown/30 bg-light-brown/10 px-3 py-1.5">
+                <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                <p className="font-paragraph text-[0.65rem] font-bold uppercase tracking-[0.2em] text-dark-brown/60">
+                  {activeOrders.length > 0
+                    ? (t("Order in progress") || "Order in progress")
+                    : (t("Fresh from the oven") || "Fresh from the oven")}
+                </p>
+              </div>
+              <h1 className="max-w-full break-words text-[clamp(1.75rem,7vw,3.25rem)] font-bold uppercase leading-[0.95] tracking-[-0.03em] text-dark-brown">
+                {t("Good day") || "Good day"}
                 <span className="mt-1 block text-brand-gold">
                   {user?.name?.split(" ")[0] || user?.name || "Back"}
                 </span>
               </h1>
-              <p className="mt-4 max-w-md font-paragraph text-sm leading-relaxed text-milk/70 sm:text-base">
+              <p className="mt-4 max-w-sm font-paragraph text-sm leading-relaxed text-dark-brown/60 sm:text-base">
                 {activeOrders.length > 0
-                  ? (t("Your order is being prepared.") || "Your order is being prepared.")
-                  : (t("Order, scan, or track — whenever you're ready.") ||
-                    "Order, scan, or track — whenever you're ready.")}
+                  ? (t("Your order is being prepared. Track it live below.") || "Your order is being prepared. Track it live below.")
+                  : (t("Order fresh pandesal and drinks — ready for pickup or dine-in.") ||
+                    "Order fresh pandesal and drinks — ready for pickup or dine-in.")}
               </p>
-              {activeOrders.length > 0 ? (
+              <div className="mt-5 flex flex-wrap items-center gap-3 sm:mt-6">
+                {activeOrders.length > 0 ? (
+                  <Link
+                    href="/track"
+                    className="inline-flex items-center gap-2 rounded-full bg-dark-brown px-5 py-2.5 text-sm font-bold uppercase tracking-wide text-milk transition-all hover:bg-dark-brown-hover hover:shadow-lg"
+                  >
+                    {t("Track order") || "Track order"}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M5 12h14" />
+                      <path d="m12 5 7 7-7 7" />
+                    </svg>
+                  </Link>
+                ) : (
+                  <Link
+                    href="/order"
+                    className="inline-flex items-center gap-2 rounded-full bg-dark-brown px-5 py-2.5 text-sm font-bold uppercase tracking-wide text-milk transition-all hover:bg-dark-brown-hover hover:shadow-lg"
+                  >
+                    {t("Order now") || "Order now"}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M5 12h14" />
+                      <path d="m12 5 7 7-7 7" />
+                    </svg>
+                  </Link>
+                )}
                 <Link
-                  href="/track"
-                  className="relative z-10 mt-5 inline-flex items-center gap-2 rounded-full bg-milk px-5 py-2.5 text-sm font-bold uppercase tracking-wide text-dark-brown transition-all hover:bg-white hover:shadow-lg sm:mt-6"
+                  href="/scan"
+                  className="inline-flex items-center gap-2 rounded-full border border-dark-brown/15 bg-milk/60 px-5 py-2.5 text-sm font-bold uppercase tracking-wide text-dark-brown transition-all hover:bg-dark-brown/5 hover:shadow-md"
                 >
-                  {t("Track order") || "Track order"}
+                  {t("Scan QR")}
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M5 12h14" />
-                    <path d="m12 5 7 7-7 7" />
+                    <rect x="3" y="3" width="7" height="7" />
+                    <rect x="14" y="3" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" />
                   </svg>
                 </Link>
-              ) : (
-                <Link
-                  href="/order"
-                  className="relative z-10 mt-5 inline-flex items-center gap-2 rounded-full bg-milk px-5 py-2.5 text-sm font-bold uppercase tracking-wide text-dark-brown transition-all hover:bg-white hover:shadow-lg sm:mt-6"
-                >
-                  {t("Order now") || "Order now"}
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M5 12h14" />
-                    <path d="m12 5 7 7-7 7" />
-                  </svg>
-                </Link>
-              )}
+              </div>
             </div>
           </div>
         </section>
