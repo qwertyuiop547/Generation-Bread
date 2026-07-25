@@ -47,7 +47,7 @@ services:
       - key: WS_MAX_CONNECTIONS_GLOBAL
         value: "5000"
       - key: RATE_LIMIT_IP_REQUESTS
-        value: "600"
+        value: "1200"
       - key: MENU_CACHE_SECONDS
         value: "30"
       - key: EMAIL_HOST_USER

@@ -41,7 +41,6 @@ class IPRateLimitMiddleware:
         "/api/auth/verify-email/",
         "/api/auth/resend-code/",
         "/api/auth/logout/",
-        "/api/auth/admin/orders",
         "/api/auth/orders",
         # Customer checkout path — cart/menu/ETA must stay reachable on shared mobile IPs.
         "/api/auth/cart",
@@ -49,6 +48,10 @@ class IPRateLimitMiddleware:
         "/api/auth/eta",
         # Staff shift actions must not get blocked by kitchen/dashboard polling noise.
         "/api/auth/shift/",
+        # Admin APIs are already JWT/role-gated. Do not block menu CRUD / notifications /
+        # dashboard polls on shared mobile carrier IPs (CGNAT) — that caused false 429s
+        # like "Too many requests" when adding menu items from a phone.
+        "/api/auth/admin/",
     )
 
     def __init__(self, get_response):

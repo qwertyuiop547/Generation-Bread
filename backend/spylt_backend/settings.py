@@ -93,7 +93,7 @@ MIDDLEWARE = [
 ]
 
 # ─── Anti-abuse / soft anti-DDoS ───────────────────────────────────────
-RATE_LIMIT_IP_REQUESTS = int(os.environ.get('RATE_LIMIT_IP_REQUESTS', '600'))
+RATE_LIMIT_IP_REQUESTS = int(os.environ.get('RATE_LIMIT_IP_REQUESTS', '1200'))
 RATE_LIMIT_IP_WINDOW = int(os.environ.get('RATE_LIMIT_IP_WINDOW', '60'))
 LOGIN_LOCKOUT_MAX_ATTEMPTS = int(os.environ.get('LOGIN_LOCKOUT_MAX_ATTEMPTS', '5'))
 LOGIN_LOCKOUT_WINDOW = int(os.environ.get('LOGIN_LOCKOUT_WINDOW', '900'))
