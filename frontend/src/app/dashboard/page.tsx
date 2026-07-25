@@ -44,7 +44,7 @@ interface Order {
 }
 
 export default function DashboardPage() {
-  const { isLoggedIn, isAuthLoading, user, logout, accessToken, apiFetch } = useAuth();
+  const { isLoggedIn, isAuthLoading, user, apiFetch } = useAuth();
   const router = useRouter();
   const { language, toggleLanguage, t } = useLanguage();
   const tc = useThemeColors();
