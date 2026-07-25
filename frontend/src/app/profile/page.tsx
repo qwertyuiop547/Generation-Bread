@@ -4,7 +4,7 @@ import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { authHeaders } from "@/lib/authHeaders";
+import { authFetch } from "@/lib/authHeaders";
 import { signOut } from "next-auth/react";
 import ThemeToggle from "@/components/ThemeToggle";
 
@@ -91,9 +91,8 @@ export default function ProfilePage() {
     const fetchPayroll = async () => {
       setPayrollLoading(true);
       try {
-        const res = await fetch(
-          `${API_BASE_URL}/api/auth/shift/payroll/?email=${encodeURIComponent(user.email)}`,
-          { headers: authHeaders() }
+        const res = await authFetch(
+          `${API_BASE_URL}/api/auth/shift/payroll/?email=${encodeURIComponent(user.email)}`
         );
         if (!res.ok || cancelled) return;
         const data = await res.json();
@@ -139,12 +138,10 @@ export default function ProfilePage() {
     setDeleteError("");
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/delete-account/`, {
+      const res = await authFetch(`${API_BASE_URL}/api/auth/delete-account/`, {
         method: "DELETE",
         headers: {
-          "Authorization": `Bearer ${localStorage.getItem("spylt_access_token")}`,
-        },
-      });
+          "Authorization": `Bearer ${localStorage.getItem("spylt_access_token")}`}});
 
       if (res.ok) {
         // Clear all localStorage data

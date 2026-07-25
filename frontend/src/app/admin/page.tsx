@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { authHeaders, getAccessToken } from "@/lib/authHeaders";
+import { authFetch, getAccessToken } from "@/lib/authHeaders";
 import { unwrapListResponse } from "@/lib/apiList";
 import { useLanguage } from "@/context/LanguageContext";
 import { signOut } from "next-auth/react";
@@ -28,8 +28,7 @@ const ATTENDANCE_STATUS_CONFIG: Record<string, { label: string; color: string; b
   absent: { label: "Marked Absent", color: "text-red-700", bg: "bg-red-50", dot: "bg-red-500" },
   absent_today: { label: "Absent Today", color: "text-red-700", bg: "bg-red-50", dot: "bg-red-500" },
   planned_absent: { label: "Planned Absence", color: "text-indigo-700", bg: "bg-indigo-50", dot: "bg-indigo-500" },
-  within_grace: { label: "Grace Period", color: "text-yellow-700", bg: "bg-yellow-50", dot: "bg-yellow-500" },
-};
+  within_grace: { label: "Grace Period", color: "text-yellow-700", bg: "bg-yellow-50", dot: "bg-yellow-500" }};
 
 function getAttendanceStatusConfig(entry: { display_status?: string; status: string }) {
   const key = entry.display_status || entry.status;
@@ -238,8 +237,7 @@ const CALENDAR_STATUS: Record<CalendarDayStatus, { cell: string; text: string; l
   planned_absent: { cell: "bg-indigo-500 border-indigo-600 text-white", text: "text-indigo-700", label: "Planned Absence" },
   pending: { cell: "bg-blue-400 border-blue-500 text-white", text: "text-blue-700", label: "Pending" },
   no_record: { cell: "bg-dark-brown/8 border-dark-brown/15 text-dark-brown/40", text: "text-dark-brown/50", label: "No Record" },
-  future: { cell: "bg-white border-dark-brown/10 text-dark-brown/25", text: "text-dark-brown/30", label: "Future" },
-};
+  future: { cell: "bg-white border-dark-brown/10 text-dark-brown/25", text: "text-dark-brown/30", label: "Future" }};
 
 function formatCalendarTime(iso: string | null | undefined): string {
   if (!iso) return "—";
@@ -252,8 +250,7 @@ function MonthlyCalendarGrid({
   selectedDay,
   onSelectDay,
   onPrevMonth,
-  onNextMonth,
-}: {
+  onNextMonth}: {
   data: MonthlyCalendarData | null;
   loading: boolean;
   selectedDay: MonthlyCalendarDay | null;
@@ -518,8 +515,7 @@ export default function AdminPage() {
           display: "flex",
           autoAlpha: 0,
           y: -18,
-          clipPath: "inset(0% 0% 100% 0%)",
-        });
+          clipPath: "inset(0% 0% 100% 0%)"});
         gsap.set(items, { autoAlpha: 0, y: -14, scale: 0.96 });
 
         menuTlRef.current = gsap
@@ -528,8 +524,7 @@ export default function AdminPage() {
             autoAlpha: 1,
             y: 0,
             clipPath: "inset(0% 0% 0% 0%)",
-            duration: 0.42,
-          })
+            duration: 0.42})
           .to(
             items,
             {
@@ -538,31 +533,27 @@ export default function AdminPage() {
               scale: 1,
               duration: 0.38,
               stagger: { each: 0.07, from: "start" },
-              ease: "power2.out",
-            },
+              ease: "power2.out"},
             "-=0.22"
           );
       } else {
         menuTlRef.current = gsap
           .timeline({
             defaults: { ease: "power2.in" },
-            onComplete: () => setShowMobileMenu(false),
-          })
+            onComplete: () => setShowMobileMenu(false)})
           .to(items, {
             autoAlpha: 0,
             y: -10,
             scale: 0.97,
             duration: 0.18,
-            stagger: { each: 0.04, from: "end" },
-          })
+            stagger: { each: 0.04, from: "end" }})
           .to(
             menu,
             {
               autoAlpha: 0,
               y: -14,
               clipPath: "inset(0% 0% 100% 0%)",
-              duration: 0.28,
-            },
+              duration: 0.28},
             "-=0.06"
           );
       }
@@ -597,7 +588,7 @@ export default function AdminPage() {
           return;
         }
         const url = `${API_BASE_URL}/api/auth/admin/orders/?admin_email=${encodeURIComponent(user.email)}&limit=500`;
-        const res = await fetch(url, { headers: authHeaders() });
+        const res = await authFetch(url);
         if (res.ok) {
           const data = unwrapListResponse<any>(await res.json());
           mapped = data.map((d: any) => ({
@@ -606,8 +597,7 @@ export default function AdminPage() {
               name: i.name,
               price: Number(i.price),
               qty: i.quantity,
-              notes: i.notes,
-            })),
+              notes: i.notes})),
             total: Number(d.total_price),
             totalItems: d.items.reduce((sum: number, i: any) => sum + i.quantity, 0),
             date: d.created_at,
@@ -624,19 +614,16 @@ export default function AdminPage() {
             servedByEmail: d.served_by_email || null,
             servedByName: d.served_by_name || null,
             paymentMethod: d.payment_method || "",
-            paymentStatus: d.payment_status || "unpaid",
-          }));
+            paymentStatus: d.payment_status || "unpaid"}));
         } else if (res.status === 401 || res.status === 403) {
           setToast({
             message: "Session expired — sign in again to see kitchen orders.",
-            type: "error",
-          });
+            type: "error"});
           setTimeout(() => setToast(null), 4000);
         } else if (res.status === 429) {
           setToast({
             message: "Too many requests — kitchen list will retry shortly.",
-            type: "error",
-          });
+            type: "error"});
           setTimeout(() => setToast(null), 4000);
         }
       } catch (backendErr) {
@@ -647,7 +634,7 @@ export default function AdminPage() {
       setOrders(allOrders);
 
       // Auto-cancel overdue scheduled orders (fire-and-forget)
-      fetch(`${API_BASE_URL}/api/auth/admin/cancel-overdue-scheduled/`, { method: "POST", headers: authHeaders() }).catch(() => {});
+      authFetch(`${API_BASE_URL}/api/auth/admin/cancel-overdue-scheduled/`, { method: "POST"}).catch(() => {});
     } catch (err) {
       setOrders([]);
     }
@@ -697,8 +684,7 @@ export default function AdminPage() {
         delay: 0.25,
         onComplete: () => {
           gsap.set(".admin-nav-item", { opacity: 1, y: 0, clearProps: "transform" });
-        },
-      }
+        }}
     );
 
     gsap.fromTo(
@@ -728,11 +714,10 @@ export default function AdminPage() {
       // Extract raw ID for backend (removing 'ORD-' prefix)
       const numericId = id.replace('ORD-', '').replace(/^0+/, '');
       
-      const res = await fetch(`${API_BASE_URL}/api/auth/admin/orders/${numericId}/status/`, {
+      const res = await authFetch(`${API_BASE_URL}/api/auth/admin/orders/${numericId}/status/`, {
         method: "PATCH",
-        headers: authHeaders({ "Content-Type": "application/json" }),
-        body: JSON.stringify({ admin_email: user.email, status }),
-      });
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ admin_email: user.email, status })});
 
       if (!res.ok) throw new Error("Failed to update order status");
 
@@ -770,11 +755,10 @@ export default function AdminPage() {
       }
 
       const numericId = id.replace("ORD-", "").replace(/^0+/, "");
-      const res = await fetch(`${API_BASE_URL}/api/auth/admin/orders/${numericId}/payment/`, {
+      const res = await authFetch(`${API_BASE_URL}/api/auth/admin/orders/${numericId}/payment/`, {
         method: "PATCH",
-        headers: authHeaders({ "Content-Type": "application/json" }),
-        body: JSON.stringify({ admin_email: user.email, payment_status: "paid" }),
-      });
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ admin_email: user.email, payment_status: "paid" })});
 
       if (!res.ok) throw new Error("Failed to mark payment");
 
@@ -785,8 +769,7 @@ export default function AdminPage() {
             ? {
                 ...o,
                 paymentStatus: (data.payment_status as Order["paymentStatus"]) || "paid",
-                paymentMethod: data.payment_method || o.paymentMethod || "cash",
-              }
+                paymentMethod: data.payment_method || o.paymentMethod || "cash"}
             : o
         )
       );
@@ -818,11 +801,10 @@ export default function AdminPage() {
 
       const numericId = id.replace('ORD-', '').replace(/^0+/, '');
 
-      const res = await fetch(`${API_BASE_URL}/api/auth/admin/orders/${numericId}/void/`, {
+      const res = await authFetch(`${API_BASE_URL}/api/auth/admin/orders/${numericId}/void/`, {
         method: "POST",
-        headers: authHeaders({ "Content-Type": "application/json" }),
-        body: JSON.stringify({ admin_email: user.email, void_reason: reason.trim() }),
-      });
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ admin_email: user.email, void_reason: reason.trim() })});
 
       if (!res.ok) {
         const data = await res.json();
@@ -859,11 +841,10 @@ export default function AdminPage() {
       }
 
       const numericId = id.replace('ORD-', '').replace(/^0+/, '');
-      const res = await fetch(`${API_BASE_URL}/api/auth/admin/orders/${numericId}/archive/`, {
+      const res = await authFetch(`${API_BASE_URL}/api/auth/admin/orders/${numericId}/archive/`, {
         method: "PATCH",
-        headers: authHeaders({ "Content-Type": "application/json" }),
-        body: JSON.stringify({ admin_email: user.email, archive }),
-      });
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ admin_email: user.email, archive })});
       if (!res.ok) throw new Error("Failed to archive order");
       setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, isArchived: archive } : o)));
     } catch (err) {
@@ -875,11 +856,10 @@ export default function AdminPage() {
   const autoArchive = async () => {
     if (!user?.email) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/admin/orders/auto-archive/`, {
+      const res = await authFetch(`${API_BASE_URL}/api/auth/admin/orders/auto-archive/`, {
         method: "POST",
-        headers: authHeaders({ "Content-Type": "application/json" }),
-        body: JSON.stringify({ admin_email: user.email }),
-      });
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ admin_email: user.email })});
       if (!res.ok) throw new Error("Failed to auto-archive");
       const data = await res.json();
       showToast(data.message || "Auto-archive complete.", "success");
@@ -895,7 +875,7 @@ export default function AdminPage() {
   const fetchStaff = async () => {
     if (!user?.email) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/admin/staff/?admin_email=${encodeURIComponent(user.email)}`, { headers: authHeaders() });
+      const res = await authFetch(`${API_BASE_URL}/api/auth/admin/staff/?admin_email=${encodeURIComponent(user.email)}`);
       if (res.ok) {
         const data = await res.json();
         setStaffUsers(data);
@@ -913,9 +893,8 @@ export default function AdminPage() {
     try {
       const params = new URLSearchParams({
         admin_email: user.email,
-        days: String(feedbackDays),
-      });
-      const res = await fetch(`${API_BASE_URL}/api/auth/admin/staff-feedback/?${params}`, { headers: authHeaders() });
+        days: String(feedbackDays)});
+      const res = await authFetch(`${API_BASE_URL}/api/auth/admin/staff-feedback/?${params}`);
       if (res.ok) {
         setFeedbackData(await res.json());
       } else {
@@ -937,14 +916,12 @@ export default function AdminPage() {
     if (!user?.email) return;
     setTaggingOrderId(orderId);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/admin/orders/${orderId}/served-by/`, {
+      const res = await authFetch(`${API_BASE_URL}/api/auth/admin/orders/${orderId}/served-by/`, {
         method: "PATCH",
-        headers: authHeaders({ "Content-Type": "application/json" }),
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           admin_email: user.email,
-          staff_email: staffEmail,
-        }),
-      });
+          staff_email: staffEmail})});
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to tag staff");
       showToast(staffEmail ? "Staff tagged on review" : "Staff tag removed", "success");
@@ -961,7 +938,7 @@ export default function AdminPage() {
   const fetchAttendance = async () => {
     if (!user?.email) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/admin/today-attendance/?admin_email=${encodeURIComponent(user.email)}`, { headers: authHeaders() });
+      const res = await authFetch(`${API_BASE_URL}/api/auth/admin/today-attendance/?admin_email=${encodeURIComponent(user.email)}`);
       if (res.ok) {
         const data = await res.json();
         setAttendanceData(data);
@@ -981,9 +958,8 @@ export default function AdminPage() {
     setPayrollLoading(true);
     try {
       const mult = parseFloat(otMultiplier) || 1.25;
-      const res = await fetch(
-          `${API_BASE_URL}/api/auth/admin/payroll-summary/?admin_email=${encodeURIComponent(user.email)}&multiplier=${mult}`,
-          { headers: authHeaders() }
+      const res = await authFetch(
+          `${API_BASE_URL}/api/auth/admin/payroll-summary/?admin_email=${encodeURIComponent(user.email)}&multiplier=${mult}`
         );
       if (res.ok) setPayrollData(await res.json());
     } catch {
@@ -1002,7 +978,7 @@ export default function AdminPage() {
 
   const fetchActivityFeed = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/admin/activity-feed/?hours=24`, { headers: authHeaders() });
+      const res = await authFetch(`${API_BASE_URL}/api/auth/admin/activity-feed/?hours=24`);
       if (res.ok) {
         const data = await res.json();
         setActivityFeed(data);
@@ -1032,10 +1008,9 @@ export default function AdminPage() {
         admin_email: user.email,
         staff_email: staff.email,
         page: String(page),
-        limit: "25",
-      });
+        limit: "25"});
       if (mark !== "all") params.set("mark", mark);
-      const res = await fetch(`${API_BASE_URL}/api/auth/admin/staff-attendance-history/?${params}`, { headers: authHeaders() });
+      const res = await authFetch(`${API_BASE_URL}/api/auth/admin/staff-attendance-history/?${params}`);
       if (res.ok) {
         const data = await res.json();
         setHistoryData(data);
@@ -1067,8 +1042,7 @@ export default function AdminPage() {
       avatar: staff.avatar ?? null,
       is_email_verified: true,
       is_active: true,
-      date_joined: "",
-    };
+      date_joined: ""};
     setHistoryStaff(fullStaff);
     setHistoryMarkFilter("all");
     setHistoryPage(1);
@@ -1096,9 +1070,8 @@ export default function AdminPage() {
         admin_email: user.email,
         staff_email: staffEmail,
         year: String(year),
-        month: String(month),
-      });
-      const res = await fetch(`${API_BASE_URL}/api/auth/admin/monthly-attendance/?${params}`, { headers: authHeaders() });
+        month: String(month)});
+      const res = await authFetch(`${API_BASE_URL}/api/auth/admin/monthly-attendance/?${params}`);
       if (res.ok) {
         setCalendarData(await res.json());
         setSelectedCalendarDay(null);
@@ -1142,7 +1115,7 @@ export default function AdminPage() {
   const fetchAbsenceRequests = async () => {
     if (!user?.email) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/admin/absence-requests/?admin_email=${encodeURIComponent(user.email)}&status=approved`, { headers: authHeaders() });
+      const res = await authFetch(`${API_BASE_URL}/api/auth/admin/absence-requests/?admin_email=${encodeURIComponent(user.email)}&status=approved`);
       if (res.ok) setAbsenceRequests(await res.json());
     } catch {
       setAbsenceRequests([]);
@@ -1160,9 +1133,8 @@ export default function AdminPage() {
     try {
       const params = new URLSearchParams({
         admin_email: user.email,
-        week_start: shiftWeekStart,
-      });
-      const res = await fetch(`${API_BASE_URL}/api/auth/admin/shift-assignments/?${params}`, { headers: authHeaders() });
+        week_start: shiftWeekStart});
+      const res = await authFetch(`${API_BASE_URL}/api/auth/admin/shift-assignments/?${params}`);
       if (res.ok) {
         const data = await res.json();
         setShiftAssignments(data.assignments || []);
@@ -1188,18 +1160,16 @@ export default function AdminPage() {
     }
     setShiftFormLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/admin/shift-assignments/`, {
+      const res = await authFetch(`${API_BASE_URL}/api/auth/admin/shift-assignments/`, {
         method: "POST",
-        headers: authHeaders({ "Content-Type": "application/json" }),
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           admin_email: user.email,
           staff_email: shiftFormStaff,
           shift_date: shiftFormDate,
           start_time: shiftFormStart,
           end_time: shiftFormEnd,
-          station: shiftFormStation,
-        }),
-      });
+          station: shiftFormStation})});
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to assign shift");
       showToast("Shift assigned", "success");
@@ -1219,11 +1189,10 @@ export default function AdminPage() {
   const deleteShiftAssignment = async (id: number) => {
     if (!user?.email) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/admin/shift-assignments/${id}/?admin_email=${encodeURIComponent(user.email)}`, {
+      const res = await authFetch(`${API_BASE_URL}/api/auth/admin/shift-assignments/${id}/?admin_email=${encodeURIComponent(user.email)}`, {
         method: "DELETE",
-        headers: authHeaders({ "Content-Type": "application/json" }),
-        body: JSON.stringify({ admin_email: user.email }),
-      });
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ admin_email: user.email })});
       if (!res.ok) {
         const data = await res.json();
         throw new Error(data.error || "Failed to remove shift");
@@ -1242,9 +1211,8 @@ export default function AdminPage() {
     try {
       const params = new URLSearchParams({
         admin_email: user.email,
-        week_start: shiftWeekStart,
-      });
-      const res = await fetch(`${API_BASE_URL}/api/auth/admin/shift-assignments/export/?${params}`, { headers: authHeaders() });
+        week_start: shiftWeekStart});
+      const res = await authFetch(`${API_BASE_URL}/api/auth/admin/shift-assignments/export/?${params}`);
       if (!res.ok) {
         let message = "Failed to export schedule";
         try {
@@ -1279,16 +1247,14 @@ export default function AdminPage() {
     }
     setAbsenceFormLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/absence-requests/`, {
+      const res = await authFetch(`${API_BASE_URL}/api/auth/absence-requests/`, {
         method: "POST",
-        headers: authHeaders({ "Content-Type": "application/json" }),
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: user.email,
           staff_email: absenceFormStaff,
           absence_date: absenceFormDate,
-          reason: absenceFormReason.trim(),
-        }),
-      });
+          reason: absenceFormReason.trim()})});
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to log absence");
       showToast("Planned absence logged", "success");
@@ -1309,11 +1275,10 @@ export default function AdminPage() {
   const cancelAbsenceRequest = async (id: number) => {
     if (!user?.email) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/absence-requests/${id}/`, {
+      const res = await authFetch(`${API_BASE_URL}/api/auth/absence-requests/${id}/`, {
         method: "PATCH",
-        headers: authHeaders({ "Content-Type": "application/json" }),
-        body: JSON.stringify({ email: user.email }),
-      });
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: user.email })});
       if (!res.ok) {
         const data = await res.json();
         throw new Error(data.error || "Failed to cancel");
@@ -1343,11 +1308,10 @@ export default function AdminPage() {
         formData.append("bio", staffForm.bio);
         formData.append("is_active", String(staffForm.is_active));
         formData.append("avatar", avatarFile);
-        res = await fetch(`${API_BASE_URL}/api/auth/admin/staff/${editingStaff.id}/`, {
+        res = await authFetch(`${API_BASE_URL}/api/auth/admin/staff/${editingStaff.id}/`, {
           method: "PATCH",
-          headers: authHeaders(),
-          body: formData,
-        });
+          
+          body: formData});
       } else if (!avatarPreview && editingStaff.avatar) {
         const formData = new FormData();
         formData.append("admin_email", user.email);
@@ -1360,17 +1324,15 @@ export default function AdminPage() {
         formData.append("bio", staffForm.bio);
         formData.append("is_active", String(staffForm.is_active));
         formData.append("avatar", "");
-        res = await fetch(`${API_BASE_URL}/api/auth/admin/staff/${editingStaff.id}/`, {
+        res = await authFetch(`${API_BASE_URL}/api/auth/admin/staff/${editingStaff.id}/`, {
           method: "PATCH",
-          headers: authHeaders(),
-          body: formData,
-        });
+          
+          body: formData});
       } else {
-        res = await fetch(`${API_BASE_URL}/api/auth/admin/staff/${editingStaff.id}/`, {
+        res = await authFetch(`${API_BASE_URL}/api/auth/admin/staff/${editingStaff.id}/`, {
           method: "PATCH",
-          headers: authHeaders({ "Content-Type": "application/json" }),
-          body: JSON.stringify({ admin_email: user.email, name: staffForm.name, role: staffForm.role, phone: staffForm.phone, position: staffForm.position, shift_start: staffForm.shift_start || null, shift_end: staffForm.shift_end || null, bio: staffForm.bio, is_active: staffForm.is_active }),
-        });
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ admin_email: user.email, name: staffForm.name, role: staffForm.role, phone: staffForm.phone, position: staffForm.position, shift_start: staffForm.shift_start || null, shift_end: staffForm.shift_end || null, bio: staffForm.bio, is_active: staffForm.is_active })});
       }
       const data = await res.json();
       if (!res.ok) {
@@ -1390,11 +1352,10 @@ export default function AdminPage() {
     if (!user?.email) return;
     const pos = STAFF_POSITIONS.find(p => p.key === position);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/admin/staff/${id}/`, {
+      const res = await authFetch(`${API_BASE_URL}/api/auth/admin/staff/${id}/`, {
         method: "PATCH",
-        headers: authHeaders({ "Content-Type": "application/json" }),
-        body: JSON.stringify({ admin_email: user.email, position }),
-      });
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ admin_email: user.email, position })});
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Failed to assign role");
       setStaffUsers((prev) => prev.map((s) => (s.id === id ? { ...s, position: data.position } : s)));
@@ -2495,30 +2456,27 @@ export default function AdminPage() {
                     const cfg = getAttendanceStatusConfig(a);
                     const handleApprove = async () => {
                       try {
-                        const res = await fetch(`${API_BASE_URL}/api/auth/admin/shift/${a.shift_id}/approve/`, {
-                          method: "POST", headers: authHeaders({ "Content-Type": "application/json" }),
-                          body: JSON.stringify({ admin_email: user?.email }),
-                        });
+                        const res = await authFetch(`${API_BASE_URL}/api/auth/admin/shift/${a.shift_id}/approve/`, {
+                          method: "POST", headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ admin_email: user?.email })});
                         if (res.ok) { showToast("Approved — On Time!", "success"); fetchAttendance(); }
                         else { const d = await res.json(); showToast(d.error || "Failed to approve", "error"); }
                       } catch { showToast("Failed to approve", "error"); }
                     };
                     const handleMarkLate = async () => {
                       try {
-                        const res = await fetch(`${API_BASE_URL}/api/auth/admin/shift/${a.shift_id}/mark-late/`, {
-                          method: "POST", headers: authHeaders({ "Content-Type": "application/json" }),
-                          body: JSON.stringify({ admin_email: user?.email }),
-                        });
+                        const res = await authFetch(`${API_BASE_URL}/api/auth/admin/shift/${a.shift_id}/mark-late/`, {
+                          method: "POST", headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ admin_email: user?.email })});
                         if (res.ok) { showToast("Marked as Late", "success"); fetchAttendance(); }
                         else { const d = await res.json(); showToast(d.error || "Failed to mark late", "error"); }
                       } catch { showToast("Failed to mark late", "error"); }
                     };
                     const handleMarkAbsent = async () => {
                       try {
-                        const res = await fetch(`${API_BASE_URL}/api/auth/admin/shift/${a.shift_id}/mark-absent/`, {
-                          method: "POST", headers: authHeaders({ "Content-Type": "application/json" }),
-                          body: JSON.stringify({ admin_email: user?.email }),
-                        });
+                        const res = await authFetch(`${API_BASE_URL}/api/auth/admin/shift/${a.shift_id}/mark-absent/`, {
+                          method: "POST", headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ admin_email: user?.email })});
                         if (res.ok) { showToast("Marked as Absent", "success"); fetchAttendance(); }
                         else { const d = await res.json(); showToast(d.error || "Failed to mark absent", "error"); }
                       } catch { showToast("Failed to mark absent", "error"); }
@@ -2602,30 +2560,27 @@ export default function AdminPage() {
                 const cfg = getAttendanceStatusConfig(a);
                 const handleApprove = async () => {
                   try {
-                    const res = await fetch(`${API_BASE_URL}/api/auth/admin/shift/${a.shift_id}/approve/`, {
-                      method: "POST", headers: authHeaders({ "Content-Type": "application/json" }),
-                      body: JSON.stringify({ admin_email: user?.email }),
-                    });
+                    const res = await authFetch(`${API_BASE_URL}/api/auth/admin/shift/${a.shift_id}/approve/`, {
+                      method: "POST", headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ admin_email: user?.email })});
                     if (res.ok) { showToast("Approved — On Time!", "success"); fetchAttendance(); }
                     else { const d = await res.json(); showToast(d.error || "Failed to approve", "error"); }
                   } catch { showToast("Failed to approve", "error"); }
                 };
                 const handleMarkLate = async () => {
                   try {
-                    const res = await fetch(`${API_BASE_URL}/api/auth/admin/shift/${a.shift_id}/mark-late/`, {
-                      method: "POST", headers: authHeaders({ "Content-Type": "application/json" }),
-                      body: JSON.stringify({ admin_email: user?.email }),
-                    });
+                    const res = await authFetch(`${API_BASE_URL}/api/auth/admin/shift/${a.shift_id}/mark-late/`, {
+                      method: "POST", headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ admin_email: user?.email })});
                     if (res.ok) { showToast("Marked as Late", "success"); fetchAttendance(); }
                     else { const d = await res.json(); showToast(d.error || "Failed to mark late", "error"); }
                   } catch { showToast("Failed to mark late", "error"); }
                 };
                 const handleMarkAbsent = async () => {
                   try {
-                    const res = await fetch(`${API_BASE_URL}/api/auth/admin/shift/${a.shift_id}/mark-absent/`, {
-                      method: "POST", headers: authHeaders({ "Content-Type": "application/json" }),
-                      body: JSON.stringify({ admin_email: user?.email }),
-                    });
+                    const res = await authFetch(`${API_BASE_URL}/api/auth/admin/shift/${a.shift_id}/mark-absent/`, {
+                      method: "POST", headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ admin_email: user?.email })});
                     if (res.ok) { showToast("Marked as Absent", "success"); fetchAttendance(); }
                     else { const d = await res.json(); showToast(d.error || "Failed to mark absent", "error"); }
                   } catch { showToast("Failed to mark absent", "error"); }
@@ -3145,8 +3100,7 @@ export default function AdminPage() {
                 planned_absence: { color: "text-indigo-600", bg: "bg-indigo-100", icon: "📅" },
                 order_completed: { color: "text-emerald-600", bg: "bg-emerald-100", icon: "📦" },
                 order_cancelled: { color: "text-red-500", bg: "bg-red-100", icon: "🚫" },
-                order_voided: { color: "text-red-700", bg: "bg-red-100", icon: "🗑" },
-              };
+                order_voided: { color: "text-red-700", bg: "bg-red-100", icon: "🗑" }};
               const cfg = iconMap[a.action] || { color: "text-dark-brown/60", bg: "bg-dark-brown/5", icon: "•" };
               const timeAgo = (() => {
                 const diff = (Date.now() - new Date(a.created_at).getTime()) / 1000;

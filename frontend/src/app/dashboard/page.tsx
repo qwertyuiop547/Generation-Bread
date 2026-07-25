@@ -417,7 +417,7 @@ export default function DashboardPage() {
     if (!user?.email) return;
     const fetchSpending = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/auth/spending/?email=${encodeURIComponent(user.email)}`);
+        const res = await apiFetch(`${API_BASE_URL}/api/auth/spending/?email=${encodeURIComponent(user.email)}`);
         if (res.ok) {
           const data = await res.json();
           setSpendingData(data.spending || []);
@@ -1068,12 +1068,14 @@ export default function DashboardPage() {
 
             <button
               type="button"
-              onClick={() =>
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 setPreviewProduct({
                   src: "/images/generation-bread-ube-cheese-pandesal.png",
                   alt: "Ube cheese pandesal",
-                })
-              }
+                });
+              }}
               className="relative mx-auto aspect-square w-full max-w-[200px] overflow-hidden rounded-[2rem] cursor-zoom-in focus:outline-none focus-visible:ring-2 focus-visible:ring-light-brown md:max-w-none"
               aria-label="View ube cheese pandesal"
             >

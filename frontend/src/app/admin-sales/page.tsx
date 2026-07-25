@@ -4,7 +4,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { authHeaders } from "@/lib/authHeaders";
+import { authFetch } from "@/lib/authHeaders";
 import { unwrapListResponse } from "@/lib/apiList";
 import { signOut } from "next-auth/react";
 import { performLogout } from "@/lib/logoutTransition";
@@ -59,9 +59,8 @@ export default function AdminSalesPage() {
 
     const fetchSales = async () => {
       try {
-        const res = await fetch(
-          `${API_BASE_URL}/api/auth/admin/orders/?admin_email=${encodeURIComponent(user.email)}&limit=500`,
-          { headers: authHeaders() }
+        const res = await authFetch(
+          `${API_BASE_URL}/api/auth/admin/orders/?admin_email=${encodeURIComponent(user.email)}&limit=500`
         );
         if (!res.ok) {
           const errBody = await res.json().catch(() => ({}));
@@ -76,8 +75,7 @@ export default function AdminSalesPage() {
             ? d.items.map((i: any) => ({
                 name: i.name,
                 price: Number(i.price),
-                qty: i.quantity,
-              }))
+                qty: i.quantity}))
             : [],
           total: Number(d.total_price),
           date: d.created_at,
@@ -85,8 +83,7 @@ export default function AdminSalesPage() {
           userName: d.customer_name || d.user_name || "Guest",
           status: d.status,
           orderType: d.order_type,
-          tableNumber: d.table_number,
-        }));
+          tableNumber: d.table_number}));
 
         // Only log completed sales
         const completedSales = mapped
@@ -219,8 +216,7 @@ export default function AdminSalesPage() {
         textColor: [250, 234, 222],
         fontStyle: "bold",
         fontSize: 9,
-        halign: "left",
-      },
+        halign: "left"},
       alternateRowStyles: { fillColor: [253, 246, 239] },
       bodyStyles: { fontSize: 8, cellPadding: 3, textColor: [52, 31, 21] },
       columnStyles: {
@@ -230,8 +226,7 @@ export default function AdminSalesPage() {
         3: { cellWidth: 20 },
         4: { cellWidth: 16 },
         5: { cellWidth: "auto" },
-        6: { cellWidth: 22, halign: "right", fontStyle: "bold" },
-      },
+        6: { cellWidth: 22, halign: "right", fontStyle: "bold" }},
       didDrawPage: (data) => {
         // Footer on each page
         const pageCount = (doc as any).internal.getNumberOfPages();
@@ -243,8 +238,7 @@ export default function AdminSalesPage() {
           doc.internal.pageSize.getHeight() - 5,
           { align: "center" }
         );
-      },
-    });
+      }});
 
     doc.save(`spylt_sales_${rangeFile}.pdf`);
   };

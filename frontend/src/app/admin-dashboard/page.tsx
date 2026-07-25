@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { authHeaders } from "@/lib/authHeaders";
+import { authFetch } from "@/lib/authHeaders";
 import { unwrapListResponse } from "@/lib/apiList";
 import { signOut } from "next-auth/react";
 import { performLogout } from "@/lib/logoutTransition";
@@ -15,8 +15,7 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Area, AreaChart,
-} from "recharts";
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Area, AreaChart} from "recharts";
 import { useThemeColors, withAlpha } from "@/lib/themeColors";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
@@ -61,8 +60,7 @@ const LINEUP_STATUS: Record<string, { label: string; color: string; bg: string; 
   not_clocked_in: { label: "Not Yet In", color: "text-gray-600", bg: "bg-gray-50", dot: "bg-gray-400" },
   within_grace: { label: "Grace Period", color: "text-yellow-700", bg: "bg-yellow-50", dot: "bg-yellow-500" },
   absent_today: { label: "Absent", color: "text-red-700", bg: "bg-red-50", dot: "bg-red-500" },
-  planned_absent: { label: "Planned Off", color: "text-indigo-700", bg: "bg-indigo-50", dot: "bg-indigo-500" },
-};
+  planned_absent: { label: "Planned Off", color: "text-indigo-700", bg: "bg-indigo-50", dot: "bg-indigo-500" }};
 
 function formatLineupTime(t: string): string {
   return new Date(`1970-01-01T${t}`).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -137,8 +135,7 @@ export default function AdminDashboardPage() {
     borderRadius: 16,
     border: `1px solid ${withAlpha(tc.lightBrown, "40")}`,
     background: tc.milk,
-    fontSize: 13,
-  } as const;
+    fontSize: 13} as const;
   const [orders, setOrders] = useState<Order[]>([]);
   const [mounted, setMounted] = useState(false);
   const [totalUsers, setTotalUsers] = useState(0);
@@ -212,8 +209,7 @@ export default function AdminDashboardPage() {
           display: "flex",
           autoAlpha: 0,
           y: -18,
-          clipPath: "inset(0% 0% 100% 0%)",
-        });
+          clipPath: "inset(0% 0% 100% 0%)"});
         gsap.set(items, { autoAlpha: 0, y: -14, scale: 0.96 });
 
         menuTlRef.current = gsap
@@ -222,8 +218,7 @@ export default function AdminDashboardPage() {
             autoAlpha: 1,
             y: 0,
             clipPath: "inset(0% 0% 0% 0%)",
-            duration: 0.42,
-          })
+            duration: 0.42})
           .to(
             items,
             {
@@ -232,31 +227,27 @@ export default function AdminDashboardPage() {
               scale: 1,
               duration: 0.38,
               stagger: { each: 0.07, from: "start" },
-              ease: "power2.out",
-            },
+              ease: "power2.out"},
             "-=0.22"
           );
       } else {
         menuTlRef.current = gsap
           .timeline({
             defaults: { ease: "power2.in" },
-            onComplete: () => setShowMobileMenu(false),
-          })
+            onComplete: () => setShowMobileMenu(false)})
           .to(items, {
             autoAlpha: 0,
             y: -10,
             scale: 0.97,
             duration: 0.18,
-            stagger: { each: 0.04, from: "end" },
-          })
+            stagger: { each: 0.04, from: "end" }})
           .to(
             menu,
             {
               autoAlpha: 0,
               y: -14,
               clipPath: "inset(0% 0% 100% 0%)",
-              duration: 0.28,
-            },
+              duration: 0.28},
             "-=0.06"
           );
       }
@@ -277,9 +268,7 @@ export default function AdminDashboardPage() {
         const localOrders: Order[] = localRaw ? JSON.parse(localRaw) : [];
         let mapped: Order[] = [];
         try {
-          const res = await fetch(`${API_BASE_URL}/api/auth/admin/orders/?admin_email=${encodeURIComponent(user.email)}&limit=500`, {
-            headers: authHeaders(),
-          });
+          const res = await authFetch(`${API_BASE_URL}/api/auth/admin/orders/?admin_email=${encodeURIComponent(user.email)}&limit=500`);
           if (res.ok) {
             const data = unwrapListResponse<any>(await res.json());
             mapped = data.map((d: any) => ({
@@ -289,8 +278,7 @@ export default function AdminDashboardPage() {
               totalItems: d.items.reduce((s: number, i: any) => s + i.quantity, 0),
               date: d.created_at, userEmail: d.user_email,
               userName: d.user_name || d.user_email, status: d.status,
-              orderType: d.order_type || "takeout",
-            }));
+              orderType: d.order_type || "takeout"}));
           }
         } catch {}
         setOrders([...mapped, ...localOrders].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
@@ -310,9 +298,8 @@ export default function AdminDashboardPage() {
     if (!mounted || !isLoggedIn || !isAdmin || !user?.email) return;
     const fetchLineup = async () => {
       try {
-        const res = await fetch(
-          `${API_BASE_URL}/api/auth/admin/today-shift-lineup/?admin_email=${encodeURIComponent(user.email)}`,
-          { headers: authHeaders() }
+        const res = await authFetch(
+          `${API_BASE_URL}/api/auth/admin/today-shift-lineup/?admin_email=${encodeURIComponent(user.email)}`
         );
         if (res.ok) {
           setShiftLineup(await res.json());
@@ -337,9 +324,8 @@ export default function AdminDashboardPage() {
       try {
         const params = new URLSearchParams({
           admin_email: user.email,
-          days: String(prepDays),
-        });
-        const res = await fetch(`${API_BASE_URL}/api/auth/admin/drink-prep-times/?${params}`);
+          days: String(prepDays)});
+        const res = await authFetch(`${API_BASE_URL}/api/auth/admin/drink-prep-times/?${params}`);
         if (res.ok) {
           setPrepData(await res.json());
         } else {
@@ -360,9 +346,8 @@ export default function AdminDashboardPage() {
     try {
       const params = new URLSearchParams({
         admin_email: user.email,
-        days: String(prepDays),
-      });
-      const res = await fetch(`${API_BASE_URL}/api/auth/admin/drink-prep-times/export/?${params}`);
+        days: String(prepDays)});
+      const res = await authFetch(`${API_BASE_URL}/api/auth/admin/drink-prep-times/export/?${params}`);
       if (!res.ok) throw new Error("Failed to export prep times");
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
@@ -385,8 +370,7 @@ export default function AdminDashboardPage() {
       name: s.name.length > 12 ? `${s.name.slice(0, 10)}…` : s.name,
       fullName: s.name,
       avgMinutes: Math.round((s.avg_prep_seconds / 60) * 10) / 10,
-      orders: s.orders_prepared,
-    })),
+      orders: s.orders_prepared})),
     [prepData],
   );
 
@@ -444,8 +428,7 @@ export default function AdminDashboardPage() {
       chartData: [
         { type: "Dine-In", revenue: dineInRevenue, orders: dineIn.length, fill: tc.darkBrown },
         { type: "Takeout", revenue: takeoutRevenue, orders: takeout.length, fill: tc.lightBrown },
-      ],
-    };
+      ]};
   }, [filteredOrders, tc]);
 
   const stats = useMemo(() => {
@@ -455,8 +438,7 @@ export default function AdminDashboardPage() {
       totalRevenue: active.reduce((s, o) => s + o.total, 0),
       avgOrderValue: active.length > 0 ? active.reduce((s, o) => s + o.total, 0) / active.length : 0,
       pending: filteredOrders.filter(o => o.status === "pending").length,
-      completed: filteredOrders.filter(o => o.status === "completed").length,
-    };
+      completed: filteredOrders.filter(o => o.status === "completed").length};
   }, [filteredOrders]);
 
   const recentOrders = filteredOrders.slice(0, 5);
@@ -481,8 +463,7 @@ export default function AdminDashboardPage() {
   );
 
   const statusColorMap: Record<string, string> = {
-    pending: "#9ca3af", preparing: "#eab308", ready: "#3b82f6", completed: "#22c55e", cancelled: "#ef4444",
-  };
+    pending: "#9ca3af", preparing: "#eab308", ready: "#3b82f6", completed: "#22c55e", cancelled: "#ef4444"};
 
   return (
     <div ref={containerRef} className="min-h-screen app-canvas relative overflow-hidden">

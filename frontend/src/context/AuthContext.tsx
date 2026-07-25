@@ -1,7 +1,8 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useSession } from "next-auth/react";
+import { authFetch, refreshAccessTokenShared, subscribeAuthTokens } from "@/lib/authFetch";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
 
@@ -119,8 +120,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [mounted, setMounted] = useState(false);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
   const { data: session, status } = useSession();
-  const refreshInFlightRef = useRef<Promise<boolean> | null>(null);
-
   const [localResolved, setLocalResolved] = useState(false);
 
   useEffect(() => {
@@ -142,6 +141,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     }
     setLocalResolved(true);
+  }, []);
+
+  // Keep React token state aligned when authFetch silently refreshes JWTs.
+  useEffect(() => {
+    return subscribeAuthTokens((access, refresh) => {
+      setAccessToken(access);
+      setRefreshToken(refresh);
+    });
   }, []);
 
   // Sync Google OAuth session → local user state and handle loading
@@ -457,93 +464,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const refreshAccessToken = async (): Promise<boolean> => {
-    if (refreshInFlightRef.current) {
-      return refreshInFlightRef.current;
-    }
-
-    const refresh =
-      refreshToken ||
-      (typeof window !== "undefined" ? localStorage.getItem("spylt_refresh_token") : null);
-    if (!refresh) return false;
-
-    refreshInFlightRef.current = (async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/auth/token/refresh/`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ refresh }),
-        });
-
-        if (!res.ok) {
-          // Drop dead JWTs but keep the local user session so checkout can continue
-          // via email/AllowAny fallback instead of kicking them to login mid-order.
-          setAccessToken(null);
-          setRefreshToken(null);
-          localStorage.removeItem("spylt_access_token");
-          localStorage.removeItem("spylt_refresh_token");
-          return false;
-        }
-
-        const data = await res.json();
-        setAccessToken(data.access);
-        localStorage.setItem("spylt_access_token", data.access);
-        if (data.refresh) {
-          setRefreshToken(data.refresh);
-          localStorage.setItem("spylt_refresh_token", data.refresh);
-        }
-        return true;
-      } catch {
-        setAccessToken(null);
-        setRefreshToken(null);
-        localStorage.removeItem("spylt_access_token");
-        localStorage.removeItem("spylt_refresh_token");
-        return false;
-      } finally {
-        refreshInFlightRef.current = null;
-      }
-    })();
-
-    return refreshInFlightRef.current;
+    // Shared single-flight refresh; keep React state in sync with localStorage.
+    // Drop dead JWTs but keep the local user session so checkout can continue
+    // via email/AllowAny fallback instead of kicking them to login mid-order.
+    return refreshAccessTokenShared((access, refresh) => {
+      setAccessToken(access);
+      setRefreshToken(refresh);
+    });
   };
 
   const apiFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
-    const headers: Record<string, string> = {
-      ...(options.headers as Record<string, string> | undefined),
-    };
-
-    const token =
-      accessToken ||
-      (typeof window !== "undefined" ? localStorage.getItem("spylt_access_token") : null);
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
-
-    let response = await fetch(url, {
-      ...options,
-      headers,
-    });
-
-    const hasRefresh =
-      !!(
-        refreshToken ||
-        (typeof window !== "undefined" && localStorage.getItem("spylt_refresh_token"))
-      );
-
-    if (response.status === 401 && hasRefresh) {
-      const refreshed = await refreshAccessToken();
-      if (refreshed) {
-        const newToken = localStorage.getItem("spylt_access_token");
-        if (newToken) {
-          headers["Authorization"] = `Bearer ${newToken}`;
-        }
-        response = await fetch(url, {
-          ...options,
-          headers,
-        });
-      }
-    }
-
-    return response;
+    // Central auth: always attach Bearer, FormData-safe, auto-refresh on 401.
+    return authFetch(url, options);
   };
 
   if (!mounted) {

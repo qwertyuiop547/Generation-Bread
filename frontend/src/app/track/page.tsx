@@ -15,7 +15,7 @@ import {
 import { GB_EASE } from "@/lib/motion";
 import OrderProgress from "@/components/OrderProgress";
 import QueuePositionCard from "@/components/QueuePositionCard";
-import { getAccessToken, withWsToken } from "@/lib/authHeaders";
+import { authFetch, getAccessToken, withWsToken } from "@/lib/authHeaders";
 import BrandLogo from "@/components/BrandLogo";
 import { notifyOrderReady } from "@/lib/orderReadyAlerts";
 
@@ -90,7 +90,7 @@ function TrackPageContent() {
       const numericPart = cleanId.replace("ORD-", "");
       const numericId = parseInt(numericPart, 10);
       if (!Number.isNaN(numericId)) {
-        const res = await fetch(`${API_BASE_URL}/api/auth/orders/${numericId}/`);
+        const res = await authFetch(`${API_BASE_URL}/api/auth/orders/${numericId}/`);
         if (res.ok) {
           const d = await res.json();
           const order: TrackedOrder = {

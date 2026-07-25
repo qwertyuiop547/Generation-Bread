@@ -1,5 +1,7 @@
 "use client";
 
+import { authFetch } from "@/lib/authHeaders";
+
 import React, { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -42,8 +44,7 @@ interface Summary { total: number; free: number; ordering: number; occupied: num
 const STATUS_CFG: Record<string, { label: string; color: string; bg: string; glow: string; icon: string }> = {
   free:     { label: "Free",     color: "#22c55e", bg: "rgba(34,197,94,0.12)",  glow: "0 0 24px rgba(34,197,94,0.25)",  icon: "✓" },
   ordering: { label: "Ordering", color: "#eab308", bg: "rgba(234,179,8,0.12)",  glow: "0 0 24px rgba(234,179,8,0.25)",  icon: "🛒" },
-  occupied: { label: "Occupied", color: "#ef4444", bg: "rgba(239,68,68,0.12)",  glow: "0 0 24px rgba(239,68,68,0.25)",  icon: "☕" },
-};
+  occupied: { label: "Occupied", color: "#ef4444", bg: "rgba(239,68,68,0.12)",  glow: "0 0 24px rgba(239,68,68,0.25)",  icon: "☕" }};
 
 export default function AdminTablesPage() {
   const { isLoggedIn, isStaff, user } = useAuth();
@@ -68,7 +69,7 @@ export default function AdminTablesPage() {
   const fetchTables = useCallback(async () => {
     if (!user?.email) return;
     try {
-      const res = await fetch(`${API}/api/auth/admin/tables/?admin_email=${encodeURIComponent(user.email)}&total_tables=${TOTAL_TABLES}`);
+      const res = await authFetch(`${API}/api/auth/admin/tables/?admin_email=${encodeURIComponent(user.email)}&total_tables=${TOTAL_TABLES}`);
       if (res.ok) {
         const data = await res.json();
         setTables(data.tables);
@@ -99,9 +100,7 @@ export default function AdminTablesPage() {
       errorCorrectionLevel: "H",
       color: {
         dark: "#523122",
-        light: "#ffffff",
-      },
-    })
+        light: "#ffffff"}})
       .then((dataUrl) => {
         if (!cancelled) setQrDataUrl(dataUrl);
       })
@@ -315,8 +314,7 @@ export default function AdminTablesPage() {
                   style={{
                     background: isSelected ? cfg.bg : "rgba(255,255,255,0.5)",
                     borderColor: isSelected ? cfg.color : "rgba(255,255,255,0.6)",
-                    boxShadow: isSelected ? cfg.glow : "0 4px 12px rgba(82,49,34,0.06)",
-                  }}
+                    boxShadow: isSelected ? cfg.glow : "0 4px 12px rgba(82,49,34,0.06)"}}
                   onMouseEnter={e => { e.currentTarget.style.borderColor = cfg.color; e.currentTarget.style.boxShadow = cfg.glow; e.currentTarget.style.transform = "translateY(-4px) scale(1.02)"; }}
                   onMouseLeave={e => { if (!isSelected) { e.currentTarget.style.borderColor = "rgba(255,255,255,0.6)"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(82,49,34,0.06)"; } e.currentTarget.style.transform = ""; }}
                 >

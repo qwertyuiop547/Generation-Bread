@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { authHeaders, getAccessToken } from "@/lib/authHeaders";
+import { authFetch, getAccessToken } from "@/lib/authHeaders";
 import { unwrapListResponse } from "@/lib/apiList";
 import { useLanguage } from "@/context/LanguageContext";
 import { signOut } from "next-auth/react";
@@ -52,32 +52,28 @@ interface TableInfo {
 const STATUS_FLOW: Record<string, string> = {
   pending: "preparing",
   preparing: "ready",
-  ready: "completed",
-};
+  ready: "completed"};
 
 const STATUS_LABELS: Record<string, string> = {
   pending: "Pending",
   preparing: "Preparing",
   ready: "Ready",
   completed: "Completed",
-  cancelled: "Cancelled",
-};
+  cancelled: "Cancelled"};
 
 const STATUS_COLORS: Record<string, string> = {
   pending: "bg-yellow-100 text-yellow-800 border-yellow-200",
   preparing: "bg-orange-100 text-orange-800 border-orange-200",
   ready: "bg-blue-100 text-blue-800 border-blue-200",
   completed: "bg-green-100 text-green-800 border-green-200",
-  cancelled: "bg-red-100 text-red-800 border-red-200",
-};
+  cancelled: "bg-red-100 text-red-800 border-red-200"};
 
 const STATUS_DOTS: Record<string, string> = {
   pending: "bg-yellow-500",
   preparing: "bg-orange-500",
   ready: "bg-blue-500",
   completed: "bg-green-500",
-  cancelled: "bg-red-500",
-};
+  cancelled: "bg-red-500"};
 
 export default function StaffDashboardPage() {
   const { isLoggedIn, isAuthLoading, isStaff, user, accessToken } = useAuth();
@@ -158,7 +154,7 @@ export default function StaffDashboardPage() {
           setOrders(localOrders);
           return;
         }
-        const res = await fetch(`${API_BASE_URL}/api/auth/admin/orders/?admin_email=${encodeURIComponent(user.email)}&limit=500`, { headers: authHeaders() });
+        const res = await authFetch(`${API_BASE_URL}/api/auth/admin/orders/?admin_email=${encodeURIComponent(user.email)}&limit=500`);
         if (res.ok) {
           const data = unwrapListResponse<any>(await res.json());
           mapped = data.map((d: any) => ({
@@ -175,13 +171,11 @@ export default function StaffDashboardPage() {
             pickupTime: d.pickup_time || null,
             voidReason: d.void_reason || undefined,
             paymentMethod: d.payment_method || "",
-            paymentStatus: d.payment_status || "unpaid",
-          }));
+            paymentStatus: d.payment_status || "unpaid"}));
         } else if (res.status === 401 || res.status === 403) {
           setToast({
             message: "Session expired — sign in again to see kitchen orders.",
-            type: "error",
-          });
+            type: "error"});
           setTimeout(() => setToast(null), 4000);
         }
       } catch { }
@@ -199,7 +193,7 @@ export default function StaffDashboardPage() {
     if (!mounted || !isLoggedIn || !isStaff || !user?.email) return;
     const fetchStaff = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/auth/admin/staff/?admin_email=${encodeURIComponent(user.email)}`, { headers: authHeaders() });
+        const res = await authFetch(`${API_BASE_URL}/api/auth/admin/staff/?admin_email=${encodeURIComponent(user.email)}`);
         if (res.ok) {
           const data = await res.json();
           setStaffUsers(data);
@@ -214,7 +208,7 @@ export default function StaffDashboardPage() {
   const fetchMyAbsenceRequests = async () => {
     if (!user?.email) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/absence-requests/?email=${encodeURIComponent(user.email)}&status=approved`, { headers: authHeaders() });
+      const res = await authFetch(`${API_BASE_URL}/api/auth/absence-requests/?email=${encodeURIComponent(user.email)}&status=approved`);
       if (res.ok) setMyAbsenceRequests(await res.json());
     } catch {
       setMyAbsenceRequests([]);
@@ -233,15 +227,13 @@ export default function StaffDashboardPage() {
     }
     setAbsenceFormLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/absence-requests/`, {
+      const res = await authFetch(`${API_BASE_URL}/api/auth/absence-requests/`, {
         method: "POST",
-        headers: authHeaders({ "Content-Type": "application/json" }),
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: user.email,
           absence_date: absenceFormDate,
-          reason: absenceFormReason.trim(),
-        }),
-      });
+          reason: absenceFormReason.trim()})});
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to submit");
       showToast("Planned absence logged", "success");
@@ -258,11 +250,10 @@ export default function StaffDashboardPage() {
   const cancelMyAbsenceRequest = async (id: number) => {
     if (!user?.email) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/absence-requests/${id}/`, {
+      const res = await authFetch(`${API_BASE_URL}/api/auth/absence-requests/${id}/`, {
         method: "PATCH",
-        headers: authHeaders({ "Content-Type": "application/json" }),
-        body: JSON.stringify({ email: user.email }),
-      });
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: user.email })});
       if (!res.ok) {
         const data = await res.json();
         throw new Error(data.error || "Failed to cancel");
@@ -284,7 +275,7 @@ export default function StaffDashboardPage() {
     }
     const fetchShiftStatus = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/auth/shift/status/?email=${encodeURIComponent(user.email)}`, { headers: authHeaders() });
+        const res = await authFetch(`${API_BASE_URL}/api/auth/shift/status/?email=${encodeURIComponent(user.email)}`);
         if (res.ok) {
           const data = await res.json();
           setIsClockedIn(!!data.is_clocked_in);
@@ -333,11 +324,10 @@ export default function StaffDashboardPage() {
       return;
     }
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/shift/clock-in/`, {
+      const res = await authFetch(`${API_BASE_URL}/api/auth/shift/clock-in/`, {
         method: "POST",
-        headers: authHeaders({ "Content-Type": "application/json" }),
-        body: JSON.stringify({ email: user.email }),
-      });
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: user.email })});
       let data: { error?: string; detail?: string; retry_after?: number; id?: number } = {};
       try {
         data = await res.json();
@@ -360,7 +350,7 @@ export default function StaffDashboardPage() {
         if (/already clocked in/i.test(message)) {
           // Sync UI: staff is already on shift / pending approval.
           try {
-            const st = await fetch(`${API_BASE_URL}/api/auth/shift/status/?email=${encodeURIComponent(user.email)}`, { headers: authHeaders() });
+            const st = await authFetch(`${API_BASE_URL}/api/auth/shift/status/?email=${encodeURIComponent(user.email)}`);
             if (st.ok) {
               const statusData = await st.json();
               setIsClockedIn(!!statusData.is_clocked_in);
@@ -394,11 +384,10 @@ export default function StaffDashboardPage() {
   const handleClockOut = async () => {
     if (!user?.email) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/shift/clock-out/`, {
+      const res = await authFetch(`${API_BASE_URL}/api/auth/shift/clock-out/`, {
         method: "POST",
-        headers: authHeaders({ "Content-Type": "application/json" }),
-        body: JSON.stringify({ email: user.email }),
-      });
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: user.email })});
       const data = await res.json();
       if (!res.ok) { showToast(data.error || "Failed to clock out", "error"); return; }
       setIsClockedIn(false);
@@ -412,11 +401,10 @@ export default function StaffDashboardPage() {
   const handleBreakStart = async () => {
     if (!user?.email) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/shift/break-start/`, {
+      const res = await authFetch(`${API_BASE_URL}/api/auth/shift/break-start/`, {
         method: "POST",
-        headers: authHeaders({ "Content-Type": "application/json" }),
-        body: JSON.stringify({ email: user.email }),
-      });
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: user.email })});
       const data = await res.json();
       if (!res.ok) { showToast(data.error || "Failed to start break", "error"); return; }
       setIsOnBreak(true);
@@ -428,11 +416,10 @@ export default function StaffDashboardPage() {
   const handleBreakEnd = async () => {
     if (!user?.email) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/shift/break-end/`, {
+      const res = await authFetch(`${API_BASE_URL}/api/auth/shift/break-end/`, {
         method: "POST",
-        headers: authHeaders({ "Content-Type": "application/json" }),
-        body: JSON.stringify({ email: user.email }),
-      });
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: user.email })});
       const data = await res.json();
       if (!res.ok) { showToast(data.error || "Failed to end break", "error"); return; }
       setIsOnBreak(false);
@@ -447,7 +434,7 @@ export default function StaffDashboardPage() {
 
     const fetchTables = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/auth/admin/tables/?admin_email=${encodeURIComponent(user.email)}`, { headers: authHeaders() });
+        const res = await authFetch(`${API_BASE_URL}/api/auth/admin/tables/?admin_email=${encodeURIComponent(user.email)}`);
         if (res.ok) {
           const data = await res.json();
           setTables(data.tables || []);
@@ -507,8 +494,7 @@ export default function StaffDashboardPage() {
           display: "flex",
           autoAlpha: 0,
           y: -18,
-          clipPath: "inset(0% 0% 100% 0%)",
-        });
+          clipPath: "inset(0% 0% 100% 0%)"});
         gsap.set(items, { autoAlpha: 0, y: -14, scale: 0.96 });
 
         menuTlRef.current = gsap
@@ -517,8 +503,7 @@ export default function StaffDashboardPage() {
             autoAlpha: 1,
             y: 0,
             clipPath: "inset(0% 0% 0% 0%)",
-            duration: 0.42,
-          })
+            duration: 0.42})
           .to(
             items,
             {
@@ -527,31 +512,27 @@ export default function StaffDashboardPage() {
               scale: 1,
               duration: 0.38,
               stagger: { each: 0.07, from: "start" },
-              ease: "power2.out",
-            },
+              ease: "power2.out"},
             "-=0.22"
           );
       } else {
         menuTlRef.current = gsap
           .timeline({
             defaults: { ease: "power2.in" },
-            onComplete: () => setShowMobileMenu(false),
-          })
+            onComplete: () => setShowMobileMenu(false)})
           .to(items, {
             autoAlpha: 0,
             y: -10,
             scale: 0.97,
             duration: 0.18,
-            stagger: { each: 0.04, from: "end" },
-          })
+            stagger: { each: 0.04, from: "end" }})
           .to(
             menu,
             {
               autoAlpha: 0,
               y: -14,
               clipPath: "inset(0% 0% 100% 0%)",
-              duration: 0.28,
-            },
+              duration: 0.28},
             "-=0.06"
           );
       }
@@ -591,8 +572,7 @@ export default function StaffDashboardPage() {
         delay: 0.3,
         onComplete: () => {
           gsap.set(".staff-nav-item", { opacity: 1, y: 0, clearProps: "transform" });
-        },
-      }
+        }}
     );
 
     gsap.fromTo(
@@ -617,8 +597,7 @@ export default function StaffDashboardPage() {
           duration: 0.35,
           yoyo: true,
           repeat: 1,
-          ease: "power2.inOut",
-        }
+          ease: "power2.inOut"}
       );
       const badge = card.querySelector<HTMLElement>("[data-status-badge]");
       if (badge) {
@@ -645,11 +624,10 @@ export default function StaffDashboardPage() {
       }
 
       const numericId = orderId.replace('ORD-', '').replace(/^0+/, '');
-      const res = await fetch(`${API_BASE_URL}/api/auth/admin/orders/${numericId}/status/`, {
+      const res = await authFetch(`${API_BASE_URL}/api/auth/admin/orders/${numericId}/status/`, {
         method: "PATCH",
-        headers: authHeaders({ "Content-Type": "application/json" }),
-        body: JSON.stringify({ status: newStatus, admin_email: user?.email }),
-      });
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus, admin_email: user?.email })});
       if (res.ok) {
         setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus as Order["status"] } : o));
         celebrateCard();
@@ -686,11 +664,10 @@ export default function StaffDashboardPage() {
       }
 
       const numericId = orderId.replace("ORD-", "").replace(/^0+/, "");
-      const res = await fetch(`${API_BASE_URL}/api/auth/admin/orders/${numericId}/payment/`, {
+      const res = await authFetch(`${API_BASE_URL}/api/auth/admin/orders/${numericId}/payment/`, {
         method: "PATCH",
-        headers: authHeaders({ "Content-Type": "application/json" }),
-        body: JSON.stringify({ admin_email: user?.email, payment_status: "paid" }),
-      });
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ admin_email: user?.email, payment_status: "paid" })});
       if (res.ok) {
         const data = await res.json();
         setOrders((prev) =>
@@ -699,8 +676,7 @@ export default function StaffDashboardPage() {
               ? {
                   ...o,
                   paymentStatus: (data.payment_status as Order["paymentStatus"]) || "paid",
-                  paymentMethod: data.payment_method || o.paymentMethod || "cash",
-                }
+                  paymentMethod: data.payment_method || o.paymentMethod || "cash"}
               : o
           )
         );
@@ -741,11 +717,10 @@ export default function StaffDashboardPage() {
       }
 
       const numericId = voidModalOrderId.replace('ORD-', '').replace(/^0+/, '');
-      const res = await fetch(`${API_BASE_URL}/api/auth/admin/orders/${numericId}/void/`, {
+      const res = await authFetch(`${API_BASE_URL}/api/auth/admin/orders/${numericId}/void/`, {
         method: "POST",
-        headers: authHeaders({ "Content-Type": "application/json" }),
-        body: JSON.stringify({ void_reason: voidReason, admin_email: user?.email }),
-      });
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ void_reason: voidReason, admin_email: user?.email })});
       if (res.ok) {
         setOrders(prev => prev.map(o => o.id === voidModalOrderId ? { ...o, status: "cancelled" as Order["status"], voidReason: voidReason } : o));
       }
@@ -1282,8 +1257,7 @@ export default function StaffDashboardPage() {
               const cfg = {
                 free: { color: "#22c55e", bg: "bg-green-50", label: "Free", glow: "0 0 15px #22c55e40" },
                 ordering: { color: "#eab308", bg: "bg-yellow-50", label: "Ordering", glow: "0 0 15px #eab30840" },
-                occupied: { color: "#ef4444", bg: "bg-red-50", label: "Occupied", glow: "0 0 15px #ef444440" },
-              }[table.table_status];
+                occupied: { color: "#ef4444", bg: "bg-red-50", label: "Occupied", glow: "0 0 15px #ef444440" }}[table.table_status];
               return (
                 <div key={table.table_number} className={`${cfg.bg} border border-white/60 rounded-3xl p-4 shadow-lg transition-all hover:shadow-xl hover:-translate-y-1`}>
                   <div className="flex items-center justify-between mb-2">

@@ -11,10 +11,9 @@ import { performLogout } from "@/lib/logoutTransition";
 import {
   fetchEtaPreview,
   localFallbackEta,
-  type SmartEta,
-} from "@/lib/smartEta";
+  type SmartEta} from "@/lib/smartEta";
 import { getMenuItemImage } from "@/constants";
-import { withWsToken, authHeaders } from "@/lib/authHeaders";
+import { authFetch, withWsToken } from "@/lib/authHeaders";
 import QueuePositionCard from "@/components/QueuePositionCard";
 import ProductLightbox from "@/components/ProductLightbox";
 
@@ -89,8 +88,7 @@ const toBackendItems = (items: CartItem[]) =>
     name: item.name,
     quantity: item.qty,
     price: item.price,
-    notes: item.notes || "",
-  }));
+    notes: item.notes || ""}));
 
 export default function OrderPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -156,15 +154,14 @@ export default function OrderPage() {
 
     const fetchMenu = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/auth/menu/`);
+        const res = await authFetch(`${API_BASE_URL}/api/auth/menu/`);
         if (res.ok) {
           const data = await res.json();
           const mapped: MenuItem[] = (data as MenuApiItem[]).map((d) => ({
             ...d,
             category: d.category || "drink",
             bgColor: d.bg_color || d.bgColor,
-            image_url: d.image_url || null,
-          }));
+            image_url: d.image_url || null}));
           setMenuItems(mapped);
           localStorage.setItem("spylt_menu", JSON.stringify(mapped));
           return;
@@ -178,8 +175,7 @@ export default function OrderPage() {
           ...m,
           category: m.category || "drink",
           bgColor: m.bg_color || m.bgColor,
-          image_url: m.image_url || null,
-        })));
+          image_url: m.image_url || null})));
       } else {
         setMenuItems(defaultMenu);
       }
@@ -362,23 +358,20 @@ export default function OrderPage() {
         order_type: orderType,
         table_number: orderType === "Dine-In" ? tableNumber : null,
         pickup_time: orderType === "Scheduled" ? pickupTime : null,
-        customer_name: orderType !== "Dine-In" ? customerName : (user?.name || "Guest"),
-      };
+        customer_name: orderType !== "Dine-In" ? customerName : (user?.name || "Guest")};
 
       // Prefer JWT (with refresh). Expired Bearer tokens used to 401 even on AllowAny.
       let res = await apiFetch(ORDERS_API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(orderPayload),
-      });
+        body: JSON.stringify(orderPayload)});
 
       // Fallback: place order without Authorization so email identity still works.
       if (res.status === 401) {
-        res = await fetch(ORDERS_API_URL, {
+        res = await authFetch(ORDERS_API_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(orderPayload),
-        });
+          body: JSON.stringify(orderPayload)});
       }
 
       if (!res.ok) {
@@ -419,8 +412,7 @@ export default function OrderPage() {
       console.error(err);
       setToast({
         message: "Unable to reach the server. Order was not sent to kitchen. Try again.",
-        type: "error",
-      });
+        type: "error"});
       setTimeout(() => setToast(null), 4000);
     } finally {
       setIsPlacingOrder(false);
@@ -467,10 +459,10 @@ export default function OrderPage() {
     try {
       if (lastOrderNumericId != null && user?.email) {
         try {
-          const res = await fetch(`${ORDERS_API_URL}${lastOrderNumericId}/payment/`, {
+          const res = await authFetch(`${ORDERS_API_URL}${lastOrderNumericId}/payment/`, {
             method: "PATCH",
             headers: {
-              ...authHeaders({ "Content-Type": "application/json" }),
+              "Content-Type": "application/json",
               ...(lastOrderToken ? { "X-Order-Token": lastOrderToken } : {}),
             },
             body: JSON.stringify({
@@ -493,8 +485,7 @@ export default function OrderPage() {
           method === "cash"
             ? "Pay at the counter"
             : "Payment method saved — staff will confirm once paid",
-        type: "success",
-      });
+        type: "success"});
       setTimeout(() => setToast(null), 2500);
     } finally {
       setIsSavingPayment(false);
@@ -566,7 +557,7 @@ export default function OrderPage() {
 
     const pollId = setInterval(async () => {
       try {
-        const res = await fetch(`${ORDERS_API_URL}${lastOrderNumericId}/`);
+        const res = await authFetch(`${ORDERS_API_URL}${lastOrderNumericId}/`);
         if (!res.ok) return;
         const data = await res.json();
         if (data.payment_status === "paid") {
@@ -675,7 +666,7 @@ export default function OrderPage() {
 
     const loadCart = async () => {
       try {
-        const response = await fetch(CART_API_URL, { headers: authHeaders() });
+        const response = await authFetch(CART_API_URL);
         if (!response.ok) {
           if (response.status !== 401) {
             setIsBackendCartSyncEnabled(false);
@@ -689,8 +680,7 @@ export default function OrderPage() {
           name: item.name,
           qty: item.quantity,
           price: Number(item.price),
-          notes: "",
-        }));
+          notes: ""}));
 
         if (!isCancelled) {
           // Never wipe a non-empty local cart with an empty backend cart (common after Google JWT arrives).
@@ -722,14 +712,12 @@ export default function OrderPage() {
 
     const timeoutId = window.setTimeout(async () => {
       try {
-        const response = await fetch(CART_API_URL, {
+        const response = await authFetch(CART_API_URL, {
           method: "PUT",
-          headers: authHeaders({ "Content-Type": "application/json" }),
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             email: user.email,
-            items: toBackendItems(cart),
-          }),
-        });
+            items: toBackendItems(cart)})});
 
         if (!response.ok) {
           // 401 often means JWT not ready yet — keep sync enabled for retry.
@@ -750,7 +738,7 @@ export default function OrderPage() {
   }, [cart, isLoggedIn, user?.email, isCartInitialized, isBackendCartSyncEnabled, accessToken]);
 
   return (
-    <div className="min-h-screen app-canvas relative overflow-hidden pb-28">
+    <div className="min-h-screen app-canvas relative overflow-x-hidden pb-28">
       {/* Background blobs */}
       <div className="absolute top-[-10%] right-[-10%] w-[40vw] h-[40vw] bg-light-brown rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
       <div className="absolute bottom-[-10%] left-[-10%] w-[40vw] h-[40vw] bg-mid-brown rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
@@ -828,25 +816,27 @@ export default function OrderPage() {
               {/* Item image — tap for full view */}
               <button
                 type="button"
-                className="relative h-52 md:h-64 w-full flex items-end justify-center overflow-hidden cursor-zoom-in focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-light-brown"
+                className="relative aspect-[5/4] w-full overflow-hidden cursor-zoom-in focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-light-brown sm:aspect-[4/3]"
                 style={{ backgroundColor: item.bgColor }}
-                onClick={() =>
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
                   setPreviewProduct({
                     src: getMenuItemImage(item.name, item.image_url, item.color),
                     alt: item.name,
-                  })
-                }
+                  });
+                }}
                 aria-label={`View ${item.name}`}
               >
-                <Image
+                {/* Native img keeps object-fit reliable on mobile (no Next/Image fill stretch). */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
                   src={getMenuItemImage(item.name, item.image_url, item.color)}
                   alt={item.name}
-                  fill
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  className="object-cover object-[center_40%] drop-shadow-xl group-hover:scale-105 transition-transform duration-500 pointer-events-none"
-                  unoptimized
+                  className="absolute inset-0 h-full w-full object-cover object-center drop-shadow-xl transition-transform duration-500 pointer-events-none group-hover:scale-105"
+                  draggable={false}
                 />
-                <span className="absolute bottom-3 right-3 rounded-full bg-black/45 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-milk backdrop-blur-sm opacity-0 transition-opacity group-hover:opacity-100">
+                <span className="absolute bottom-3 right-3 rounded-full bg-black/45 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-milk backdrop-blur-sm opacity-90 transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
                   View
                 </span>
               </button>
