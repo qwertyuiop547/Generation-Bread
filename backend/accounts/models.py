@@ -196,6 +196,9 @@ class MenuItem(models.Model):
     description = models.TextField(blank=True)
     bg_color = models.CharField(max_length=50)
     image = models.ImageField(upload_to='menu_images/', blank=True, null=True, help_text='Menu item photo. Falls back to category placeholder if not set.')
+    # Persist bytes in Postgres — Render free disk is ephemeral so ImageField files 404 after restart.
+    image_data = models.BinaryField(blank=True, null=True, editable=False)
+    image_content_type = models.CharField(max_length=64, blank=True, default='')
     is_hidden = models.BooleanField(default=False)
     stock = models.PositiveIntegerField(default=0, help_text='Available inventory count. 0 = unlimited if track_stock is False.')
     track_stock = models.BooleanField(default=False, help_text='Enable inventory tracking for this item')

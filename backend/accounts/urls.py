@@ -28,6 +28,7 @@ urlpatterns = [
     path('admin/orders/<int:order_id>/archive/', views.admin_archive_order_view, name='admin-archive-order'),
     path('admin/orders/auto-archive/', views.admin_auto_archive_view, name='admin-auto-archive'),
     path('menu/', views.menu_view, name='menu'),
+    path('menu-media/<int:item_id>/', views.menu_media_view, name='menu-media'),
     path('admin/menu/', views.admin_menu_view, name='admin-menu'),
     path('admin/menu/<int:item_id>/', views.admin_menu_view, name='admin-menu-detail'),
     path('admin/tables/', views.admin_tables_view, name='admin-tables'),

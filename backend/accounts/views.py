@@ -1344,6 +1344,9 @@ def admin_menu_view(request, item_id=None):
         # Handle image clearing: if 'image' key exists but is empty string, clear the image
         if 'image' in data and data['image'] == '':
             item.image.delete(save=False)
+            item.image_data = None
+            item.image_content_type = ''
+            item.save(update_fields=['image', 'image_data', 'image_content_type'])
             data.pop('image')
         serializer = MenuItemSerializer(item, data=data, partial=True, context={'request': request})
         if serializer.is_valid():
@@ -1359,6 +1362,47 @@ def admin_menu_view(request, item_id=None):
         item.delete()
         _bust_menu_cache()
         return Response({'message': 'Menu item deleted.'}, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+@authentication_classes([])
+def menu_media_view(request, item_id):
+    """
+    Stream a menu item photo from Postgres (preferred) or local ImageField.
+    Public so customer order pages can load <img src> without auth.
+    """
+    try:
+        item = MenuItem.objects.only(
+            'id', 'image', 'image_data', 'image_content_type'
+        ).get(id=item_id)
+    except MenuItem.DoesNotExist:
+        return HttpResponse(status=404)
+
+    content_type = (item.image_content_type or '').strip() or 'image/jpeg'
+    data = None
+
+    if item.image_data:
+        data = bytes(item.image_data)
+    elif item.image:
+        try:
+            with item.image.open('rb') as fh:
+                data = fh.read()
+            if data:
+                # Backfill so the photo survives the next Render redeploy
+                MenuItem.objects.filter(pk=item.pk).update(
+                    image_data=data,
+                    image_content_type=content_type,
+                )
+        except Exception:
+            data = None
+
+    if not data:
+        return HttpResponse(status=404)
+
+    response = HttpResponse(data, content_type=content_type)
+    response['Cache-Control'] = 'public, max-age=86400'
+    return response
 
 
 @api_view(['GET'])

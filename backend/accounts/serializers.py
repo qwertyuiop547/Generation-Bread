@@ -146,14 +146,54 @@ class MenuItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = MenuItem
         fields = ['id', 'name', 'category', 'color', 'price', 'description', 'bg_color', 'image', 'image_url', 'is_hidden', 'stock', 'track_stock', 'created_at']
+        # Never expose raw binary blobs in list/detail JSON
+        extra_kwargs = {
+            'image': {'write_only': False, 'required': False},
+        }
 
     def get_image_url(self, obj):
-        if obj.image:
+        # Prefer durable DB-backed media endpoint (survives Render redeploys).
+        if obj.image_data or obj.image:
             request = self.context.get('request')
+            path = f'/api/auth/menu-media/{obj.id}/'
             if request:
-                return request.build_absolute_uri(obj.image.url)
-            return obj.image.url
+                return request.build_absolute_uri(path)
+            return path
         return None
+
+    def _capture_image_blob(self, image_file):
+        if not image_file:
+            return None, ''
+        content_type = (getattr(image_file, 'content_type', None) or 'image/jpeg').lower().strip()
+        raw = image_file.read()
+        try:
+            image_file.seek(0)
+        except Exception:
+            pass
+        return raw, content_type
+
+    def create(self, validated_data):
+        image = validated_data.get('image')
+        blob, content_type = self._capture_image_blob(image)
+        instance = super().create(validated_data)
+        if blob is not None:
+            instance.image_data = blob
+            instance.image_content_type = content_type
+            instance.save(update_fields=['image_data', 'image_content_type'])
+        return instance
+
+    def update(self, instance, validated_data):
+        image = validated_data.get('image')
+        blob = None
+        content_type = ''
+        if image is not None:
+            blob, content_type = self._capture_image_blob(image)
+        instance = super().update(instance, validated_data)
+        if blob is not None:
+            instance.image_data = blob
+            instance.image_content_type = content_type
+            instance.save(update_fields=['image_data', 'image_content_type'])
+        return instance
 
 
 class StaffUserSerializer(serializers.ModelSerializer):
