@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
@@ -1047,84 +1048,64 @@ export default function DashboardPage() {
       </header>
 
       <main className="relative z-10 mx-auto w-full max-w-5xl px-4 py-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-5 sm:py-8 md:px-10 md:py-12">
-        {/* Welcome hero card */}
-        <section className="dashboard-stagger-item mb-7 md:mb-10">
-          <div className="relative overflow-hidden rounded-3xl border border-dark-brown/10 bg-milk p-6 shadow-xl sm:p-8 md:p-10">
-            {/* Warm cream gradient wash */}
-            <div
-              className="pointer-events-none absolute inset-0"
-              style={{
-                background:
-                  "radial-gradient(ellipse 70% 50% at 15% 15%, rgba(227,164,88,0.18), transparent 50%), radial-gradient(ellipse 50% 60% at 95% 80%, rgba(82,49,34,0.06), transparent 50%), linear-gradient(135deg, #fffcf8 0%, #fef7ef 100%)",
-              }}
-            />
-            {/* Decorative floating bread image */}
-            <div className="pointer-events-none absolute -bottom-8 -right-4 z-0 opacity-90 sm:-bottom-12 sm:-right-8 md:-bottom-16 md:-right-10">
-              <img
-                src="/images/generation-bread-ube-cheese-pandesal.png"
-                alt=""
-                className="h-40 w-auto rotate-[-6deg] select-none drop-shadow-2xl sm:h-52 md:h-64"
-                draggable={false}
-              />
-            </div>
-            <div className="relative z-10 max-w-lg">
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-light-brown/30 bg-light-brown/10 px-3 py-1.5">
-                <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                <p className="font-paragraph text-[0.65rem] font-bold uppercase tracking-[0.2em] text-dark-brown/60">
-                  {activeOrders.length > 0
-                    ? (t("Order in progress") || "Order in progress")
-                    : (t("Fresh from the oven") || "Fresh from the oven")}
-                </p>
-              </div>
-              <h1 className="max-w-full break-words text-[clamp(1.75rem,7vw,3.25rem)] font-bold uppercase leading-[0.95] tracking-[-0.03em] text-dark-brown">
-                {t("Good day") || "Good day"}
-                <span className="mt-1 block text-brand-gold">
-                  {user?.name?.split(" ")[0] || user?.name || "Back"}
+        {/* Welcome */}
+        <section className="dashboard-stagger-item mb-8 md:mb-12">
+          <div className="grid items-center gap-6 md:grid-cols-[1fr_minmax(200px,280px)] md:gap-10">
+            <div className="min-w-0">
+              <p className="mb-2 font-paragraph text-[0.7rem] uppercase tracking-[0.32em] text-dark-brown/40">
+                Generation Bread
+              </p>
+              <h1 className="text-[clamp(2.1rem,7vw,3.5rem)] font-bold uppercase leading-[0.92] tracking-[-0.03em] text-dark-brown">
+                {t("Hello") || "Hello"}
+                <span className="mt-1 block truncate text-brand-gold">
+                  {user?.name?.split(" ")[0] || user?.name || "there"}
                 </span>
               </h1>
-              <p className="mt-4 max-w-sm font-paragraph text-sm leading-relaxed text-dark-brown/60 sm:text-base">
+              <p className="mt-3 max-w-md font-paragraph text-sm leading-relaxed text-dark-brown/55 sm:text-[0.95rem]">
                 {activeOrders.length > 0
-                  ? (t("Your order is being prepared. Track it live below.") || "Your order is being prepared. Track it live below.")
-                  : (t("Order fresh pandesal and drinks — ready for pickup or dine-in.") ||
-                    "Order fresh pandesal and drinks — ready for pickup or dine-in.")}
+                  ? (t("Your order is in the kitchen — track it anytime.") ||
+                    "Your order is in the kitchen — track it anytime.")
+                  : (t("Fresh bakes ready when you are.") ||
+                    "Fresh bakes ready when you are.")}
               </p>
-              <div className="mt-5 flex flex-wrap items-center gap-3 sm:mt-6">
-                {activeOrders.length > 0 ? (
-                  <Link
-                    href="/track"
-                    className="inline-flex items-center gap-2 rounded-full bg-dark-brown px-5 py-2.5 text-sm font-bold uppercase tracking-wide text-milk transition-all hover:bg-dark-brown-hover hover:shadow-lg"
-                  >
-                    {t("Track order") || "Track order"}
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M5 12h14" />
-                      <path d="m12 5 7 7-7 7" />
-                    </svg>
-                  </Link>
-                ) : (
-                  <Link
-                    href="/order"
-                    className="inline-flex items-center gap-2 rounded-full bg-dark-brown px-5 py-2.5 text-sm font-bold uppercase tracking-wide text-milk transition-all hover:bg-dark-brown-hover hover:shadow-lg"
-                  >
-                    {t("Order now") || "Order now"}
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M5 12h14" />
-                      <path d="m12 5 7 7-7 7" />
-                    </svg>
-                  </Link>
-                )}
+              <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3">
                 <Link
-                  href="/scan"
-                  className="inline-flex items-center gap-2 rounded-full border border-dark-brown/15 bg-milk/60 px-5 py-2.5 text-sm font-bold uppercase tracking-wide text-dark-brown transition-all hover:bg-dark-brown/5 hover:shadow-md"
+                  href={activeOrders.length > 0 ? "/track" : "/order"}
+                  className="inline-flex items-center gap-2 rounded-full bg-dark-brown px-6 py-3 text-sm font-bold uppercase tracking-wide text-milk transition-colors hover:bg-dark-brown-hover"
                 >
-                  {t("Scan QR")}
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="3" width="7" height="7" />
-                    <rect x="14" y="3" width="7" height="7" />
-                    <rect x="14" y="14" width="7" height="7" />
-                    <rect x="3" y="14" width="7" height="7" />
+                  {activeOrders.length > 0
+                    ? (t("Track order") || "Track order")
+                    : (t("Order now") || "Order now")}
+                  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <path d="M5 12h14" />
+                    <path d="m12 5 7 7-7 7" />
                   </svg>
                 </Link>
+                <Link
+                  href="/scan"
+                  className="text-sm font-bold uppercase tracking-wide text-dark-brown/45 transition-colors hover:text-dark-brown"
+                >
+                  {t("Scan QR")}
+                </Link>
               </div>
+            </div>
+
+            <div className="relative mx-auto hidden aspect-square w-full max-w-[240px] overflow-hidden rounded-[2rem] md:block md:max-w-none">
+              <Image
+                src="/images/generation-bread-ube-cheese-pandesal.png"
+                alt="Ube cheese pandesal"
+                fill
+                sizes="280px"
+                className="object-cover object-center"
+                priority
+              />
+              <div
+                className="pointer-events-none absolute inset-0"
+                style={{
+                  background:
+                    "linear-gradient(160deg, rgba(246,235,224,0.15) 0%, transparent 40%, rgba(42,24,16,0.12) 100%)",
+                }}
+              />
             </div>
           </div>
         </section>
@@ -1150,16 +1131,13 @@ export default function DashboardPage() {
                 return (
                   <div
                     key={order.id}
-                    className={`relative overflow-hidden rounded-2xl border p-4 sm:rounded-3xl sm:p-5 md:p-6 ${
+                    className={`rounded-2xl border p-4 sm:rounded-3xl sm:p-5 md:p-6 ${
                       isReady
-                        ? "border-light-brown/40 bg-gradient-to-br from-light-brown/20 via-milk/80 to-milk"
-                        : "border-dark-brown/10 bg-milk/80"
+                        ? "border-light-brown/40 bg-light-brown/15"
+                        : "border-dark-brown/10 bg-milk/70"
                     }`}
                   >
-                    {isReady && (
-                      <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-light-brown/20 blur-2xl" />
-                    )}
-                    <div className="relative mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
+                    <div className="mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
                           <p className="text-sm font-bold uppercase tracking-tight text-dark-brown">{order.id}</p>
@@ -1188,7 +1166,7 @@ export default function DashboardPage() {
                       )}
                     </div>
                     {isReady ? (
-                      <div className="relative flex flex-col gap-2 rounded-2xl bg-dark-brown px-4 py-3.5 text-milk shadow-lg sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+                      <div className="flex flex-col gap-2 rounded-2xl bg-dark-brown px-4 py-3.5 text-milk sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
                         <div className="flex items-center gap-2">
                           <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
                           <p className="text-sm font-bold uppercase tracking-wide">
@@ -1210,112 +1188,67 @@ export default function DashboardPage() {
         )}
 
         {/* Actions */}
-        <section className="dashboard-stagger-item mb-7 md:mb-10">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
+        <section className="dashboard-stagger-item mb-8 md:mb-10">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-3">
             <Link
               href="/order"
-              className="group relative flex min-h-[4.5rem] items-center justify-between overflow-hidden rounded-2xl bg-dark-brown px-4 py-4 text-milk shadow-[0_10px_28px_-12px_rgba(42,24,16,0.4)] transition-all hover:-translate-y-0.5 hover:bg-dark-brown-hover hover:shadow-[0_16px_36px_-12px_rgba(42,24,16,0.5)] sm:min-h-0 sm:rounded-3xl sm:px-5 sm:py-5"
+              className="group flex items-center justify-between rounded-2xl bg-dark-brown px-5 py-4 text-milk transition-colors hover:bg-dark-brown-hover sm:py-5"
             >
-              <div className="absolute right-0 top-0 h-20 w-20 translate-x-6 -translate-y-6 rounded-full bg-white/5 transition-all group-hover:scale-110" />
-              <div className="relative min-w-0 pr-3">
-                <p className="text-sm font-bold uppercase tracking-tight sm:text-base">{t("Order Now")}</p>
-                <p className="mt-1 font-paragraph text-xs text-milk/55">{t("Browse the menu") || "Browse the menu"}</p>
+              <div>
+                <p className="text-sm font-bold uppercase tracking-tight">{t("Order Now")}</p>
+                <p className="mt-0.5 font-paragraph text-xs text-milk/50">{t("Browse the menu") || "Browse the menu"}</p>
               </div>
-              <span className="relative shrink-0 text-lg text-milk/35 transition-all group-hover:translate-x-0.5 group-hover:text-milk/70" aria-hidden>→</span>
+              <span className="text-milk/40 transition-transform group-hover:translate-x-0.5" aria-hidden>→</span>
             </Link>
             <Link
               href="/scan"
-              className="group relative flex min-h-[4.5rem] items-center justify-between overflow-hidden rounded-2xl bg-light-brown px-4 py-4 text-dark-brown shadow-[0_10px_28px_-12px_rgba(227,164,88,0.35)] transition-all hover:-translate-y-0.5 hover:bg-mid-brown hover:text-milk hover:shadow-[0_16px_36px_-12px_rgba(227,164,88,0.45)] sm:min-h-0 sm:rounded-3xl sm:px-5 sm:py-5"
+              className="group flex items-center justify-between rounded-2xl bg-light-brown px-5 py-4 text-dark-brown transition-colors hover:bg-mid-brown hover:text-milk sm:py-5"
             >
-              <div className="absolute right-0 top-0 h-20 w-20 translate-x-6 -translate-y-6 rounded-full bg-white/15 transition-all group-hover:scale-110" />
-              <div className="relative min-w-0 pr-3">
-                <p className="text-sm font-bold uppercase tracking-tight sm:text-base">{t("Scan QR")}</p>
-                <p className="mt-1 font-paragraph text-xs text-dark-brown/60 group-hover:text-milk/65">{t("Table ordering") || "Table ordering"}</p>
+              <div>
+                <p className="text-sm font-bold uppercase tracking-tight">{t("Scan QR")}</p>
+                <p className="mt-0.5 font-paragraph text-xs text-dark-brown/55 group-hover:text-milk/60">{t("Table ordering") || "Table ordering"}</p>
               </div>
-              <span className="relative shrink-0 text-lg opacity-35 transition-all group-hover:translate-x-0.5 group-hover:opacity-70" aria-hidden>→</span>
+              <span className="opacity-40 transition-transform group-hover:translate-x-0.5" aria-hidden>→</span>
             </Link>
             <Link
               href="/track"
-              className="group relative flex min-h-[4.5rem] items-center justify-between overflow-hidden rounded-2xl border border-dark-brown/10 bg-milk/85 px-4 py-4 text-dark-brown transition-all hover:-translate-y-0.5 hover:border-dark-brown/25 hover:bg-white hover:shadow-lg sm:min-h-0 sm:rounded-3xl sm:px-5 sm:py-5"
+              className="group flex items-center justify-between rounded-2xl border border-dark-brown/10 bg-milk/70 px-5 py-4 text-dark-brown transition-colors hover:border-dark-brown/20 hover:bg-milk sm:py-5"
             >
-              <div className="absolute right-0 top-0 h-20 w-20 translate-x-6 -translate-y-6 rounded-full bg-dark-brown/5 transition-all group-hover:scale-110" />
-              <div className="relative min-w-0 pr-3">
-                <p className="text-sm font-bold uppercase tracking-tight sm:text-base">{t("Track Order")}</p>
-                <p className="mt-1 font-paragraph text-xs text-dark-brown/50">{t("Live status") || "Live status"}</p>
+              <div>
+                <p className="text-sm font-bold uppercase tracking-tight">{t("Track Order")}</p>
+                <p className="mt-0.5 font-paragraph text-xs text-dark-brown/45">{t("Live status") || "Live status"}</p>
               </div>
-              <span className="relative shrink-0 text-lg text-dark-brown/25 transition-all group-hover:translate-x-0.5 group-hover:text-dark-brown/50" aria-hidden>→</span>
+              <span className="text-dark-brown/30 transition-transform group-hover:translate-x-0.5" aria-hidden>→</span>
             </Link>
           </div>
         </section>
 
-        {/* Stats cards */}
-        <section className="dashboard-stagger-item mb-7 md:mb-10">
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-            <div className="app-panel flex flex-col justify-between rounded-2xl border border-dark-brown/10 p-4 sm:rounded-3xl sm:p-5">
-              <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-light-brown/15">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-mid-brown">
-                  <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
-                  <path d="M3 6h18" />
-                  <path d="M16 10a4 4 0 0 1-8 0" />
-                </svg>
-              </div>
-              <p className="font-paragraph text-[10px] uppercase tracking-[0.15em] text-dark-brown/40">{t("Orders") || "Orders"}</p>
-              <p className="mt-0.5 text-2xl font-bold tabular-nums text-dark-brown sm:text-3xl">{lifetimeTotalOrders}</p>
+        {/* Stats */}
+        <section className="dashboard-stagger-item mb-8 border-y border-dark-brown/10 py-5 md:mb-10 md:py-6">
+          <div className="grid grid-cols-3 gap-3 sm:gap-8">
+            <div className="min-w-0 text-center sm:text-left">
+              <p className="font-paragraph text-[10px] uppercase tracking-[0.18em] text-dark-brown/40">{t("Orders") || "Orders"}</p>
+              <p className="mt-1 text-2xl font-bold tabular-nums text-dark-brown sm:text-3xl">{lifetimeTotalOrders}</p>
             </div>
-            <div className="app-panel flex flex-col justify-between rounded-2xl border border-dark-brown/10 p-4 sm:rounded-3xl sm:p-5">
-              <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-700">
-                  <circle cx="12" cy="8" r="6" />
-                  <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11" />
-                </svg>
-              </div>
-              <p className="font-paragraph text-[10px] uppercase tracking-[0.15em] text-dark-brown/40">{t("Completed")}</p>
-              <p className="mt-0.5 text-2xl font-bold tabular-nums text-dark-brown sm:text-3xl">{lifetimeCompleted}</p>
+            <div className="min-w-0 text-center sm:text-left">
+              <p className="font-paragraph text-[10px] uppercase tracking-[0.18em] text-dark-brown/40">{t("Spent") || "Spent"}</p>
+              <p className="mt-1 text-2xl font-bold tabular-nums text-dark-brown sm:text-3xl">₱{lifetimeTotalSpent.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
             </div>
-            <div className="app-panel flex flex-col justify-between rounded-2xl border border-dark-brown/10 p-4 sm:rounded-3xl sm:p-5">
-              <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-light-brown/15">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-mid-brown">
-                  <line x1="12" y1="1" x2="12" y2="23" />
-                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                </svg>
-              </div>
-              <p className="font-paragraph text-[10px] uppercase tracking-[0.15em] text-dark-brown/40">{t("Spent") || "Spent"}</p>
-              <p className="mt-0.5 text-2xl font-bold tabular-nums text-dark-brown sm:text-3xl">₱{lifetimeTotalSpent.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+            <div className="min-w-0 text-center sm:text-left">
+              <p className="font-paragraph text-[10px] uppercase tracking-[0.18em] text-dark-brown/40">{t("Completed")}</p>
+              <p className="mt-1 text-2xl font-bold tabular-nums text-dark-brown sm:text-3xl">{lifetimeCompleted}</p>
             </div>
-            {mostOrderedDrink ? (
-              <button
-                type="button"
-                onClick={() => setShowTopDrinksModal(true)}
-                className="app-panel group flex flex-col justify-between rounded-2xl border border-dark-brown/10 p-4 text-left transition-colors hover:bg-light-brown/10 sm:rounded-3xl sm:p-5"
-              >
-                <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-light-brown/15">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-mid-brown">
-                    <path d="M17 8h1a4 4 0 1 1 0 8h-1" />
-                    <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z" />
-                    <line x1="6" y1="2" x2="6" y2="4" />
-                    <line x1="10" y1="2" x2="10" y2="4" />
-                    <line x1="14" y1="2" x2="14" y2="4" />
-                  </svg>
-                </div>
-                <p className="font-paragraph text-[10px] uppercase tracking-[0.15em] text-dark-brown/40">{t("Your usual") || "Your usual"}</p>
-                <p className="mt-0.5 truncate text-sm font-bold text-mid-brown group-hover:text-dark-brown">{mostOrderedDrink}</p>
-              </button>
-            ) : (
-              <div className="app-panel flex flex-col justify-between rounded-2xl border border-dark-brown/10 p-4 sm:rounded-3xl sm:p-5">
-                <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-light-brown/15">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-mid-brown">
-                    <path d="M17 8h1a4 4 0 1 1 0 8h-1" />
-                    <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z" />
-                    <line x1="6" y1="2" x2="6" y2="4" />
-                    <line x1="10" y1="2" x2="10" y2="4" />
-                    <line x1="14" y1="2" x2="14" y2="4" />
-                  </svg>
-                </div>
-                <p className="font-paragraph text-[10px] uppercase tracking-[0.15em] text-dark-brown/40">{t("Your usual") || "Your usual"}</p>
-                <p className="mt-0.5 text-sm font-bold text-dark-brown/45">—</p>
-              </div>
-            )}
           </div>
+          {mostOrderedDrink && (
+            <button
+              type="button"
+              onClick={() => setShowTopDrinksModal(true)}
+              className="mt-4 block w-full text-center transition-opacity hover:opacity-70 sm:text-left"
+            >
+              <p className="font-paragraph text-[10px] uppercase tracking-[0.18em] text-dark-brown/40">{t("Your usual") || "Your usual"}</p>
+              <p className="mt-0.5 truncate text-sm font-bold text-mid-brown">{mostOrderedDrink}</p>
+            </button>
+          )}
         </section>
 
         {/* Recent orders */}
@@ -1367,7 +1300,7 @@ export default function DashboardPage() {
                   <article
                     key={order.id}
                     id={`receipt-${order.id}`}
-                    className="paginated-order overflow-hidden rounded-2xl border border-dark-brown/10 bg-milk/90 p-4 shadow-sm transition-shadow hover:shadow-md sm:rounded-3xl sm:p-5 md:p-6"
+                    className="paginated-order overflow-hidden rounded-2xl border border-dark-brown/10 bg-milk/75 p-4 sm:rounded-3xl sm:p-5 md:p-6"
                   >
                     <div className="mb-3 flex flex-col justify-between gap-3 md:flex-row md:items-start">
                       <div className="min-w-0 flex-1">
@@ -1480,25 +1413,17 @@ export default function DashboardPage() {
           <button
             type="button"
             onClick={() => setShowSpending((v) => !v)}
-            className="group flex w-full cursor-pointer items-center justify-between gap-3 rounded-2xl border border-dark-brown/10 bg-milk/60 p-4 text-left transition-colors hover:bg-milk/80 sm:rounded-3xl sm:p-5"
+            className="group flex w-full cursor-pointer items-center justify-between gap-3 border-t border-dark-brown/10 pt-6 text-left"
           >
-            <div className="flex items-center gap-3 sm:gap-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-light-brown/15 sm:h-11 sm:w-11">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-mid-brown">
-                  <path d="M3 3v18h18" />
-                  <path d="m19 9-5 5-4-4-3 3" />
-                </svg>
-              </div>
-              <div>
-                <h2 className="text-lg font-bold uppercase tracking-tight text-dark-brown transition-colors group-hover:text-mid-brown md:text-xl">
-                  {t("Spending Insights") || "Spending Insights"}
-                </h2>
-                <p className="mt-0.5 font-paragraph text-sm text-dark-brown/40">
-                  {t("Monthly trends") || "Monthly trends"}
-                </p>
-              </div>
+            <div>
+              <h2 className="text-lg font-bold uppercase tracking-tight text-dark-brown transition-colors group-hover:text-mid-brown md:text-xl">
+                {t("Spending Insights") || "Spending Insights"}
+              </h2>
+              <p className="mt-0.5 font-paragraph text-sm text-dark-brown/40">
+                {t("Monthly trends") || "Monthly trends"}
+              </p>
             </div>
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-dark-brown/5 text-center text-sm font-bold tabular-nums text-dark-brown/50 transition-colors group-hover:bg-dark-brown/10 group-hover:text-dark-brown/70">
+            <span className="text-lg font-bold tabular-nums text-dark-brown/35">
               {showSpending ? "−" : "+"}
             </span>
           </button>
@@ -1514,8 +1439,8 @@ export default function DashboardPage() {
                 </div>
               ) : (
                 <>
-                  <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
-                    <div className="rounded-2xl border border-dark-brown/10 bg-milk/60 p-3 sm:rounded-3xl sm:p-4">
+                  <div className="mb-4 flex flex-wrap gap-x-8 gap-y-3">
+                    <div>
                       <p className="font-paragraph text-[10px] uppercase tracking-[0.2em] text-dark-brown/40">
                         {t("Avg Monthly") || "Avg Monthly"}
                       </p>
@@ -1523,17 +1448,11 @@ export default function DashboardPage() {
                         ₱{spendingSummary?.avg_monthly?.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) || "0"}
                       </p>
                     </div>
-                    <div className="rounded-2xl border border-dark-brown/10 bg-milk/60 p-3 sm:rounded-3xl sm:p-4">
+                    <div>
                       <p className="font-paragraph text-[10px] uppercase tracking-[0.2em] text-dark-brown/40">
                         {t("Top Month") || "Top Month"}
                       </p>
                       <p className="mt-0.5 text-xl font-bold text-dark-brown">{spendingSummary?.top_month?.month || "—"}</p>
-                    </div>
-                    <div className="rounded-2xl border border-dark-brown/10 bg-milk/60 p-3 sm:rounded-3xl sm:p-4">
-                      <p className="font-paragraph text-[10px] uppercase tracking-[0.2em] text-dark-brown/40">
-                        {t("Months Tracked") || "Months"}
-                      </p>
-                      <p className="mt-0.5 text-xl font-bold tabular-nums text-dark-brown">{spendingSummary?.months_tracked || 0}</p>
                     </div>
                   </div>
                   <div className="overflow-x-auto rounded-2xl border border-dark-brown/10 bg-milk/70 p-3 sm:rounded-3xl sm:p-4 md:p-5">
