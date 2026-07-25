@@ -1047,24 +1047,58 @@ export default function DashboardPage() {
       </header>
 
       <main className="relative z-10 mx-auto w-full max-w-5xl px-4 py-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-5 sm:py-8 md:px-10 md:py-12">
-        {/* Welcome — login typography language */}
-        <div className="dashboard-stagger-item mb-7 md:mb-10">
-          <p className="mb-2 font-paragraph text-[0.65rem] uppercase tracking-[0.35em] text-dark-brown/45 sm:text-[0.7rem]">
-            {t("Account") || "Account"}
-          </p>
-          <h1 className="max-w-full break-words text-[clamp(1.85rem,8vw,3.25rem)] font-bold uppercase leading-[0.92] tracking-[-0.03em] text-dark-brown">
-            {t("Welcome") || "Welcome"}
-            <span className="mt-1 block truncate text-mid-brown sm:whitespace-normal sm:overflow-visible">
-              {user?.name?.split(" ")[0] || user?.name || "Back"}
-            </span>
-          </h1>
-          <p className="mt-3 max-w-md font-paragraph text-sm leading-relaxed text-dark-brown/60 sm:text-base">
-            {activeOrders.length > 0
-              ? (t("Your order is being prepared.") || "Your order is being prepared.")
-              : (t("Order, scan, or track — whenever you're ready.") ||
-                "Order, scan, or track — whenever you're ready.")}
-          </p>
-        </div>
+        {/* Welcome hero card */}
+        <section className="dashboard-stagger-item mb-7 md:mb-10">
+          <div className="relative overflow-hidden rounded-3xl border border-dark-brown/10 bg-[#2a1810] p-6 text-milk shadow-2xl sm:p-8 md:p-10">
+            <div
+              className="pointer-events-none absolute inset-0 opacity-60"
+              style={{
+                background:
+                  "radial-gradient(ellipse 80% 60% at 20% 20%, rgba(227,164,88,0.35), transparent 55%), radial-gradient(ellipse 60% 50% at 100% 100%, rgba(82,49,34,0.35), transparent 50%), linear-gradient(135deg, rgba(42,24,16,0.9), rgba(82,49,34,0.85))",
+              }}
+            />
+            <div className="relative z-10">
+              <p className="mb-3 font-paragraph text-[0.65rem] uppercase tracking-[0.35em] text-milk/60 sm:text-[0.7rem]">
+                {t("Account") || "Account"}
+              </p>
+              <h1 className="max-w-full break-words text-[clamp(2rem,9vw,3.75rem)] font-bold uppercase leading-[0.92] tracking-[-0.03em] text-milk">
+                {t("Welcome") || "Welcome"}
+                <span className="mt-1 block text-brand-gold">
+                  {user?.name?.split(" ")[0] || user?.name || "Back"}
+                </span>
+              </h1>
+              <p className="mt-4 max-w-md font-paragraph text-sm leading-relaxed text-milk/70 sm:text-base">
+                {activeOrders.length > 0
+                  ? (t("Your order is being prepared.") || "Your order is being prepared.")
+                  : (t("Order, scan, or track — whenever you're ready.") ||
+                    "Order, scan, or track — whenever you're ready.")}
+              </p>
+              {activeOrders.length > 0 ? (
+                <Link
+                  href="/track"
+                  className="relative z-10 mt-5 inline-flex items-center gap-2 rounded-full bg-milk px-5 py-2.5 text-sm font-bold uppercase tracking-wide text-dark-brown transition-all hover:bg-white hover:shadow-lg sm:mt-6"
+                >
+                  {t("Track order") || "Track order"}
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 12h14" />
+                    <path d="m12 5 7 7-7 7" />
+                  </svg>
+                </Link>
+              ) : (
+                <Link
+                  href="/order"
+                  className="relative z-10 mt-5 inline-flex items-center gap-2 rounded-full bg-milk px-5 py-2.5 text-sm font-bold uppercase tracking-wide text-dark-brown transition-all hover:bg-white hover:shadow-lg sm:mt-6"
+                >
+                  {t("Order now") || "Order now"}
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 12h14" />
+                    <path d="m12 5 7 7-7 7" />
+                  </svg>
+                </Link>
+              )}
+            </div>
+          </div>
+        </section>
 
         {/* Active order */}
         {activeOrders.length > 0 && (
@@ -1083,26 +1117,28 @@ export default function DashboardPage() {
             <div className="space-y-3">
               {activeOrders.slice(0, 2).map((order) => {
                 const isReady = order.status === "ready";
+                const status = statusStyles[order.status];
                 return (
                   <div
                     key={order.id}
-                    className={`rounded-2xl border p-4 sm:rounded-3xl sm:p-5 md:p-6 ${
+                    className={`relative overflow-hidden rounded-2xl border p-4 sm:rounded-3xl sm:p-5 md:p-6 ${
                       isReady
-                        ? "border-light-brown/50 bg-gradient-to-br from-light-brown/25 to-milk"
+                        ? "border-light-brown/40 bg-gradient-to-br from-light-brown/20 via-milk/80 to-milk"
                         : "border-dark-brown/10 bg-milk/80"
                     }`}
                   >
-                    <div className="mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
+                    {isReady && (
+                      <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-light-brown/20 blur-2xl" />
+                    )}
+                    <div className="relative mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
                           <p className="text-sm font-bold uppercase tracking-tight text-dark-brown">{order.id}</p>
                           <span
-                            className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase"
-                            style={{
-                              background: statusStyles[order.status].bg,
-                              color: statusStyles[order.status].text,
-                            }}
+                            className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase"
+                            style={{ background: status.bg, color: status.text }}
                           >
+                            <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: status.text }} />
                             {kitchenLabel(order.status)}
                           </span>
                         </div>
@@ -1116,17 +1152,20 @@ export default function DashboardPage() {
                       {order.status === "pending" && (
                         <button
                           onClick={() => setCancelOrderId(order.id)}
-                          className="self-start text-xs font-bold uppercase tracking-wider text-dark-brown/40 transition-colors hover:text-red-brown"
+                          className="self-start rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider text-dark-brown/40 transition-colors hover:bg-red-brown/10 hover:text-red-brown"
                         >
                           {t("Cancel") || "Cancel"}
                         </button>
                       )}
                     </div>
                     {isReady ? (
-                      <div className="flex flex-col gap-2 rounded-2xl bg-dark-brown px-4 py-3.5 text-milk sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-                        <p className="text-sm font-bold uppercase tracking-wide">
-                          {t("Ready for pickup") || "Ready for pickup"}
-                        </p>
+                      <div className="relative flex flex-col gap-2 rounded-2xl bg-dark-brown px-4 py-3.5 text-milk shadow-lg sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                          <p className="text-sm font-bold uppercase tracking-wide">
+                            {t("Ready for pickup") || "Ready for pickup"}
+                          </p>
+                        </div>
                         <Link href="/track" className="text-xs font-bold uppercase tracking-wider text-light-brown hover:text-milk">
                           {t("View") || "View"} →
                         </Link>
@@ -1143,79 +1182,141 @@ export default function DashboardPage() {
 
         {/* Actions */}
         <section className="dashboard-stagger-item mb-7 md:mb-10">
-          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3 sm:gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
             <Link
               href="/order"
-              className="group flex min-h-[4.5rem] items-center justify-between rounded-2xl bg-dark-brown px-4 py-4 text-milk shadow-[0_10px_28px_-12px_rgba(42,24,16,0.4)] transition-colors hover:bg-dark-brown-hover sm:min-h-0 sm:rounded-3xl sm:px-5 sm:py-5"
+              className="group relative flex min-h-[4.5rem] items-center justify-between overflow-hidden rounded-2xl bg-dark-brown px-4 py-4 text-milk shadow-[0_10px_28px_-12px_rgba(42,24,16,0.4)] transition-all hover:-translate-y-0.5 hover:bg-dark-brown-hover hover:shadow-[0_16px_36px_-12px_rgba(42,24,16,0.5)] sm:min-h-0 sm:rounded-3xl sm:px-5 sm:py-5"
             >
-              <div className="min-w-0 pr-3">
+              <div className="absolute right-0 top-0 h-20 w-20 translate-x-6 -translate-y-6 rounded-full bg-white/5 transition-all group-hover:scale-110" />
+              <div className="relative min-w-0 pr-3">
                 <p className="text-sm font-bold uppercase tracking-tight sm:text-base">{t("Order Now")}</p>
                 <p className="mt-1 font-paragraph text-xs text-milk/55">{t("Browse the menu") || "Browse the menu"}</p>
               </div>
-              <span className="shrink-0 text-lg text-milk/35 transition-transform group-hover:translate-x-0.5 group-hover:text-milk/70" aria-hidden>→</span>
+              <span className="relative shrink-0 text-lg text-milk/35 transition-all group-hover:translate-x-0.5 group-hover:text-milk/70" aria-hidden>→</span>
             </Link>
             <Link
               href="/scan"
-              className="group flex min-h-[4.5rem] items-center justify-between rounded-2xl bg-light-brown px-4 py-4 text-dark-brown shadow-[0_10px_28px_-12px_rgba(227,164,88,0.35)] transition-colors hover:bg-mid-brown hover:text-milk sm:min-h-0 sm:rounded-3xl sm:px-5 sm:py-5"
+              className="group relative flex min-h-[4.5rem] items-center justify-between overflow-hidden rounded-2xl bg-light-brown px-4 py-4 text-dark-brown shadow-[0_10px_28px_-12px_rgba(227,164,88,0.35)] transition-all hover:-translate-y-0.5 hover:bg-mid-brown hover:text-milk hover:shadow-[0_16px_36px_-12px_rgba(227,164,88,0.45)] sm:min-h-0 sm:rounded-3xl sm:px-5 sm:py-5"
             >
-              <div className="min-w-0 pr-3">
+              <div className="absolute right-0 top-0 h-20 w-20 translate-x-6 -translate-y-6 rounded-full bg-white/15 transition-all group-hover:scale-110" />
+              <div className="relative min-w-0 pr-3">
                 <p className="text-sm font-bold uppercase tracking-tight sm:text-base">{t("Scan QR")}</p>
                 <p className="mt-1 font-paragraph text-xs text-dark-brown/60 group-hover:text-milk/65">{t("Table ordering") || "Table ordering"}</p>
               </div>
-              <span className="shrink-0 text-lg opacity-35 transition-all group-hover:translate-x-0.5 group-hover:opacity-70" aria-hidden>→</span>
+              <span className="relative shrink-0 text-lg opacity-35 transition-all group-hover:translate-x-0.5 group-hover:opacity-70" aria-hidden>→</span>
             </Link>
             <Link
               href="/track"
-              className="group flex min-h-[4.5rem] items-center justify-between rounded-2xl border border-dark-brown/10 bg-milk/85 px-4 py-4 text-dark-brown transition-colors hover:border-dark-brown/25 sm:min-h-0 sm:rounded-3xl sm:px-5 sm:py-5"
+              className="group relative flex min-h-[4.5rem] items-center justify-between overflow-hidden rounded-2xl border border-dark-brown/10 bg-milk/85 px-4 py-4 text-dark-brown transition-all hover:-translate-y-0.5 hover:border-dark-brown/25 hover:bg-white hover:shadow-lg sm:min-h-0 sm:rounded-3xl sm:px-5 sm:py-5"
             >
-              <div className="min-w-0 pr-3">
+              <div className="absolute right-0 top-0 h-20 w-20 translate-x-6 -translate-y-6 rounded-full bg-dark-brown/5 transition-all group-hover:scale-110" />
+              <div className="relative min-w-0 pr-3">
                 <p className="text-sm font-bold uppercase tracking-tight sm:text-base">{t("Track Order")}</p>
                 <p className="mt-1 font-paragraph text-xs text-dark-brown/50">{t("Live status") || "Live status"}</p>
               </div>
-              <span className="shrink-0 text-lg text-dark-brown/25 transition-all group-hover:translate-x-0.5 group-hover:text-dark-brown/50" aria-hidden>→</span>
+              <span className="relative shrink-0 text-lg text-dark-brown/25 transition-all group-hover:translate-x-0.5 group-hover:text-dark-brown/50" aria-hidden>→</span>
             </Link>
           </div>
         </section>
 
-        {/* Slim stats — centered columns */}
-        <section className="dashboard-stagger-item mb-7 border-y border-dark-brown/10 py-5 md:mb-10">
-          <div className="grid grid-cols-3 gap-2 sm:gap-6">
-            <div className="min-w-0 text-center">
-              <p className="font-paragraph text-[10px] uppercase tracking-[0.15em] text-dark-brown/40 sm:tracking-[0.2em]">{t("Orders") || "Orders"}</p>
-              <p className="mt-0.5 text-xl font-bold tabular-nums text-dark-brown sm:text-2xl">{lifetimeTotalOrders}</p>
+        {/* Stats cards */}
+        <section className="dashboard-stagger-item mb-7 md:mb-10">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+            <div className="app-panel flex flex-col justify-between rounded-2xl border border-dark-brown/10 p-4 sm:rounded-3xl sm:p-5">
+              <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-light-brown/15">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-mid-brown">
+                  <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+                  <path d="M3 6h18" />
+                  <path d="M16 10a4 4 0 0 1-8 0" />
+                </svg>
+              </div>
+              <p className="font-paragraph text-[10px] uppercase tracking-[0.15em] text-dark-brown/40">{t("Orders") || "Orders"}</p>
+              <p className="mt-0.5 text-2xl font-bold tabular-nums text-dark-brown sm:text-3xl">{lifetimeTotalOrders}</p>
             </div>
-            <div className="min-w-0 text-center">
-              <p className="font-paragraph text-[10px] uppercase tracking-[0.15em] text-dark-brown/40 sm:tracking-[0.2em]">{t("Spent") || "Spent"}</p>
-              <p className="mt-0.5 text-xl font-bold tabular-nums text-dark-brown sm:text-2xl">₱{lifetimeTotalSpent.toFixed(0)}</p>
+            <div className="app-panel flex flex-col justify-between rounded-2xl border border-dark-brown/10 p-4 sm:rounded-3xl sm:p-5">
+              <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-700">
+                  <circle cx="12" cy="8" r="6" />
+                  <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11" />
+                </svg>
+              </div>
+              <p className="font-paragraph text-[10px] uppercase tracking-[0.15em] text-dark-brown/40">{t("Completed")}</p>
+              <p className="mt-0.5 text-2xl font-bold tabular-nums text-dark-brown sm:text-3xl">{lifetimeCompleted}</p>
             </div>
-            <div className="min-w-0 text-center">
-              <p className="font-paragraph text-[10px] uppercase tracking-[0.15em] text-dark-brown/40 sm:tracking-[0.2em]">{t("Completed")}</p>
-              <p className="mt-0.5 text-xl font-bold tabular-nums text-dark-brown sm:text-2xl">{lifetimeCompleted}</p>
+            <div className="app-panel flex flex-col justify-between rounded-2xl border border-dark-brown/10 p-4 sm:rounded-3xl sm:p-5">
+              <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-light-brown/15">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-mid-brown">
+                  <line x1="12" y1="1" x2="12" y2="23" />
+                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                </svg>
+              </div>
+              <p className="font-paragraph text-[10px] uppercase tracking-[0.15em] text-dark-brown/40">{t("Spent") || "Spent"}</p>
+              <p className="mt-0.5 text-2xl font-bold tabular-nums text-dark-brown sm:text-3xl">₱{lifetimeTotalSpent.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
             </div>
+            {mostOrderedDrink ? (
+              <button
+                type="button"
+                onClick={() => setShowTopDrinksModal(true)}
+                className="app-panel group flex flex-col justify-between rounded-2xl border border-dark-brown/10 p-4 text-left transition-colors hover:bg-light-brown/10 sm:rounded-3xl sm:p-5"
+              >
+                <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-light-brown/15">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-mid-brown">
+                    <path d="M17 8h1a4 4 0 1 1 0 8h-1" />
+                    <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z" />
+                    <line x1="6" y1="2" x2="6" y2="4" />
+                    <line x1="10" y1="2" x2="10" y2="4" />
+                    <line x1="14" y1="2" x2="14" y2="4" />
+                  </svg>
+                </div>
+                <p className="font-paragraph text-[10px] uppercase tracking-[0.15em] text-dark-brown/40">{t("Your usual") || "Your usual"}</p>
+                <p className="mt-0.5 truncate text-sm font-bold text-mid-brown group-hover:text-dark-brown">{mostOrderedDrink}</p>
+              </button>
+            ) : (
+              <div className="app-panel flex flex-col justify-between rounded-2xl border border-dark-brown/10 p-4 sm:rounded-3xl sm:p-5">
+                <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-light-brown/15">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-mid-brown">
+                    <path d="M17 8h1a4 4 0 1 1 0 8h-1" />
+                    <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z" />
+                    <line x1="6" y1="2" x2="6" y2="4" />
+                    <line x1="10" y1="2" x2="10" y2="4" />
+                    <line x1="14" y1="2" x2="14" y2="4" />
+                  </svg>
+                </div>
+                <p className="font-paragraph text-[10px] uppercase tracking-[0.15em] text-dark-brown/40">{t("Your usual") || "Your usual"}</p>
+                <p className="mt-0.5 text-sm font-bold text-dark-brown/45">—</p>
+              </div>
+            )}
           </div>
-          {mostOrderedDrink && (
-            <button
-              type="button"
-              onClick={() => setShowTopDrinksModal(true)}
-              className="mx-auto mt-4 block max-w-full cursor-pointer px-2 text-center transition-opacity hover:opacity-75 sm:max-w-[18rem]"
-            >
-              <p className="font-paragraph text-[10px] uppercase tracking-[0.2em] text-dark-brown/40">{t("Your usual") || "Your usual"}</p>
-              <p className="truncate text-sm font-bold leading-snug text-mid-brown">{mostOrderedDrink}</p>
-            </button>
-          )}
         </section>
 
         {/* Recent orders */}
         <section className="dashboard-stagger-item mb-8 md:mb-10">
-          <h2 className="mb-1.5 text-xl font-bold uppercase tracking-tight text-dark-brown md:text-2xl">
-            {t("Recent Orders") || "Recent Orders"}
-          </h2>
-          <p className="mb-5 font-paragraph text-sm text-dark-brown/45">
-            {t("Your latest activity") || "Your latest activity"}
-          </p>
+          <div className="mb-5 flex items-end justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-bold uppercase tracking-tight text-dark-brown md:text-2xl">
+                {t("Recent Orders") || "Recent Orders"}
+              </h2>
+              <p className="mt-0.5 font-paragraph text-sm text-dark-brown/45">
+                {t("Your latest activity") || "Your latest activity"}
+              </p>
+            </div>
+            <Link
+              href="/order"
+              className="hidden rounded-full bg-dark-brown px-4 py-2 text-xs font-bold uppercase text-milk transition-colors hover:bg-dark-brown-hover sm:inline-block"
+            >
+              {t("Order Now")}
+            </Link>
+          </div>
 
           {orders.length === 0 ? (
-            <div className="rounded-3xl border border-dark-brown/10 bg-milk/70 px-6 py-12 text-center">
+            <div className="rounded-3xl border border-dark-brown/10 bg-milk/70 px-6 py-14 text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-light-brown/15">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-mid-brown">
+                  <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+                  <path d="M3 6h18" />
+                  <path d="M16 10a4 4 0 0 1-8 0" />
+                </svg>
+              </div>
               <p className="text-lg font-bold uppercase tracking-tight text-dark-brown">
                 {t("No orders yet") || "No orders yet"}
               </p>
@@ -1231,92 +1332,94 @@ export default function DashboardPage() {
             </div>
           ) : (
             <div className="flex flex-col gap-3">
-              {orders.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((order) => (
-                <article
-                  key={order.id}
-                  id={`receipt-${order.id}`}
-                  className="paginated-order overflow-hidden rounded-2xl border border-dark-brown/10 bg-milk/75 p-4 sm:rounded-3xl sm:p-5 md:p-6"
-                >
-                  <div className="mb-3 flex flex-col justify-between gap-3 md:flex-row md:items-start">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="text-sm font-bold uppercase tracking-tight text-dark-brown">{order.id}</p>
-                        <span
-                          className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase"
-                          style={{
-                            background: statusStyles[order.status].bg,
-                            color: statusStyles[order.status].text,
-                          }}
-                        >
-                          {kitchenLabel(order.status)}
-                        </span>
-                        {order.status !== "cancelled" && (
+              {orders.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((order) => {
+                const orderStatus = statusStyles[order.status];
+                return (
+                  <article
+                    key={order.id}
+                    id={`receipt-${order.id}`}
+                    className="paginated-order overflow-hidden rounded-2xl border border-dark-brown/10 bg-milk/90 p-4 shadow-sm transition-shadow hover:shadow-md sm:rounded-3xl sm:p-5 md:p-6"
+                  >
+                    <div className="mb-3 flex flex-col justify-between gap-3 md:flex-row md:items-start">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="text-sm font-bold uppercase tracking-tight text-dark-brown">{order.id}</p>
                           <span
-                            className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase ${
-                              order.paymentStatus === "paid"
-                                ? "border-emerald-200 bg-emerald-50 text-emerald-800"
-                                : "border-amber-200 bg-amber-50 text-amber-800"
-                            }`}
+                            className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase"
+                            style={{ background: orderStatus.bg, color: orderStatus.text }}
                           >
-                            {order.paymentStatus === "paid" ? "paid" : "unpaid"}
+                            <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: orderStatus.text }} />
+                            {kitchenLabel(order.status)}
                           </span>
-                        )}
-                        {(order.status === "pending" || order.status === "preparing") && orderEtas[order.id] && (
-                          <QueuePositionCard eta={orderEtas[order.id]} compact />
-                        )}
-                      </div>
-                      <p className="mt-1 font-paragraph text-xs text-dark-brown/40">
-                        {new Date(order.date).toLocaleString()}
-                      </p>
-                    </div>
-                    <div className="flex max-w-full flex-wrap items-center gap-1 self-start" data-html2canvas-ignore="true">
-                      {order.status === "pending" && (
-                        <button onClick={() => setCancelOrderId(order.id)} className="rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-dark-brown/45 transition-colors hover:bg-dark-brown/5 hover:text-yellow-800 sm:px-3">
-                          {t("Cancel")}
-                        </button>
-                      )}
-                      {order.status === "completed" && (
-                        order.rating ? (
-                          <div className="flex items-center gap-0.5 px-2" title={`Rated ${order.rating}`}>
-                            {[1, 2, 3, 4, 5].map((star) => (
-                              <svg key={star} xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill={star <= order.rating! ? "#a26833" : "none"} stroke={star <= order.rating! ? "#a26833" : "currentColor"} strokeWidth="2" className="text-dark-brown/20"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
-                            ))}
-                          </div>
-                        ) : (
-                          <button onClick={() => { setRateOrderId(order.id); setRatingValue(0); }} className="rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-mid-brown transition-colors hover:bg-light-brown/20 hover:text-dark-brown sm:px-3">
-                            Rate
-                          </button>
-                        )
-                      )}
-                      <button onClick={() => downloadReceipt(order)} className="rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-dark-brown/50 transition-colors hover:bg-dark-brown/5 hover:text-dark-brown sm:px-3">
-                        {t("Save")}
-                      </button>
-                      <button onClick={() => deleteOrder(order.id)} disabled={deletingOrderIds.includes(order.id)} className="rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-red-brown/60 transition-colors hover:bg-red-brown/10 hover:text-red-brown disabled:opacity-50 sm:px-3">
-                        {t("Delete")}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="divide-y divide-dark-brown/10 border-t border-dark-brown/10 pt-1">
-                    {order.items.map((item) => (
-                      <div key={item.name} className="flex items-start justify-between gap-2 py-2.5">
-                        <div className="flex min-w-0 flex-1 gap-2 sm:gap-3 sm:pr-4">
-                          <span className="w-6 shrink-0 text-xs font-bold tabular-nums text-dark-brown">{item.qty}×</span>
-                          <span className="min-w-0 break-words font-paragraph text-sm leading-snug text-dark-brown">{item.name}</span>
+                          {order.status !== "cancelled" && (
+                            <span
+                              className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase ${
+                                order.paymentStatus === "paid"
+                                  ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                                  : "border-amber-200 bg-amber-50 text-amber-800"
+                              }`}
+                            >
+                              <span className={`h-1.5 w-1.5 rounded-full ${order.paymentStatus === "paid" ? "bg-emerald-600" : "bg-amber-600"}`} />
+                              {order.paymentStatus === "paid" ? "paid" : "unpaid"}
+                            </span>
+                          )}
+                          {(order.status === "pending" || order.status === "preparing") && orderEtas[order.id] && (
+                            <QueuePositionCard eta={orderEtas[order.id]} compact />
+                          )}
                         </div>
-                        <span className="shrink-0 font-paragraph text-sm tabular-nums text-dark-brown/55">
-                          ₱{(item.price * item.qty).toFixed(2)}
-                        </span>
+                        <p className="mt-1 font-paragraph text-xs text-dark-brown/40">
+                          {new Date(order.date).toLocaleString()}
+                        </p>
                       </div>
-                    ))}
-                  </div>
+                      <div className="flex max-w-full flex-wrap items-center gap-1 self-start" data-html2canvas-ignore="true">
+                        {order.status === "pending" && (
+                          <button onClick={() => setCancelOrderId(order.id)} className="rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-dark-brown/45 transition-colors hover:bg-red-brown/10 hover:text-red-brown sm:px-3">
+                            {t("Cancel")}
+                          </button>
+                        )}
+                        {order.status === "completed" && (
+                          order.rating ? (
+                            <div className="flex items-center gap-0.5 px-2" title={`Rated ${order.rating}`}>
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <svg key={star} xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill={star <= order.rating! ? "#e3a458" : "none"} stroke={star <= order.rating! ? "#e3a458" : "currentColor"} strokeWidth="2" className="text-dark-brown/20"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
+                              ))}
+                            </div>
+                          ) : (
+                            <button onClick={() => { setRateOrderId(order.id); setRatingValue(0); }} className="rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-mid-brown transition-colors hover:bg-light-brown/20 hover:text-dark-brown sm:px-3">
+                              Rate
+                            </button>
+                          )
+                        )}
+                        <button onClick={() => downloadReceipt(order)} className="rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-dark-brown/50 transition-colors hover:bg-dark-brown/5 hover:text-dark-brown sm:px-3">
+                          {t("Save")}
+                        </button>
+                        <button onClick={() => deleteOrder(order.id)} disabled={deletingOrderIds.includes(order.id)} className="rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-red-brown/60 transition-colors hover:bg-red-brown/10 hover:text-red-brown disabled:opacity-50 sm:px-3">
+                          {t("Delete")}
+                        </button>
+                      </div>
+                    </div>
 
-                  <div className="mt-3 flex items-center justify-between border-t border-dark-brown/10 pt-3">
-                    <span className="font-paragraph text-sm text-dark-brown/50">{t("Total")}</span>
-                    <span className="text-lg font-bold tabular-nums text-dark-brown">₱{order.total.toFixed(2)}</span>
-                  </div>
-                </article>
-              ))}
+                    <div className="divide-y divide-dark-brown/10 border-t border-dark-brown/10 pt-1">
+                      {order.items.map((item) => (
+                        <div key={item.name} className="flex items-start justify-between gap-2 py-2.5">
+                          <div className="flex min-w-0 flex-1 items-baseline gap-2 sm:gap-3 sm:pr-4">
+                            <span className="shrink-0 text-xs font-bold tabular-nums text-dark-brown/60">{item.qty}×</span>
+                            <span className="min-w-0 break-words font-paragraph text-sm leading-snug text-dark-brown">{item.name}</span>
+                          </div>
+                          <span className="shrink-0 font-paragraph text-sm tabular-nums text-dark-brown/60">
+                            ₱{(item.price * item.qty).toFixed(2)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="mt-3 flex items-center justify-between border-t border-dark-brown/10 pt-3">
+                      <span className="font-paragraph text-sm text-dark-brown/50">{t("Total")}</span>
+                      <span className="text-lg font-bold tabular-nums text-dark-brown">₱{order.total.toFixed(2)}</span>
+                    </div>
+                  </article>
+                );
+              })}
 
               {Math.ceil(orders.length / ITEMS_PER_PAGE) > 1 && (
                 <div className="mt-3 flex items-center justify-between gap-2 px-0.5">
@@ -1348,17 +1451,25 @@ export default function DashboardPage() {
           <button
             type="button"
             onClick={() => setShowSpending((v) => !v)}
-            className="group flex w-full cursor-pointer items-center justify-between gap-3 border-t border-dark-brown/10 pt-6 text-left"
+            className="group flex w-full cursor-pointer items-center justify-between gap-3 rounded-2xl border border-dark-brown/10 bg-milk/60 p-4 text-left transition-colors hover:bg-milk/80 sm:rounded-3xl sm:p-5"
           >
-            <div>
-              <h2 className="text-lg font-bold uppercase tracking-tight text-dark-brown transition-colors group-hover:text-mid-brown md:text-xl">
-                {t("Spending Insights") || "Spending Insights"}
-              </h2>
-              <p className="mt-0.5 font-paragraph text-sm text-dark-brown/40">
-                {t("Monthly trends") || "Monthly trends"}
-              </p>
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-light-brown/15 sm:h-11 sm:w-11">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-mid-brown">
+                  <path d="M3 3v18h18" />
+                  <path d="m19 9-5 5-4-4-3 3" />
+                </svg>
+              </div>
+              <div>
+                <h2 className="text-lg font-bold uppercase tracking-tight text-dark-brown transition-colors group-hover:text-mid-brown md:text-xl">
+                  {t("Spending Insights") || "Spending Insights"}
+                </h2>
+                <p className="mt-0.5 font-paragraph text-sm text-dark-brown/40">
+                  {t("Monthly trends") || "Monthly trends"}
+                </p>
+              </div>
             </div>
-            <span className="w-8 text-center text-lg font-bold tabular-nums text-dark-brown/35">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-dark-brown/5 text-center text-sm font-bold tabular-nums text-dark-brown/50 transition-colors group-hover:bg-dark-brown/10 group-hover:text-dark-brown/70">
               {showSpending ? "−" : "+"}
             </span>
           </button>
@@ -1374,20 +1485,26 @@ export default function DashboardPage() {
                 </div>
               ) : (
                 <>
-                  <div className="mb-4 flex flex-wrap gap-x-8 gap-y-3">
-                    <div>
+                  <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
+                    <div className="rounded-2xl border border-dark-brown/10 bg-milk/60 p-3 sm:rounded-3xl sm:p-4">
                       <p className="font-paragraph text-[10px] uppercase tracking-[0.2em] text-dark-brown/40">
                         {t("Avg Monthly") || "Avg Monthly"}
                       </p>
-                      <p className="text-xl font-bold tabular-nums text-dark-brown">
+                      <p className="mt-0.5 text-xl font-bold tabular-nums text-dark-brown">
                         ₱{spendingSummary?.avg_monthly?.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) || "0"}
                       </p>
                     </div>
-                    <div>
+                    <div className="rounded-2xl border border-dark-brown/10 bg-milk/60 p-3 sm:rounded-3xl sm:p-4">
                       <p className="font-paragraph text-[10px] uppercase tracking-[0.2em] text-dark-brown/40">
                         {t("Top Month") || "Top Month"}
                       </p>
-                      <p className="text-xl font-bold text-dark-brown">{spendingSummary?.top_month?.month || "—"}</p>
+                      <p className="mt-0.5 text-xl font-bold text-dark-brown">{spendingSummary?.top_month?.month || "—"}</p>
+                    </div>
+                    <div className="rounded-2xl border border-dark-brown/10 bg-milk/60 p-3 sm:rounded-3xl sm:p-4">
+                      <p className="font-paragraph text-[10px] uppercase tracking-[0.2em] text-dark-brown/40">
+                        {t("Months Tracked") || "Months"}
+                      </p>
+                      <p className="mt-0.5 text-xl font-bold tabular-nums text-dark-brown">{spendingSummary?.months_tracked || 0}</p>
                     </div>
                   </div>
                   <div className="overflow-x-auto rounded-2xl border border-dark-brown/10 bg-milk/70 p-3 sm:rounded-3xl sm:p-4 md:p-5">
