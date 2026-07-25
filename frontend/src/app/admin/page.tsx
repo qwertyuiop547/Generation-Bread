@@ -634,8 +634,12 @@ export default function AdminPage() {
       const allOrders = [...mapped, ...localOrders].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       setOrders(allOrders);
 
-      // Auto-cancel overdue scheduled orders (fire-and-forget)
-      authFetch(`${API_BASE_URL}/api/auth/admin/cancel-overdue-scheduled/`, { method: "POST"}).catch(() => {});
+      // Auto-cancel overdue scheduled orders (at most once every 5 min — avoid 429 spam)
+      const now = Date.now();
+      if (now - lastCancelOverdueAtRef.current > 5 * 60 * 1000) {
+        lastCancelOverdueAtRef.current = now;
+        authFetch(`${API_BASE_URL}/api/auth/admin/cancel-overdue-scheduled/`, { method: "POST" }).catch(() => {});
+      }
     } catch (err) {
       setOrders([]);
     }
