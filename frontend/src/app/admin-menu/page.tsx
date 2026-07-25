@@ -10,10 +10,36 @@ import NotificationBell from "@/components/NotificationBell";
 import ProductLightbox from "@/components/ProductLightbox";
 import { getMenuItemImage } from "@/constants";
 import { extractDominantColorFromImage } from "@/lib/extractDominantColor";
+import { prepareMenuImage } from "@/lib/prepareMenuImage";
 
 gsap.registerPlugin(useGSAP);
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
+
+function formatApiError(err: unknown, fallback: string): string {
+  if (!err || typeof err !== "object") return fallback;
+  const e = err as Record<string, unknown>;
+  if (typeof e.error === "string" && e.error.trim()) return e.error;
+  if (typeof e.detail === "string" && e.detail.trim()) return e.detail;
+  if (Array.isArray(e.detail)) {
+    const joined = e.detail
+      .map((d) => (typeof d === "string" ? d : JSON.stringify(d)))
+      .filter(Boolean)
+      .join(" ");
+    if (joined) return joined;
+  }
+  const parts: string[] = [];
+  for (const [key, val] of Object.entries(e)) {
+    if (key === "error" || key === "detail") continue;
+    if (Array.isArray(val)) {
+      const msg = val.map((v) => (typeof v === "string" ? v : JSON.stringify(v))).join(", ");
+      if (msg) parts.push(`${key}: ${msg}`);
+    } else if (typeof val === "string" && val.trim()) {
+      parts.push(`${key}: ${val}`);
+    }
+  }
+  return parts.length ? parts.join(" · ") : fallback;
+}
 
 interface MenuItem {
   id?: number | string;
@@ -362,19 +388,28 @@ export default function AdminMenuPage() {
   const safeBg =
     /^#[0-9A-Fa-f]{6}$/i.test(formData.bg_color) ? formData.bg_color : "#523122";
 
-  const handlePhotoSelected = (file: File | null) => {
-    setImageFile(file);
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-        void applyAiColorFromSource(file);
-      };
-      reader.readAsDataURL(file);
-    } else {
+  const handlePhotoSelected = async (file: File | null) => {
+    if (!file) {
+      setImageFile(null);
       setImagePreview(editingItem?.image_url || null);
       setAiColorMatched(false);
       setAiColorAlts([]);
+      return;
+    }
+
+    try {
+      const prepared = await prepareMenuImage(file);
+      setImageFile(prepared);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+        void applyAiColorFromSource(prepared);
+      };
+      reader.readAsDataURL(prepared);
+    } catch (err) {
+      setImageFile(null);
+      setImagePreview(editingItem?.image_url || null);
+      setSaveError(err instanceof Error ? err.message : "Could not use that photo. Try JPEG or PNG.");
     }
   };
 
@@ -468,19 +503,33 @@ export default function AdminMenuPage() {
     if (!user?.email) return;
     setSaveError(null);
 
+    const price = Number(formData.price);
+    if (!Number.isFinite(price) || price < 0) {
+      setSaveError("Enter a valid price.");
+      return;
+    }
+    if (!formData.name.trim()) {
+      setSaveError("Item name is required.");
+      return;
+    }
+    if (!formData.description.trim()) {
+      setSaveError("Description is required.");
+      return;
+    }
+
     const formPayload = new FormData();
-    formPayload.append('name', formData.name);
-    formPayload.append('category', formData.category);
-    formPayload.append('color', formData.color);
-    formPayload.append('price', String(formData.price));
-    formPayload.append('description', formData.description);
-    formPayload.append('bg_color', formData.bg_color);
-    formPayload.append('is_hidden', String(formData.is_hidden));
-    formPayload.append('track_stock', String(formData.track_stock || false));
-    formPayload.append('stock', String(formData.stock || 0));
-    formPayload.append('admin_email', user.email);
+    formPayload.append("name", formData.name.trim());
+    formPayload.append("category", formData.category);
+    formPayload.append("color", formData.color || "brown");
+    formPayload.append("price", String(price));
+    formPayload.append("description", formData.description.trim());
+    formPayload.append("bg_color", /^#[0-9A-Fa-f]{6}$/i.test(formData.bg_color) ? formData.bg_color : "#523122");
+    formPayload.append("is_hidden", formData.is_hidden ? "true" : "false");
+    formPayload.append("track_stock", formData.track_stock ? "true" : "false");
+    formPayload.append("stock", String(Math.max(0, Number(formData.stock) || 0)));
+    formPayload.append("admin_email", user.email);
     if (imageFile) {
-      formPayload.append('image', imageFile);
+      formPayload.append("image", imageFile);
     }
 
     try {
@@ -500,8 +549,12 @@ export default function AdminMenuPage() {
           setSaveError("Session expired. Please log in again as admin.");
           return;
         }
+        if (res.status === 429) {
+          setSaveError("Too many requests. Wait a moment, then try again.");
+          return;
+        }
         const err = await res.json().catch(() => ({}));
-        setSaveError(err.error || err.detail || "Failed to update menu item.");
+        setSaveError(formatApiError(err, "Failed to update menu item."));
         return;
       }
 
@@ -525,8 +578,12 @@ export default function AdminMenuPage() {
         setSaveError("Session expired. Please log in again as admin.");
         return;
       }
+      if (res.status === 429) {
+        setSaveError("Too many requests. Wait a moment, then try again.");
+        return;
+      }
       const err = await res.json().catch(() => ({}));
-      setSaveError(err.error || err.detail || "Failed to create menu item.");
+      setSaveError(formatApiError(err, "Failed to create menu item."));
     } catch {
       setSaveError("Network error. Check if the API is running.");
     }
@@ -920,7 +977,14 @@ export default function AdminMenuPage() {
                         type="number"
                         step="0.01"
                         value={formData.price}
-                        onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) })}
+                        onChange={(e) => {
+                          const raw = e.target.value;
+                          const next = raw === "" ? 0 : Number(raw);
+                          setFormData({
+                            ...formData,
+                            price: Number.isFinite(next) ? next : formData.price,
+                          });
+                        }}
                         className="w-full rounded-2xl border border-dark-brown/10 bg-white py-3.5 pl-9 pr-4 font-paragraph text-dark-brown focus:border-light-brown focus:outline-none"
                       />
                     </div>

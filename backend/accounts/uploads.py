@@ -3,8 +3,8 @@ from __future__ import annotations
 
 from django.core.exceptions import ValidationError
 
-# Max upload size for menu/avatar images (2 MiB)
-MAX_IMAGE_BYTES = 2 * 1024 * 1024
+# Max upload size for menu/avatar images (5 MiB — phone cameras)
+MAX_IMAGE_BYTES = 5 * 1024 * 1024
 
 ALLOWED_IMAGE_CONTENT_TYPES = {
     "image/jpeg": (b"\xff\xd8\xff",),
