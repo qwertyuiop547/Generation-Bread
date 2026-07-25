@@ -185,6 +185,10 @@ MENU_CACHE_SECONDS = int(os.environ.get('MENU_CACHE_SECONDS', '30'))
 
 def _database_from_env():
     database_url = os.environ.get('DATABASE_URL', '').strip()
+    # Daphne/ASGI + long-lived CONN_MAX_AGE can exhaust Postgres max_connections.
+    # Prefer short-lived connections locally; allow override via DB_CONN_MAX_AGE.
+    default_conn_max_age = '0' if os.environ.get('DJANGO_DEBUG', '').lower() in ('1', 'true', 'yes') else '60'
+    conn_max_age = int(os.environ.get('DB_CONN_MAX_AGE', default_conn_max_age))
     if database_url:
         # postgres://user:pass@host:port/db
         from urllib.parse import urlparse, unquote
@@ -196,7 +200,7 @@ def _database_from_env():
             'PASSWORD': unquote(u.password or ''),
             'HOST': u.hostname or 'localhost',
             'PORT': str(u.port or '5432'),
-            'CONN_MAX_AGE': int(os.environ.get('DB_CONN_MAX_AGE', '60')),
+            'CONN_MAX_AGE': conn_max_age,
             'CONN_HEALTH_CHECKS': True,
             'OPTIONS': {
                 'connect_timeout': int(os.environ.get('DB_CONNECT_TIMEOUT', '10')),
@@ -209,7 +213,7 @@ def _database_from_env():
         'PASSWORD': os.environ.get('POSTGRES_PASSWORD', ''),
         'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),
         'PORT': os.environ.get('POSTGRES_PORT', '5432'),
-        'CONN_MAX_AGE': int(os.environ.get('DB_CONN_MAX_AGE', '60')),
+        'CONN_MAX_AGE': conn_max_age,
         'CONN_HEALTH_CHECKS': True,
         'OPTIONS': {
             'connect_timeout': int(os.environ.get('DB_CONNECT_TIMEOUT', '10')),
