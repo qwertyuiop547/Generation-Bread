@@ -16,6 +16,7 @@ import {
 import { getMenuItemImage } from "@/constants";
 import { withWsToken, authHeaders } from "@/lib/authHeaders";
 import QueuePositionCard from "@/components/QueuePositionCard";
+import ProductLightbox from "@/components/ProductLightbox";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
 const CART_API_URL = `${API_BASE_URL}/api/auth/cart/`;
@@ -135,6 +136,7 @@ export default function OrderPage() {
 
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [customizingItem, setCustomizingItem] = useState<MenuItem | null>(null);
+  const [previewProduct, setPreviewProduct] = useState<{ src: string; alt: string } | null>(null);
   const [customSize, setCustomSize] = useState<CustomSize>("Small");
   const [customSugar, setCustomSugar] = useState<SugarLevel>("100%");
   const [customAddOns, setCustomAddOns] = useState<string[]>([]);
@@ -823,20 +825,31 @@ export default function OrderPage() {
               key={item.id ?? item.name}
               className="group relative app-panel border rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all hover:-translate-y-2 flex flex-col h-full"
             >
-              {/* Item image — same photos as home flavor cards */}
-              <div
-                className="relative h-52 md:h-64 flex items-end justify-center overflow-hidden"
+              {/* Item image — tap for full view */}
+              <button
+                type="button"
+                className="relative h-52 md:h-64 w-full flex items-end justify-center overflow-hidden cursor-zoom-in focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-light-brown"
                 style={{ backgroundColor: item.bgColor }}
+                onClick={() =>
+                  setPreviewProduct({
+                    src: getMenuItemImage(item.name, item.image_url, item.color),
+                    alt: item.name,
+                  })
+                }
+                aria-label={`View ${item.name}`}
               >
                 <Image
                   src={getMenuItemImage(item.name, item.image_url, item.color)}
                   alt={item.name}
                   fill
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  className="object-cover object-[center_40%] drop-shadow-xl group-hover:scale-105 transition-transform duration-500"
+                  className="object-cover object-[center_40%] drop-shadow-xl group-hover:scale-105 transition-transform duration-500 pointer-events-none"
                   unoptimized
                 />
-              </div>
+                <span className="absolute bottom-3 right-3 rounded-full bg-black/45 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-milk backdrop-blur-sm opacity-0 transition-opacity group-hover:opacity-100">
+                  View
+                </span>
+              </button>
 
               {/* Details */}
               <div className="p-5 md:p-6 flex-1 flex flex-col">
@@ -1532,6 +1545,13 @@ export default function OrderPage() {
           </div>
         </div>
       )}
+
+      <ProductLightbox
+        src={previewProduct?.src || ""}
+        alt={previewProduct?.alt || ""}
+        open={!!previewProduct}
+        onClose={() => setPreviewProduct(null)}
+      />
     </div>
   );
 }

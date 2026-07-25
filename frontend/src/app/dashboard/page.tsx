@@ -19,6 +19,7 @@ import { unwrapListResponse } from "@/lib/apiList";
 import BrandLogo from "@/components/BrandLogo";
 import { useThemeColors, withAlpha } from "@/lib/themeColors";
 import QueuePositionCard from "@/components/QueuePositionCard";
+import ProductLightbox from "@/components/ProductLightbox";
 import { fetchOrderEta, type SmartEta } from "@/lib/smartEta";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
@@ -79,6 +80,7 @@ export default function DashboardPage() {
   const [skipIntro, setSkipIntro] = useState(false);
   const [orderEtas, setOrderEtas] = useState<Record<string, SmartEta>>({});
   const [showSpending, setShowSpending] = useState(false);
+  const [previewProduct, setPreviewProduct] = useState<{ src: string; alt: string } | null>(null);
 
   useEffect(() => {
     try {
@@ -1064,13 +1066,23 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="relative mx-auto hidden aspect-square w-full max-w-[240px] overflow-hidden rounded-[2rem] md:block md:max-w-none">
+            <button
+              type="button"
+              onClick={() =>
+                setPreviewProduct({
+                  src: "/images/generation-bread-ube-cheese-pandesal.png",
+                  alt: "Ube cheese pandesal",
+                })
+              }
+              className="relative mx-auto aspect-square w-full max-w-[200px] overflow-hidden rounded-[2rem] cursor-zoom-in focus:outline-none focus-visible:ring-2 focus-visible:ring-light-brown md:max-w-none"
+              aria-label="View ube cheese pandesal"
+            >
               <Image
                 src="/images/generation-bread-ube-cheese-pandesal.png"
                 alt="Ube cheese pandesal"
                 fill
                 sizes="280px"
-                className="object-cover object-center"
+                className="object-cover object-center pointer-events-none"
                 priority
               />
               <div
@@ -1080,7 +1092,10 @@ export default function DashboardPage() {
                     "linear-gradient(160deg, rgba(246,235,224,0.15) 0%, transparent 40%, rgba(42,24,16,0.12) 100%)",
                 }}
               />
-            </div>
+              <span className="absolute bottom-3 right-3 rounded-full bg-black/40 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-milk backdrop-blur-sm">
+                View
+              </span>
+            </button>
           </div>
         </section>
 
@@ -1645,6 +1660,13 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
+
+      <ProductLightbox
+        src={previewProduct?.src || ""}
+        alt={previewProduct?.alt || ""}
+        open={!!previewProduct}
+        onClose={() => setPreviewProduct(null)}
+      />
     </div>
     ) : null}
     </PageIntro>
