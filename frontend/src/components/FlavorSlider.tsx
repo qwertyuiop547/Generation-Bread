@@ -48,7 +48,6 @@ const FlavorSlider = () => {
           end: () => `+=${measure()}px`,
           scrub: true,
           pin: true,
-          invalidateOnRefresh: true,
           ...smoothScroll,
         },
       });

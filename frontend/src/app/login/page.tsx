@@ -7,7 +7,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { signIn } from "next-auth/react";
 import IntroHomeLink from "@/components/IntroHomeLink";
+import PageIntro from "@/components/PageIntro";
 import BrandLogo from "@/components/BrandLogo";
+import PasswordInput from "@/components/PasswordInput";
+import ForgotPasswordModal from "@/components/ForgotPasswordModal";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
 
@@ -17,8 +20,8 @@ const inputClass =
 function LoginPageContent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(false);
+  const [showForgotModal, setShowForgotModal] = useState(false);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [slowHint, setSlowHint] = useState(false);
@@ -71,12 +74,6 @@ function LoginPageContent() {
         }
 
         const explicitRedirect = searchParams.get("redirect");
-        try {
-          sessionStorage.setItem("gb_skip_intro", "1");
-        } catch {
-          /* ignore */
-        }
-        // Soft navigate — keeps auth state and skips a full page + preloader reload.
         router.replace(explicitRedirect || defaultRedirect);
         return;
       }
@@ -89,7 +86,8 @@ function LoginPageContent() {
   };
 
   return (
-    <div className="login-page relative min-h-dvh overflow-x-hidden app-canvas text-dark-brown">
+    <PageIntro>
+      <div className="login-page relative min-h-dvh overflow-x-hidden app-canvas text-dark-brown">
       <div className="relative z-10 grid min-h-dvh lg:grid-cols-2">
         <aside className="relative hidden min-h-dvh overflow-hidden lg:block">
           <div className="absolute inset-0 bg-[#2a1810]">
@@ -156,15 +154,6 @@ function LoginPageContent() {
                   <path d="m15 18-6-6 6-6" />
                 </svg>
                 Home
-              </IntroHomeLink>
-              <IntroHomeLink href="/">
-                <BrandLogo
-                  priority
-                  width={120}
-                  height={30}
-                  onDark
-                  className="h-7 w-auto opacity-95"
-                />
               </IntroHomeLink>
             </div>
 
@@ -233,25 +222,15 @@ function LoginPageContent() {
                   <label htmlFor="login-password" className="font-paragraph text-sm font-semibold text-dark-brown">
                     Password
                   </label>
-                  <div className="relative">
-                    <input
-                      id="login-password"
-                      type={showPassword ? "text" : "password"}
-                      autoComplete="current-password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="••••••••"
-                      className={`${inputClass} pr-14`}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword((v) => !v)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 font-paragraph text-xs font-bold uppercase tracking-wide text-dark-brown/50 transition-colors hover:text-dark-brown"
-                      aria-label={showPassword ? "Hide password" : "Show password"}
-                    >
-                      {showPassword ? "Hide" : "Show"}
-                    </button>
-                  </div>
+                  <PasswordInput
+                    id="login-password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    autoComplete="current-password"
+                    disabled={submitting}
+                  />
                 </div>
 
                 <div className="flex items-center justify-between gap-3 pt-0.5">
@@ -264,20 +243,31 @@ function LoginPageContent() {
                     />
                     <span className="font-paragraph text-sm text-dark-brown/75">Remember me</span>
                   </label>
-                  <a
-                    href="#"
-                    className="font-paragraph text-sm font-semibold text-dark-brown transition-colors hover:text-mid-brown"
+                  <button
+                    type="button"
+                    onClick={() => setShowForgotModal(true)}
+                    className="font-paragraph text-sm font-semibold text-dark-brown transition-colors hover:text-mid-brown cursor-pointer"
                   >
                     Forgot Password?
-                  </a>
+                  </button>
                 </div>
 
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="mt-1 w-full rounded-full bg-dark-brown py-3.5 text-base font-bold uppercase tracking-wide text-milk shadow-[0_8px_24px_rgba(82,49,34,0.22)] transition-all active:scale-[0.98] hover:bg-dark-brown-hover sm:py-4 sm:text-lg disabled:cursor-not-allowed disabled:opacity-70"
+                  className="mt-1 flex w-full items-center justify-center gap-2 rounded-full bg-dark-brown py-3.5 text-base font-bold uppercase tracking-wide text-milk shadow-[0_8px_24px_rgba(82,49,34,0.22)] transition-all active:scale-[0.98] hover:bg-dark-brown-hover sm:py-4 sm:text-lg disabled:cursor-not-allowed disabled:opacity-70"
                 >
-                  {submitting ? "Signing in…" : "Sign In"}
+                  {submitting ? (
+                    <>
+                      <svg className="size-5 animate-spin text-milk" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      <span>Signing in…</span>
+                    </>
+                  ) : (
+                    "Sign In"
+                  )}
                 </button>
                 {slowHint && submitting && (
                   <p className="text-center font-paragraph text-xs text-dark-brown/55">
@@ -295,11 +285,6 @@ function LoginPageContent() {
               <button
                 type="button"
                 onClick={() => {
-                  try {
-                    sessionStorage.setItem("gb_skip_intro", "1");
-                  } catch {
-                    /* ignore */
-                  }
                   void signIn("google", { callbackUrl: "/dashboard" });
                 }}
                 className="flex w-full items-center justify-center gap-3 rounded-full border border-light-brown/40 bg-milk py-3.5 font-paragraph font-semibold text-dark-brown transition-all active:scale-[0.98] hover:border-dark-brown/25 hover:bg-white"
@@ -327,7 +312,15 @@ function LoginPageContent() {
         </main>
       </div>
     </div>
-  );
+
+    {/* Forgot Password Recovery Modal */}
+    <ForgotPasswordModal
+      isOpen={showForgotModal}
+      onClose={() => setShowForgotModal(false)}
+      initialEmail={email}
+    />
+  </PageIntro>
+);
 }
 
 export default function LoginPage() {

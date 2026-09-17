@@ -81,7 +81,7 @@ export function useCustomerOrderReadyAlerts() {
     };
 
     const ensureToken = async (): Promise<string | null> => {
-      let token = getAccessToken();
+      const token = getAccessToken();
       if (token) return token;
       const ok = await refreshAccessToken();
       if (!ok) {

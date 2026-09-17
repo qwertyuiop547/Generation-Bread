@@ -2,7 +2,8 @@
   "site_package_search_strategy": "pep561",
   "source_directories": ["backend"],
   "search_path": [
-    "backend/venv/Lib/site-packages"
+    "backend/.venv/Lib/site-packages",
+    "backend"
   ],
   "strict": false,
   "exclude": [

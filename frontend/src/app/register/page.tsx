@@ -9,6 +9,8 @@ import { signIn } from "next-auth/react";
 import IntroHomeLink from "@/components/IntroHomeLink";
 import PageIntro from "@/components/PageIntro";
 import BrandLogo from "@/components/BrandLogo";
+import PasswordInput from "@/components/PasswordInput";
+import LegalModal from "@/components/LegalModal";
 
 const inputClass =
   "w-full rounded-2xl border border-light-brown/45 bg-milk px-4 py-3.5 font-paragraph text-base text-dark-brown outline-none transition-all placeholder:text-dark-brown/35 focus:border-light-brown focus:bg-milk focus:ring-2 focus:ring-light-brown/30 [color-scheme:light] autofill:shadow-[inset_0_0_0_1000px_var(--color-milk)]";
@@ -17,7 +19,9 @@ function RegisterPageContent() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const [agreeTerms, setAgreeTerms] = useState(false);
+  const [showLegalModal, setShowLegalModal] = useState(false);
+  const [legalTab, setLegalTab] = useState<"terms" | "privacy">("terms");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const { register } = useAuth();
@@ -35,6 +39,11 @@ function RegisterPageContent() {
 
     if (password.length < 10) {
       setError("Password must be at least 10 characters.");
+      return;
+    }
+
+    if (!agreeTerms) {
+      setError("Please agree to the Terms of Service and Privacy Policy to continue.");
       return;
     }
 
@@ -122,15 +131,6 @@ function RegisterPageContent() {
                   </svg>
                   Home
                 </IntroHomeLink>
-                <IntroHomeLink href="/">
-                  <BrandLogo
-                    priority
-                    width={140}
-                    height={36}
-                    onDark
-                    className="h-8 w-auto opacity-95"
-                  />
-                </IntroHomeLink>
               </div>
 
               <div className="absolute inset-x-0 bottom-0 z-10 px-5 pb-8">
@@ -211,35 +211,71 @@ function RegisterPageContent() {
 
                   <div className="flex flex-col gap-1.5">
                     <label htmlFor="register-password" className="font-paragraph text-sm font-semibold text-dark-brown">
-                      Password
+                      Password <span className="text-xs text-dark-brown/50 font-normal">(min 10 chars)</span>
                     </label>
-                    <div className="relative">
-                      <input
-                        id="register-password"
-                        type={showPassword ? "text" : "password"}
-                        autoComplete="new-password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="••••••••"
-                        className={`${inputClass} pr-14`}
-                      />
+                    <PasswordInput
+                      id="register-password"
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      autoComplete="new-password"
+                      disabled={submitting}
+                    />
+                  </div>
+
+                  {/* Terms of Service & Privacy Policy Checkbox */}
+                  <div className="flex items-start gap-2.5 pt-1">
+                    <input
+                      id="agree-terms"
+                      type="checkbox"
+                      checked={agreeTerms}
+                      onChange={(e) => setAgreeTerms(e.target.checked)}
+                      className="mt-1 size-4 shrink-0 accent-dark-brown cursor-pointer"
+                    />
+                    <label htmlFor="agree-terms" className="font-paragraph text-xs sm:text-sm text-dark-brown/75 leading-relaxed cursor-pointer select-none">
+                      I agree to Generation Bread&apos;s{" "}
                       <button
                         type="button"
-                        onClick={() => setShowPassword((v) => !v)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 font-paragraph text-xs font-bold uppercase tracking-wide text-dark-brown/50 transition-colors hover:text-dark-brown"
-                        aria-label={showPassword ? "Hide password" : "Show password"}
+                        onClick={() => {
+                          setLegalTab("terms");
+                          setShowLegalModal(true);
+                        }}
+                        className="font-bold text-dark-brown underline decoration-light-brown/70 underline-offset-2 hover:text-mid-brown transition-colors cursor-pointer"
                       >
-                        {showPassword ? "Hide" : "Show"}
+                        Terms of Service
+                      </button>{" "}
+                      and{" "}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setLegalTab("privacy");
+                          setShowLegalModal(true);
+                        }}
+                        className="font-bold text-dark-brown underline decoration-light-brown/70 underline-offset-2 hover:text-mid-brown transition-colors cursor-pointer"
+                      >
+                        Privacy Policy
                       </button>
-                    </div>
+                      .
+                    </label>
                   </div>
 
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="mt-1 w-full rounded-full bg-light-brown py-3.5 text-base font-bold uppercase tracking-wide text-dark-brown shadow-[0_8px_24px_rgba(227,164,88,0.35)] transition-all active:scale-[0.98] hover:bg-mid-brown hover:text-milk sm:py-4 sm:text-lg disabled:cursor-not-allowed disabled:opacity-70"
+                    className="mt-1 flex w-full items-center justify-center gap-2 rounded-full bg-light-brown py-3.5 text-base font-bold uppercase tracking-wide text-dark-brown shadow-[0_8px_24px_rgba(227,164,88,0.35)] transition-all active:scale-[0.98] hover:bg-mid-brown hover:text-milk sm:py-4 sm:text-lg disabled:cursor-not-allowed disabled:opacity-70"
                   >
-                    {submitting ? "Creating…" : "Create Account"}
+                    {submitting ? (
+                      <>
+                        <svg className="size-5 animate-spin text-dark-brown" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                        <span>Creating Account…</span>
+                      </>
+                    ) : (
+                      "Create Account"
+                    )}
                   </button>
                 </form>
 
@@ -277,6 +313,13 @@ function RegisterPageContent() {
           </main>
         </div>
       </div>
+
+      {/* Terms of Service & Privacy Policy Modal */}
+      <LegalModal
+        isOpen={showLegalModal}
+        onClose={() => setShowLegalModal(false)}
+        initialTab={legalTab}
+      />
     </PageIntro>
   );
 }

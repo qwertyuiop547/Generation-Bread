@@ -1,6 +1,6 @@
 {
   "venvPath": "backend",
-  "venv": "venv",
+  "venv": ".venv",
   "pythonVersion": "3.13",
   "reportMissingImports": "none",
   "reportMissingModuleSource": "none",
@@ -9,7 +9,7 @@
   "executionEnvironments": [
     {
       "root": "backend",
-      "extraPaths": ["backend", "backend/venv/Lib/site-packages"]
+      "extraPaths": ["backend", "backend/.venv/Lib/site-packages"]
     }
   ]
 }

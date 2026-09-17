@@ -14,6 +14,8 @@ import NotificationBell from "@/components/NotificationBell";
 import { useStaffOrdersRealtime } from "@/hooks/useStaffOrdersRealtime";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
+import CroissantLogoIcon from "@/components/CroissantLogoIcon";
+import BrandLogo from "@/components/BrandLogo";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
 
@@ -76,7 +78,7 @@ const STATUS_DOTS: Record<string, string> = {
   cancelled: "bg-red-500"};
 
 export default function StaffDashboardPage() {
-  const { isLoggedIn, isAuthLoading, isStaff, user, accessToken } = useAuth();
+  const { isLoggedIn, isAuthLoading, isStaff, isAdmin, user, accessToken } = useAuth();
   const { language, toggleLanguage, t } = useLanguage();
   const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
@@ -782,141 +784,161 @@ export default function StaffDashboardPage() {
   return (
     <div ref={containerRef} className="min-h-screen app-canvas relative overflow-hidden">
       {/* Header */}
-      <div className="staff-header sticky top-0 z-40 app-header-bar backdrop-blur-xl border-b border-dark-brown/10">
-        <div className="flex items-center justify-between px-5 md:px-10 py-4">
-          <div className="flex items-center gap-4">
-            <h1 className="text-dark-brown font-bold uppercase text-lg md:text-xl tracking-tight hidden sm:block staff-nav-item">{t("Staff Panel")}</h1>
+      <header className="staff-header sticky top-0 z-40 bg-[#FFFDF9]/85 backdrop-blur-xl border-b border-[#EBE3D7] shadow-[0_2px_16px_rgba(42,24,16,0.04)]">
+        <div className="max-w-7xl mx-auto flex items-center justify-between px-5 md:px-10 py-3.5">
+          <div className="flex items-center gap-3">
+            <Link href="/" className="group flex items-center gap-2.5 transition-transform active:scale-95">
+              <div className="w-10 h-10 rounded-2xl bg-[#2A1810] flex items-center justify-center shadow-md group-hover:bg-[#3D2519] transition-colors">
+                <CroissantLogoIcon className="w-6 h-6 text-[#FAEADE]" />
+              </div>
+              <div className="hidden sm:block">
+                <p className="text-xs font-extrabold uppercase tracking-widest text-[#2A1810] leading-none">Generation Bread</p>
+                <div className="flex items-center gap-1.5 mt-1">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#A26833]">Staff Kitchen Portal</p>
+                </div>
+              </div>
+            </Link>
           </div>
-          <div className="flex items-center gap-2 sm:gap-4 justify-end relative">
-            <div className="staff-nav-item"><NotificationBell userEmail={user?.email} /></div>
+
+          <div className="flex items-center gap-2 sm:gap-3 justify-end">
+            <div className="staff-nav-item">
+              <NotificationBell userEmail={user?.email} />
+            </div>
+
             <button
               onClick={toggleLanguage}
-              className="staff-nav-item bg-light-brown/20 hover:bg-light-brown/40 text-dark-brown font-bold text-xs md:text-sm rounded-full py-1.5 px-3 md:py-2 md:px-4 transition-all uppercase"
+              className="staff-nav-item bg-[#F5EFE6] hover:bg-[#EBE3D7] text-[#2A1810] font-bold text-xs rounded-full py-2 px-3.5 transition-all uppercase shadow-xs border border-[#EBE3D7]"
             >
               {language}
             </button>
-            <button
-              onClick={() => { void performLogout(signOut); }}
-              className="staff-nav-item md:hidden group flex items-center gap-1.5 bg-red-brown/10 hover:bg-red-brown text-red-brown hover:text-milk font-bold text-[11px] uppercase rounded-full py-1.5 px-3 transition-all duration-300 shadow-sm"
-            >
-              <span>{t("Logout")}</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                <polyline points="16 17 21 12 16 7"></polyline>
-                <line x1="21" y1="12" x2="9" y2="12"></line>
-              </svg>
-            </button>
-            <h1 className="staff-nav-item text-dark-brown font-bold uppercase text-lg md:text-xl tracking-tight hidden sm:block md:hidden mr-2">{t("Staff Panel")}</h1>
-
-            {/* Hamburger Button for Mobile */}
-            <button
-              type="button"
-              aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
-              aria-expanded={isMobileMenuOpen}
-              className="staff-nav-item md:hidden p-2 text-dark-brown hover:bg-dark-brown/10 rounded-full transition-colors"
-              onClick={toggleMobileMenu}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.25"
-                strokeLinecap="round"
-                className="overflow-visible"
-              >
-                <line className="ham-top" x1="3" y1="6" x2="21" y2="6" />
-                <line className="ham-mid" x1="3" y1="12" x2="21" y2="12" />
-                <line className="ham-bot" x1="3" y1="18" x2="21" y2="18" />
-              </svg>
-            </button>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-4">
+            <div className="hidden md:flex items-center gap-2.5">
+              {(isAdmin || user?.role === "admin") && (
+                <Link
+                  href="/admin"
+                  className="staff-nav-item group flex items-center gap-1.5 bg-[#2A1810] hover:bg-[#3D2519] text-[#FAEADE] font-extrabold text-xs uppercase rounded-full py-2 px-4 transition-all shadow-xs hover:-translate-y-0.5"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                  <span>Admin Hub</span>
+                </Link>
+              )}
               <Link
                 href="/profile"
-                className="staff-nav-item group flex items-center gap-2 bg-dark-brown/10 hover:bg-dark-brown text-dark-brown hover:text-milk font-bold text-sm uppercase rounded-full py-2 px-4 transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5"
+                className="staff-nav-item group flex items-center gap-2 bg-[#F5EFE6] hover:bg-[#2A1810] text-[#2A1810] hover:text-[#FAEADE] font-bold text-xs uppercase rounded-full py-2 px-4 transition-all shadow-xs border border-[#EBE3D7] hover:border-transparent hover:-translate-y-0.5"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                   <circle cx="12" cy="7" r="4"></circle>
                 </svg>
-                <span>{t("Profile") || "Profile"}</span>
+                <span>{user?.name?.split(" ")[0] || "Profile"}</span>
               </Link>
-              <Link href="/admin-sales" className="staff-nav-item group flex items-center gap-2 bg-dark-brown/10 hover:bg-dark-brown text-dark-brown hover:text-milk font-bold text-sm uppercase rounded-full py-2 px-4 transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" /></svg>
+              <Link
+                href="/admin-sales"
+                className="staff-nav-item group flex items-center gap-2 bg-[#F5EFE6] hover:bg-[#2A1810] text-[#2A1810] hover:text-[#FAEADE] font-bold text-xs uppercase rounded-full py-2 px-4 transition-all shadow-xs border border-[#EBE3D7] hover:border-transparent hover:-translate-y-0.5"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" />
+                </svg>
                 <span>{t("Sales")}</span>
               </Link>
-              <button onClick={() => { void performLogout(signOut); }} className="staff-nav-item group flex items-center gap-2 bg-red-brown/10 hover:bg-red-brown text-red-brown hover:text-milk font-bold text-sm uppercase rounded-full py-2 px-4 transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5">
+              <button
+                onClick={() => { void performLogout(signOut); }}
+                className="staff-nav-item group flex items-center gap-1.5 bg-red-50 hover:bg-red-600 text-red-700 hover:text-white font-bold text-xs uppercase rounded-full py-2 px-4 transition-all duration-200 border border-red-200 hover:border-transparent shadow-xs hover:-translate-y-0.5"
+              >
                 <span>{t("Logout")}</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:translate-x-1 transition-transform">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:translate-x-0.5 transition-transform">
                   <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                   <polyline points="16 17 21 12 16 7"></polyline>
                   <line x1="21" y1="12" x2="9" y2="12"></line>
                 </svg>
               </button>
             </div>
+
+            {/* Mobile Hamburger */}
+            <button
+              type="button"
+              aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={isMobileMenuOpen}
+              className="staff-nav-item md:hidden p-2 text-[#2A1810] hover:bg-[#EBE3D7]/60 rounded-full transition-colors"
+              onClick={toggleMobileMenu}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                <line className="ham-top" x1="3" y1="6" x2="21" y2="6" />
+                <line className="ham-mid" x1="3" y1="12" x2="21" y2="12" />
+                <line className="ham-bot" x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            </button>
           </div>
         </div>
 
-        {/* Mobile Dropdown Navigation */}
+        {/* Mobile Dropdown */}
         {showMobileMenu && (
           <div
             ref={mobileMenuRef}
-            className="mobile-nav-menu md:hidden absolute top-[100%] right-0 w-full app-header-bar backdrop-blur-md border-b border-dark-brown/10 shadow-lg flex flex-col items-center py-4 gap-3 z-50 will-change-transform"
+            className="mobile-nav-menu md:hidden absolute top-[100%] right-0 w-full bg-[#FFFDF9] border-b border-[#EBE3D7] shadow-xl flex flex-col items-center py-4 gap-2 z-50 will-change-transform"
           >
+            {(isAdmin || user?.role === "admin") && (
+              <Link
+                href="/admin"
+                onClick={closeMobileMenu}
+                className="mobile-nav-item flex items-center gap-3 w-[90%] bg-[#2A1810] text-[#FAEADE] font-extrabold text-xs uppercase rounded-xl py-3 px-5 transition-all shadow-xs"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m15 18-6-6 6-6"/></svg>
+                <span>Admin Hub</span>
+              </Link>
+            )}
             <Link
               href="/profile"
               onClick={closeMobileMenu}
-              className="mobile-nav-item flex items-center gap-3 w-[90%] bg-white hover:bg-dark-brown/5 text-dark-brown font-bold text-sm uppercase rounded-xl py-3 px-5 transition-all shadow-sm active:scale-[0.98]"
+              className="mobile-nav-item flex items-center gap-3 w-[90%] bg-[#F5EFE6] hover:bg-[#EBE3D7] text-[#2A1810] font-bold text-xs uppercase rounded-xl py-3 px-5 transition-all shadow-xs"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-              </svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
               {t("Profile") || "Profile"}
             </Link>
             <Link
               href="/admin-sales"
               onClick={closeMobileMenu}
-              className="mobile-nav-item flex items-center gap-3 w-[90%] bg-white hover:bg-dark-brown/5 text-dark-brown font-bold text-sm uppercase rounded-xl py-3 px-5 transition-all shadow-sm active:scale-[0.98]"
+              className="mobile-nav-item flex items-center gap-3 w-[90%] bg-[#F5EFE6] hover:bg-[#EBE3D7] text-[#2A1810] font-bold text-xs uppercase rounded-xl py-3 px-5 transition-all shadow-xs"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" /></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" /></svg>
               {t("Sales")}
             </Link>
             <button
               onClick={() => { void performLogout(signOut); }}
-              className="mobile-nav-item flex items-center justify-between gap-3 w-[90%] bg-red-50 hover:bg-red-100 text-red-700 font-bold text-sm uppercase rounded-xl py-3 px-5 transition-all shadow-sm active:scale-[0.98]"
+              className="mobile-nav-item flex items-center justify-between gap-3 w-[90%] bg-red-50 hover:bg-red-100 text-red-700 font-bold text-xs uppercase rounded-xl py-3 px-5 transition-all shadow-xs"
             >
               <span>{t("Logout")}</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                <polyline points="16 17 21 12 16 7"></polyline>
-                <line x1="21" y1="12" x2="9" y2="12"></line>
-              </svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
             </button>
           </div>
         )}
-      </div>
+      </header>
 
       <div className="max-w-7xl mx-auto px-5 md:px-10 py-8 md:py-12 relative z-10">
         {/* Welcome + Stats */}
-        <div className="staff-stagger-item mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div className="staff-stagger-item mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h2 className="text-3xl md:text-4xl font-bold text-dark-brown uppercase tracking-tighter">{t("Staff Dashboard")}</h2>
-            <p className="font-paragraph text-dark-brown/60 mt-1">{t("Manage orders and tables for today's shift.")}</p>
+            <div className="flex items-center gap-2.5">
+              <span className="text-2xl">👨‍🍳</span>
+              <h2 className="text-3xl md:text-4xl font-extrabold text-[#2A1810] uppercase tracking-tight">
+                {t("Staff Dashboard")}
+              </h2>
+            </div>
+            <p className="font-paragraph text-[#2A1810]/70 mt-1 text-sm md:text-base">
+              {t("Manage orders and tables for today's shift.")}
+            </p>
           </div>
           <button
             type="button"
             onClick={() => setShowAbsenceModal(true)}
-            className="inline-flex items-center gap-2 self-start sm:self-auto bg-white/70 hover:bg-white border border-indigo-200/60 text-indigo-800 font-bold text-xs uppercase rounded-full py-2.5 px-4 shadow-sm hover:shadow-md transition-all"
+            className="inline-flex items-center gap-2 self-start sm:self-auto bg-[#FFFDF9] hover:bg-[#F5EFE6] border border-[#EBE3D7] text-[#2A1810] font-bold text-xs uppercase rounded-full py-2.5 px-5 shadow-xs hover:shadow-md transition-all active:scale-95"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            Absence Request
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="text-[#A26833]"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span>Absence Request</span>
             {myAbsenceRequests.filter((r) => r.status === "approved").length > 0 && (
-              <span className="bg-indigo-600 text-white text-[10px] rounded-full min-w-[18px] h-[18px] px-1 flex items-center justify-center">
+              <span className="bg-emerald-600 text-white text-[10px] rounded-full min-w-[18px] h-[18px] px-1 flex items-center justify-center font-bold">
                 {myAbsenceRequests.filter((r) => r.status === "approved").length}
               </span>
             )}
@@ -924,9 +946,9 @@ export default function StaffDashboardPage() {
         </div>
 
         {!accessToken && !getAccessToken() && (
-          <div className="mb-6 rounded-2xl border border-red-brown/30 bg-red-brown/10 px-4 py-3 text-sm text-red-brown font-paragraph">
+          <div className="mb-6 rounded-2xl border border-red-300 bg-red-50/90 px-5 py-3.5 text-sm text-red-800 font-paragraph shadow-xs">
             Session expired for kitchen actions.{" "}
-            <Link href="/login?redirect=/staff" className="font-bold underline underline-offset-2">
+            <Link href="/login?redirect=/staff" className="font-bold underline underline-offset-2 hover:text-red-950">
               Sign in again
             </Link>{" "}
             to clock in and manage orders.
@@ -934,96 +956,130 @@ export default function StaffDashboardPage() {
         )}
 
         {/* Stat Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="staff-stagger-item app-panel border rounded-3xl p-5 shadow-lg">
-            <p className="font-paragraph text-dark-brown/50 text-xs uppercase mb-1">{t("Today's Orders")}</p>
-            <p className="text-2xl md:text-3xl font-bold text-dark-brown">{todayOrders.length}</p>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 mb-8">
+          {/* Today's Orders */}
+          <div className="staff-stagger-item bg-[#FFFDF9] border border-[#EBE3D7] rounded-3xl p-5 md:p-6 shadow-[0_4px_20px_rgba(42,24,16,0.05)] hover:shadow-md transition-all">
+            <div className="flex items-center justify-between mb-3">
+              <span className="font-paragraph text-[#2A1810]/60 text-xs font-bold uppercase tracking-wider">{t("Today's Orders")}</span>
+              <div className="w-9 h-9 rounded-xl bg-[#2A1810]/5 flex items-center justify-center text-[#2A1810]">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+              </div>
+            </div>
+            <p className="text-3xl md:text-4xl font-extrabold text-[#2A1810] tracking-tight">{todayOrders.length}</p>
           </div>
-          <div className="staff-stagger-item app-panel border rounded-3xl p-5 shadow-lg">
-            <p className="font-paragraph text-dark-brown/50 text-xs uppercase mb-1">{t("Today's Revenue")}</p>
-            <p className="text-2xl md:text-3xl font-bold text-dark-brown">₱{todayRevenue.toLocaleString()}</p>
+
+          {/* Today's Revenue */}
+          <div className="staff-stagger-item bg-[#FFFDF9] border border-[#EBE3D7] rounded-3xl p-5 md:p-6 shadow-[0_4px_20px_rgba(42,24,16,0.05)] hover:shadow-md transition-all">
+            <div className="flex items-center justify-between mb-3">
+              <span className="font-paragraph text-[#2A1810]/60 text-xs font-bold uppercase tracking-wider">{t("Today's Revenue")}</span>
+              <div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-600 font-bold">
+                ₱
+              </div>
+            </div>
+            <p className="text-3xl md:text-4xl font-extrabold text-[#2A1810] tracking-tight">₱{todayRevenue.toLocaleString()}</p>
           </div>
-          <div className="staff-stagger-item app-panel border rounded-3xl p-5 shadow-lg">
-            <p className="font-paragraph text-dark-brown/50 text-xs uppercase mb-1">{t("Pending")}</p>
-            <p className="text-2xl md:text-3xl font-bold text-yellow-700">{pendingCount}</p>
+
+          {/* Pending Orders */}
+          <div className="staff-stagger-item bg-[#FFFDF9] border border-[#EBE3D7] rounded-3xl p-5 md:p-6 shadow-[0_4px_20px_rgba(42,24,16,0.05)] hover:shadow-md transition-all">
+            <div className="flex items-center justify-between mb-3">
+              <span className="font-paragraph text-[#2A1810]/60 text-xs font-bold uppercase tracking-wider">{t("Pending")}</span>
+              <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center text-amber-700">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+            </div>
+            <div className="flex items-baseline gap-2">
+              <p className="text-3xl md:text-4xl font-extrabold text-amber-700 tracking-tight">{pendingCount}</p>
+              {pendingCount > 0 && (
+                <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold uppercase animate-pulse">Needs Kitchen</span>
+              )}
+            </div>
           </div>
-          <div className="staff-stagger-item app-panel border rounded-3xl p-5 shadow-lg">
-            <p className="font-paragraph text-dark-brown/50 text-xs uppercase mb-1">{t("Occupied Tables")}</p>
-            <p className="text-2xl md:text-3xl font-bold text-dark-brown">{occupiedTables}<span className="text-sm text-dark-brown/40">/10</span></p>
+
+          {/* Occupied Tables */}
+          <div className="staff-stagger-item bg-[#FFFDF9] border border-[#EBE3D7] rounded-3xl p-5 md:p-6 shadow-[0_4px_20px_rgba(42,24,16,0.05)] hover:shadow-md transition-all">
+            <div className="flex items-center justify-between mb-3">
+              <span className="font-paragraph text-[#2A1810]/60 text-xs font-bold uppercase tracking-wider">{t("Occupied Tables")}</span>
+              <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-700">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>
+              </div>
+            </div>
+            <p className="text-3xl md:text-4xl font-extrabold text-[#2A1810] tracking-tight">{occupiedTables}<span className="text-lg text-[#2A1810]/40 font-normal"> / 10</span></p>
           </div>
         </div>
 
         {/* Clock In / Clock Out Card */}
         <div className="staff-stagger-item mb-8">
-          <div className={`rounded-3xl p-6 shadow-lg border transition-all ${
+          <div className={`rounded-3xl p-6 md:p-7 shadow-[0_6px_28px_rgba(42,24,16,0.06)] border transition-all ${
             isPending
-              ? "bg-blue-50/80 backdrop-blur-sm border-blue-200/60"
+              ? "bg-blue-50/90 border-blue-200/80"
               : isLate
-              ? "bg-orange-50/80 backdrop-blur-sm border-orange-200/60"
+              ? "bg-orange-50/90 border-orange-200/80"
               : isOnBreak
-              ? "bg-amber-50/80 backdrop-blur-sm border-amber-200/60"
+              ? "bg-amber-50/90 border-amber-200/80"
               : isClockedIn
-              ? "bg-emerald-50/80 backdrop-blur-sm border-emerald-200/60"
+              ? "bg-[#F0FDF4] border-emerald-200/80"
               : !canClockIn
-              ? "bg-red-50/50 backdrop-blur-sm border-red-200/40"
-              : "app-panel border"
+              ? "bg-[#FFFDF9] border-[#EBE3D7]"
+              : "bg-[#FFFDF9] border-[#EBE3D7]"
           }`}>
-            <div className="flex flex-col md:flex-row md:items-center gap-5">
-              {/* Left: Status + Button */}
-              <div className="flex items-center gap-4 flex-1">
-                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 ${
-                  isPending ? "bg-blue-100" : isLate ? "bg-orange-100" : isOnBreak ? "bg-amber-100" : isClockedIn ? "bg-emerald-100" : "bg-dark-brown/5"
+            <div className="flex flex-col lg:flex-row lg:items-center gap-6">
+              {/* Left: Status + Live timer */}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-5 flex-1">
+                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm ${
+                  isPending ? "bg-blue-100" : isLate ? "bg-orange-100" : isOnBreak ? "bg-amber-100" : isClockedIn ? "bg-emerald-100" : "bg-[#2A1810]/5"
                 }`}>
                   {isPending ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgb(37,99,235)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgb(37,99,235)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/></svg>
                   ) : isLate ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgb(194,65,12)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgb(194,65,12)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                   ) : isOnBreak ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgb(217,119,6)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgb(217,119,6)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
                   ) : isClockedIn ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgb(5,150,105)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgb(5,150,105)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                   ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgb(120,113,108)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgb(120,113,108)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                   )}
                 </div>
+
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className={`text-sm font-bold uppercase ${isPending ? "text-blue-600" : isLate ? "text-orange-700" : isOnBreak ? "text-amber-600" : isClockedIn ? "text-emerald-700" : !canClockIn ? "text-dark-brown/50" : "text-dark-brown/50"}`}>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className={`text-sm font-bold uppercase tracking-wider ${isPending ? "text-blue-700" : isLate ? "text-orange-800" : isOnBreak ? "text-amber-800" : isClockedIn ? "text-emerald-800" : "text-[#2A1810]/60"}`}>
                       {shiftStatusLabel}
                     </p>
                     {isPending && (
-                      <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500 text-white text-[10px] font-bold uppercase animate-pulse">
+                      <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-600 text-white text-[10px] font-bold uppercase animate-pulse">
                         <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
                         Waiting
                       </span>
                     )}
                     {isLate && (
-                      <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-500 text-white text-[10px] font-bold uppercase">
+                      <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-orange-600 text-white text-[10px] font-bold uppercase">
                         <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
                         Late
                       </span>
                     )}
                     {isClockedIn && !isOnBreak && !isPending && !isLate && (
-                      <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500 text-white text-[10px] font-bold uppercase animate-pulse">
+                      <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-bold uppercase animate-pulse">
                         <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
                         Live
                       </span>
                     )}
                     {isOnBreak && (
-                      <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-bold uppercase">
+                      <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-600 text-white text-[10px] font-bold uppercase">
                         <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
-                        Break
+                        On Break
                       </span>
                     )}
                   </div>
+
                   {isClockedIn && currentShift ? (
-                    <div className="flex items-center gap-3 mt-1">
-                      <p className={`text-2xl font-mono font-bold tracking-wider ${isPending ? "text-blue-600" : isLate ? "text-orange-600" : isOnBreak ? "text-amber-600" : "text-emerald-700"}`}>{shiftElapsed}</p>
-                      <p className={`text-xs font-paragraph ${isPending ? "text-blue-500/70" : isLate ? "text-orange-500/70" : isOnBreak ? "text-amber-500/70" : "text-emerald-600/70"}`}>
-                        Started {new Date(currentShift.clock_in).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    <div className="flex items-baseline gap-3 mt-1 flex-wrap">
+                      <p className={`text-3xl font-mono font-extrabold tracking-wider ${isPending ? "text-blue-700" : isLate ? "text-orange-700" : isOnBreak ? "text-amber-700" : "text-emerald-700"}`}>{shiftElapsed}</p>
+                      <p className="text-xs font-paragraph text-[#2A1810]/65">
+                        Started at {new Date(currentShift.clock_in).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                       </p>
                       {currentShift?.minutes_late != null && currentShift.minutes_late > 0 && (
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-orange-100 text-orange-700 text-[10px] font-bold">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-orange-100 text-orange-800 text-[11px] font-bold">
                           +{currentShift.minutes_late}m late
                         </span>
                       )}
@@ -1031,83 +1087,87 @@ export default function StaffDashboardPage() {
                   ) : (
                     <div className="mt-1">
                       {!shiftStatusLoaded ? (
-                        <p className="text-xs text-dark-brown/40 font-paragraph">Loading shift status…</p>
+                        <p className="text-xs text-[#2A1810]/50 font-paragraph">Loading shift status…</p>
                       ) : !accessToken && !getAccessToken() ? (
-                        <p className="text-xs text-red-brown/80 font-paragraph">Sign in again to load your shift status.</p>
+                        <p className="text-xs text-red-700 font-paragraph font-bold">Sign in again to load your shift status.</p>
                       ) : !canClockIn && shiftStart && shiftEnd ? (
-                        <div className="flex flex-col gap-0.5 mt-1.5">
-                          <p className="text-xs text-red-600/80 font-bold uppercase tracking-wide">Outside Shift Hours</p>
-                          <p className="text-[11px] text-dark-brown/60 font-paragraph bg-red-100/50 inline-block px-2 py-0.5 rounded-md border border-red-200/50 w-fit">
-                            Shift window: <span className="font-bold text-red-700/80">{formatShiftClock(shiftStart)} – {formatShiftClock(shiftEnd)}</span>
+                        <div className="flex flex-col gap-1 mt-1">
+                          <p className="text-xs text-red-700 font-bold uppercase tracking-wide">Outside Shift Hours</p>
+                          <p className="text-xs text-[#2A1810]/70 font-paragraph bg-red-50 inline-block px-2.5 py-1 rounded-lg border border-red-200 w-fit">
+                            Shift window: <span className="font-bold text-red-800">{formatShiftClock(shiftStart)} – {formatShiftClock(shiftEnd)}</span>
                           </p>
                         </div>
                       ) : (
-                        <p className="text-xs text-dark-brown/40 font-paragraph">Clock in to start your shift</p>
+                        <p className="text-xs text-[#2A1810]/50 font-paragraph">Clock in to begin tracking your shift hours.</p>
                       )}
                     </div>
                   )}
                 </div>
-                <div className="flex items-center gap-2">
+
+                <div className="flex items-center gap-2.5 mt-2 sm:mt-0">
                   {isClockedIn && !isOnBreak && !isPending && (
                     <button
                       onClick={handleBreakStart}
-                      className="flex items-center gap-2 px-4 py-3 rounded-2xl text-sm font-bold uppercase transition-all shadow-md hover:shadow-lg active:scale-95 bg-amber-500 hover:bg-amber-600 text-white"
+                      className="flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-extrabold uppercase tracking-wider transition-all shadow-sm hover:shadow-md active:scale-95 bg-amber-500 hover:bg-amber-600 text-white"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
                       Break
                     </button>
                   )}
                   {isOnBreak && (
                     <button
                       onClick={handleBreakEnd}
-                      className="flex items-center gap-2 px-4 py-3 rounded-2xl text-sm font-bold uppercase transition-all shadow-md hover:shadow-lg active:scale-95 bg-emerald-600 hover:bg-emerald-700 text-white"
+                      className="flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-extrabold uppercase tracking-wider transition-all shadow-sm hover:shadow-md active:scale-95 bg-emerald-600 hover:bg-emerald-700 text-white"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                       End Break
                     </button>
                   )}
                   <button
                     onClick={isClockedIn ? handleClockOut : handleClockIn}
                     disabled={!isClockedIn && !canClockIn}
-                    className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-sm font-bold uppercase transition-all shadow-md active:scale-95 ${
+                    className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-xs font-extrabold uppercase tracking-wider transition-all shadow-md active:scale-95 ${
                       isClockedIn
-                      ? "bg-red-500 hover:bg-red-600 text-white hover:shadow-lg"
+                      ? "bg-red-600 hover:bg-red-700 text-white hover:shadow-lg"
                       : !canClockIn
-                      ? "bg-dark-brown/10 text-dark-brown/40 cursor-not-allowed shadow-none"
-                      : "bg-emerald-600 hover:bg-emerald-700 text-white hover:shadow-lg"
+                      ? "bg-[#2A1810]/10 text-[#2A1810]/40 cursor-not-allowed shadow-none"
+                      : "bg-[#2A1810] hover:bg-[#3D2519] text-[#FAEADE] hover:shadow-lg"
                   }`}
                 >
                   {isClockedIn ? (
                     <>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="6" height="6" x="4" y="4" /><rect width="6" height="6" x="14" y="4" /><rect width="6" height="6" x="4" y="14" /><rect width="6" height="6" x="14" y="14" /></svg>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect width="6" height="6" x="4" y="4" /><rect width="6" height="6" x="14" y="4" /><rect width="6" height="6" x="4" y="14" /><rect width="6" height="6" x="14" y="14" /></svg>
                       Clock Out
                     </>
                   ) : (
                     <>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                       Clock In
                     </>
                   )}
                 </button>
                 </div>
               </div>
-              {/* Right: Recent Shifts */}
+
+              {/* Right: Recent Shifts Timeline */}
               {recentShifts.length > 0 && (
-                <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-bold uppercase text-dark-brown/40 mb-2">Recent Shifts</p>
-                  <div className="space-y-1.5">
+                <div className="lg:w-72 border-t lg:border-t-0 lg:border-l border-[#EBE3D7] pt-4 lg:pt-0 lg:pl-6">
+                  <p className="text-[11px] font-extrabold uppercase text-[#2A1810]/50 tracking-wider mb-2.5">Recent Shifts</p>
+                  <div className="space-y-2">
                     {recentShifts.slice(0, 3).map((shift: any) => (
-                      <div key={shift.id} className="flex items-center gap-2 text-xs">
-                        <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${shift.clock_out ? "bg-dark-brown/20" : "bg-emerald-500"}`}></span>
-                        <span className="text-dark-brown/60 font-paragraph">
-                          {new Date(shift.clock_in).toLocaleDateString([], { month: "short", day: "numeric" })}
-                        </span>
-                        <span className="text-dark-brown/40 font-paragraph">
+                      <div key={shift.id} className="flex items-center justify-between text-xs bg-[#2A1810]/[0.03] rounded-xl px-3 py-2">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full flex-shrink-0 ${shift.clock_out ? "bg-[#2A1810]/30" : "bg-emerald-500 animate-pulse"}`}></span>
+                          <span className="text-[#2A1810] font-bold">
+                            {new Date(shift.clock_in).toLocaleDateString([], { month: "short", day: "numeric" })}
+                          </span>
+                        </div>
+                        <span className="text-[#2A1810]/60 font-paragraph text-[11px]">
                           {new Date(shift.clock_in).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                           {shift.clock_out ? ` → ${new Date(shift.clock_out).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : " → ..."}
                         </span>
                         {shift.duration && (
-                          <span className="ml-auto text-dark-brown/50 font-bold font-mono text-[10px]">{shift.duration}</span>
+                          <span className="text-[#2A1810] font-extrabold font-mono text-[11px] bg-white px-1.5 py-0.5 rounded border border-[#EBE3D7]">{shift.duration}</span>
                         )}
                       </div>
                     ))}
@@ -1119,13 +1179,21 @@ export default function StaffDashboardPage() {
         </div>
 
         {/* Tabs */}
-        <div className="staff-stagger-item flex flex-wrap gap-2 mb-6">
+        <div className="staff-stagger-item flex flex-wrap items-center gap-2 p-1.5 rounded-full bg-[#EBE3D7]/60 border border-[#EBE3D7] w-fit mb-6 shadow-inner">
           {(["orders", "tables", "contacts"] as const).map(tab => (
-            <button key={tab} onClick={() => setActiveTab(tab)} className={`flex items-center gap-1.5 px-5 py-2 rounded-full text-xs font-bold uppercase transition-all ${activeTab === tab ? "bg-dark-brown text-milk shadow-md" : "bg-white/60 text-dark-brown/70 hover:bg-white border border-white/60"}`}>
-              {tab === "orders" && <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>}
-              {tab === "tables" && <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>}
-              {tab === "contacts" && <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>}
-              {tab === "orders" ? t("Orders") : tab === "tables" ? t("Tables") : "Contacts"}
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`flex items-center gap-2 px-5 sm:px-6 py-2.5 rounded-full text-xs font-extrabold uppercase tracking-wider transition-all duration-200 ${
+                activeTab === tab
+                  ? "bg-[#2A1810] text-[#FAEADE] shadow-md -translate-y-0.5"
+                  : "text-[#2A1810]/70 hover:text-[#2A1810] hover:bg-white/60"
+              }`}
+            >
+              {tab === "orders" && <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>}
+              {tab === "tables" && <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>}
+              {tab === "contacts" && <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>}
+              <span>{tab === "orders" ? `${t("Orders")} (${orders.length})` : tab === "tables" ? `${t("Tables")} (${occupiedTables}/10)` : "Staff Contacts"}</span>
             </button>
           ))}
         </div>
@@ -1133,115 +1201,164 @@ export default function StaffDashboardPage() {
         {activeTab === "orders" && (
           <>
             {/* Filters */}
-            <div className="staff-stagger-item flex flex-wrap gap-2 mb-4">
+            <div className="staff-stagger-item flex flex-wrap items-center gap-2 mb-5">
               {(["all", "pending", "preparing", "ready", "completed"] as const).map(s => (
-                <button key={s} onClick={() => setFilter(s)} className={`px-3 py-1.5 rounded-full text-[11px] font-bold uppercase transition-all ${filter === s ? "bg-dark-brown text-milk" : "bg-white/50 text-dark-brown/60 hover:bg-white border border-white/40"}`}>
-                  {STATUS_LABELS[s]} ({s === "all" ? orders.length : orders.filter(o => o.status === s).length})
+                <button
+                  key={s}
+                  onClick={() => { setFilter(s); setCurrentPage(1); }}
+                  className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
+                    filter === s
+                      ? "bg-[#2A1810] text-[#FAEADE] shadow-sm scale-100"
+                      : "bg-[#FFFDF9] text-[#2A1810]/70 hover:bg-[#F5EFE6] border border-[#EBE3D7]"
+                  }`}
+                >
+                  {STATUS_LABELS[s]} <span className="opacity-75 font-mono ml-1">({s === "all" ? orders.length : orders.filter(o => o.status === s).length})</span>
                 </button>
               ))}
             </div>
 
             {/* Orders List */}
-            <div className="staff-stagger-item space-y-3">
+            <div className="staff-stagger-item space-y-4">
               {filteredOrders.length === 0 ? (
-                <div className="app-panel border rounded-3xl p-10 text-center shadow-lg">
+                <div className="bg-[#FFFDF9] border border-[#EBE3D7] rounded-3xl p-12 text-center shadow-[0_4px_24px_rgba(42,24,16,0.05)]">
                   <p className="text-4xl mb-3">📋</p>
-                  <p className="font-paragraph text-dark-brown/50">No orders yet</p>
+                  <p className="font-bold uppercase text-[#2A1810] text-lg">No orders in this view</p>
+                  <p className="font-paragraph text-[#2A1810]/50 text-sm mt-1">New incoming customer orders will appear here in real-time.</p>
                 </div>
               ) : (
                 displayedOrders.map(order => (
-                  <div key={order.id} data-order-card={order.id} className="paginated-order app-panel border rounded-3xl p-5 shadow-lg hover:shadow-xl transition-all">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-3">
-                      <div className="flex items-center gap-3">
-                        <span className={`w-3 h-3 rounded-full ${STATUS_DOTS[order.status]}`}></span>
-                        <p className="font-bold text-dark-brown uppercase text-sm">{order.id}</p>
-                        <span data-status-badge className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border ${STATUS_COLORS[order.status]}`}>{order.status}</span>
+                  <div
+                    key={order.id}
+                    data-order-card={order.id}
+                    className="paginated-order bg-[#FFFDF9] border border-[#EBE3D7] rounded-3xl p-6 md:p-7 shadow-[0_4px_24px_rgba(42,24,16,0.06)] hover:shadow-lg transition-all duration-300"
+                  >
+                    {/* Header Row */}
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4 pb-4 border-b border-[#EBE3D7]/60">
+                      <div className="flex items-center gap-2.5 flex-wrap">
+                        <span className={`w-3 h-3 rounded-full flex-shrink-0 shadow-xs ${STATUS_DOTS[order.status]}`}></span>
+                        <p className="font-extrabold text-[#2A1810] uppercase text-base tracking-tight font-mono">{order.id}</p>
+                        
+                        <span data-status-badge className={`px-3 py-1 rounded-full text-[11px] font-extrabold uppercase border shadow-xs ${STATUS_COLORS[order.status]}`}>
+                          {order.status}
+                        </span>
+
                         {order.orderType && (
-                          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${order.orderType === "Dine-In" ? "bg-light-brown/20 text-dark-brown"
-                              : order.orderType === "Scheduled" ? "bg-blue-100 text-blue-800"
-                                : "bg-dark-brown/10 text-dark-brown/70"
-                            }`}>
+                          <span className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase shadow-xs ${
+                            order.orderType === "Dine-In"
+                              ? "bg-amber-100 text-amber-900 border border-amber-200"
+                              : order.orderType === "Scheduled"
+                              ? "bg-blue-100 text-blue-900 border border-blue-200"
+                              : "bg-[#2A1810]/10 text-[#2A1810] border border-[#2A1810]/15"
+                          }`}>
                             {order.orderType === "Scheduled" && order.pickupTime
-                              ? `Pre-Order @ ${(() => { try { const d = new Date(order.pickupTime); return isNaN(d.getTime()) ? order.pickupTime : d.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch { return order.pickupTime; } })()}`
+                              ? `⏰ Pre-Order @ ${(() => { try { const d = new Date(order.pickupTime); return isNaN(d.getTime()) ? order.pickupTime : d.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch { return order.pickupTime; } })()}`
                               : order.orderType === "Dine-In" && order.tableNumber
-                                ? `Dine-In (T-${order.tableNumber})`
-                                : order.orderType}
+                              ? `🍽️ Dine-In (Table ${order.tableNumber})`
+                              : `🛍️ ${order.orderType}`}
                           </span>
                         )}
+
                         {order.paymentMethod && (
-                          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border ${
+                          <span className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase border shadow-xs ${
                             order.paymentStatus === "paid"
                               ? "bg-emerald-50 text-emerald-800 border-emerald-200"
                               : "bg-amber-50 text-amber-800 border-amber-200"
                           }`}>
-                            {order.paymentMethod}
-                            {order.paymentStatus === "paid" ? " · paid" : " · unpaid"}
+                            {order.paymentMethod} · {order.paymentStatus === "paid" ? "Paid" : "Unpaid"}
                           </span>
                         )}
-
                       </div>
-                      <p className="font-paragraph text-dark-brown/40 text-xs">{new Date(order.date).toLocaleString()}</p>
+
+                      <div className="flex items-center gap-1.5 text-xs text-[#2A1810]/50 font-paragraph">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        <span>{new Date(order.date).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
+                      </div>
                     </div>
 
-                    <div className="mb-3">
-                      <p className="font-paragraph text-dark-brown/70 text-sm mb-1"><span className="font-bold">Customer:</span> {order.userName}</p>
-                      <div className="space-y-1">
+                    {/* Customer & Items Section */}
+                    <div className="mb-4">
+                      <div className="flex items-center gap-2 mb-3 bg-[#2A1810]/[0.03] rounded-xl px-3.5 py-2 w-fit">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[#A26833]"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        <span className="font-paragraph text-[#2A1810] text-sm"><span className="font-bold">Customer:</span> {order.userName || "Guest"}</span>
+                      </div>
+
+                      <div className="space-y-2 bg-white/70 border border-[#EBE3D7]/70 rounded-2xl p-4">
                         {order.items.map((item, idx) => (
-                          <div key={idx} className="flex items-center justify-between text-sm">
-                            <span className="font-paragraph text-dark-brown">{item.qty}x {item.name}</span>
-                            <span className="font-bold text-dark-brown">₱{(item.price * item.qty).toFixed(2)}</span>
+                          <div key={idx} className="flex items-center justify-between text-sm py-1 border-b border-[#EBE3D7]/40 last:border-0">
+                            <div className="flex items-center gap-2.5">
+                              <span className="w-6 h-6 rounded-lg bg-[#2A1810]/8 text-[#2A1810] font-mono font-extrabold text-xs flex items-center justify-center">
+                                {item.qty}×
+                              </span>
+                              <span className="font-paragraph text-[#2A1810] font-medium">{item.name}</span>
+                            </div>
+                            <span className="font-bold text-[#2A1810] font-mono">₱{(item.price * item.qty).toFixed(2)}</span>
                           </div>
                         ))}
+                        
+                        <div className="flex items-center justify-between pt-2 mt-1 border-t border-[#EBE3D7]">
+                          <span className="font-paragraph text-xs uppercase font-extrabold text-[#2A1810]/60 tracking-wider">Total Order Amount</span>
+                          <span className="text-xl font-extrabold text-[#2A1810] font-mono">₱{order.total.toFixed(2)}</span>
+                        </div>
                       </div>
-                      <p className="font-bold text-dark-brown text-right mt-2">Total: ₱{order.total.toFixed(2)}</p>
                     </div>
 
                     {order.voidReason && (
-                      <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-3">
-                        <p className="text-red-700 text-xs font-bold uppercase">Void Reason:</p>
-                        <p className="text-red-600 text-sm font-paragraph">{order.voidReason}</p>
+                      <div className="bg-red-50 border border-red-200 rounded-2xl p-4 mb-4">
+                        <p className="text-red-800 text-xs font-bold uppercase tracking-wider mb-1">Void Reason:</p>
+                        <p className="text-red-700 text-sm font-paragraph">{order.voidReason}</p>
                       </div>
                     )}
 
-                    <div className="flex flex-wrap gap-2">
+                    {/* Action Buttons */}
+                    <div className="flex flex-wrap items-center gap-3 pt-2">
                       {order.status !== "cancelled" && order.paymentStatus !== "paid" && (
                         <button
                           onClick={() => markOrderPaid(order.id)}
-                          className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase rounded-full py-2 px-5 shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5"
+                          className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs uppercase rounded-full py-2.5 px-6 shadow-md hover:shadow-lg transition-all active:scale-95"
                         >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                           Mark Paid
                         </button>
                       )}
                       {order.status !== "completed" && order.status !== "cancelled" && STATUS_FLOW[order.status] && (
-                        <button onClick={() => updateStatus(order.id, STATUS_FLOW[order.status])} className="bg-dark-brown hover:bg-dark-brown-hover text-milk font-bold text-xs uppercase rounded-full py-2 px-5 shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5">
-                          Mark {STATUS_LABELS[STATUS_FLOW[order.status]]}
+                        <button
+                          onClick={() => updateStatus(order.id, STATUS_FLOW[order.status])}
+                          className="flex items-center gap-2 bg-[#2A1810] hover:bg-[#3D2519] text-[#FAEADE] font-extrabold text-xs uppercase rounded-full py-2.5 px-6 shadow-md hover:shadow-lg transition-all active:scale-95"
+                        >
+                          <span>Mark {STATUS_LABELS[STATUS_FLOW[order.status]]}</span>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
                         </button>
                       )}
                       {(order.status === "pending" || order.status === "preparing") && (
-                        <button onClick={() => setVoidModalOrderId(order.id)} className="bg-red-brown/10 hover:bg-red-brown text-red-brown hover:text-milk font-bold text-xs uppercase rounded-full py-2 px-5 transition-all">
-                          Void
+                        <button
+                          onClick={() => setVoidModalOrderId(order.id)}
+                          className="bg-red-50 hover:bg-red-600 text-red-700 hover:text-white border border-red-200 hover:border-transparent font-bold text-xs uppercase rounded-full py-2.5 px-5 transition-all active:scale-95"
+                        >
+                          Void Order
                         </button>
                       )}
                     </div>
                   </div>
                 ))
               )}
+
+              {/* Pagination */}
               {totalPages > 1 && (
-                <div className="flex items-center justify-between mt-4 pb-4 px-2">
+                <div className="flex items-center justify-between mt-6 pt-4 border-t border-[#EBE3D7]">
                   <button
                     onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
-                    className="bg-dark-brown/10 disabled:opacity-50 hover:bg-dark-brown text-dark-brown hover:text-milk font-bold text-xs uppercase rounded-full py-2.5 px-6 transition-all duration-300 shadow-sm hover:shadow-md"
+                    className="bg-[#FFFDF9] disabled:opacity-40 hover:bg-[#F5EFE6] border border-[#EBE3D7] text-[#2A1810] font-bold text-xs uppercase rounded-full py-2.5 px-6 transition-all shadow-xs"
                   >
-                    Prev
+                    Previous
                   </button>
-                  <span className="text-dark-brown font-bold text-sm">
+                  <span className="text-[#2A1810] font-bold text-sm">
                     Page {currentPage} of {totalPages}
                   </span>
                   <button
                     onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                     disabled={currentPage === totalPages}
-                    className="bg-dark-brown/10 disabled:opacity-50 hover:bg-dark-brown text-dark-brown hover:text-milk font-bold text-xs uppercase rounded-full py-2.5 px-6 transition-all duration-300 shadow-sm hover:shadow-md"
+                    className="bg-[#FFFDF9] disabled:opacity-40 hover:bg-[#F5EFE6] border border-[#EBE3D7] text-[#2A1810] font-bold text-xs uppercase rounded-full py-2.5 px-6 transition-all shadow-xs"
                   >
                     Next
                   </button>
@@ -1251,25 +1368,30 @@ export default function StaffDashboardPage() {
           </>
         )}
 
+        {/* Tables Tab */}
         {activeTab === "tables" && (
-          <div className="staff-stagger-item grid grid-cols-2 md:grid-cols-5 gap-3">
+          <div className="staff-stagger-item grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
             {tables.map(table => {
               const cfg = {
-                free: { color: "#22c55e", bg: "bg-green-50", label: "Free", glow: "0 0 15px #22c55e40" },
-                ordering: { color: "#eab308", bg: "bg-yellow-50", label: "Ordering", glow: "0 0 15px #eab30840" },
-                occupied: { color: "#ef4444", bg: "bg-red-50", label: "Occupied", glow: "0 0 15px #ef444440" }}[table.table_status];
+                free: { color: "#10b981", bg: "bg-emerald-50/80 border-emerald-200", label: "Free", dot: "bg-emerald-500" },
+                ordering: { color: "#f59e0b", bg: "bg-amber-50/80 border-amber-200", label: "Ordering", dot: "bg-amber-500 animate-pulse" },
+                occupied: { color: "#ef4444", bg: "bg-red-50/80 border-red-200", label: "Occupied", dot: "bg-red-500" },
+              }[table.table_status];
               return (
-                <div key={table.table_number} className={`${cfg.bg} border border-white/60 rounded-3xl p-4 shadow-lg transition-all hover:shadow-xl hover:-translate-y-1`}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-bold text-dark-brown text-lg">T{table.table_number}</span>
-                    <span className="w-3 h-3 rounded-full" style={{ background: cfg.color, boxShadow: cfg.glow }}></span>
+                <div
+                  key={table.table_number}
+                  className={`${cfg.bg} border rounded-3xl p-5 shadow-[0_4px_16px_rgba(42,24,16,0.05)] transition-all hover:shadow-lg hover:-translate-y-1`}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="font-extrabold text-[#2A1810] text-xl font-mono">Table {table.table_number}</span>
+                    <span className={`w-3 h-3 rounded-full shadow-xs ${cfg.dot}`}></span>
                   </div>
-                  <p className="text-xs font-bold uppercase text-dark-brown/60">{cfg.label}</p>
+                  <p className="text-[11px] font-extrabold uppercase tracking-wider text-[#2A1810]/70">{cfg.label}</p>
                   {table.customer_name && (
-                    <p className="text-xs font-paragraph text-dark-brown/80 mt-1">{table.customer_name}</p>
+                    <p className="text-xs font-paragraph font-bold text-[#2A1810] mt-2 truncate">👤 {table.customer_name}</p>
                   )}
                   {table.total_price && (
-                    <p className="text-xs font-bold text-dark-brown mt-1">₱{table.total_price}</p>
+                    <p className="text-sm font-extrabold text-[#2A1810] font-mono mt-1">₱{table.total_price}</p>
                   )}
                 </div>
               );
@@ -1277,44 +1399,45 @@ export default function StaffDashboardPage() {
           </div>
         )}
 
+        {/* Contacts Tab */}
         {activeTab === "contacts" && (
           <div className="staff-stagger-item">
             <div className="mb-6">
-              <h3 className="text-xl md:text-2xl font-bold text-dark-brown uppercase tracking-tight">Staff Contact Directory</h3>
-              <p className="font-paragraph text-dark-brown/50 text-sm mt-1">All staff phone numbers and emails — tap to call or copy</p>
+              <h3 className="text-2xl font-bold text-[#2A1810] uppercase tracking-tight">Staff Contact Directory</h3>
+              <p className="font-paragraph text-[#2A1810]/60 text-sm mt-1">Team contact list — click to call or copy details</p>
             </div>
 
             {staffUsers.length === 0 ? (
-              <div className="app-panel border rounded-3xl p-10 text-center shadow-lg">
+              <div className="bg-[#FFFDF9] border border-[#EBE3D7] rounded-3xl p-12 text-center shadow-[0_4px_20px_rgba(42,24,16,0.05)]">
                 <p className="text-4xl mb-3">📞</p>
-                <p className="font-paragraph text-dark-brown/50">No staff contacts to display</p>
+                <p className="font-bold text-[#2A1810] uppercase text-lg">No staff contacts found</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {staffUsers.map((s: any) => (
                   <div
                     key={s.id}
-                    className="app-panel border rounded-2xl p-5 shadow-md hover:shadow-lg transition-all group"
+                    className="bg-[#FFFDF9] border border-[#EBE3D7] rounded-3xl p-6 shadow-[0_4px_20px_rgba(42,24,16,0.05)] hover:shadow-md transition-all group"
                   >
                     {/* Avatar + Name */}
-                    <div className="flex items-center gap-3 mb-4">
+                    <div className="flex items-center gap-3.5 mb-4">
                       {s.avatar ? (
-                        <Image src={s.avatar} alt={s.name || s.email} width={44} height={44} className="w-11 h-11 rounded-xl object-cover flex-shrink-0" />
+                        <Image src={s.avatar} alt={s.name || s.email} width={48} height={48} className="w-12 h-12 rounded-2xl object-cover flex-shrink-0 border border-[#EBE3D7]" />
                       ) : (
-                        <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 text-sm font-bold uppercase ${
-                          s.role === "admin" ? "bg-dark-brown text-milk" : "bg-light-brown/20 text-dark-brown"
+                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 text-base font-extrabold uppercase shadow-xs ${
+                          s.role === "admin" ? "bg-[#2A1810] text-[#FAEADE]" : "bg-[#F5EFE6] text-[#2A1810]"
                         }`}>
                           {(s.name || s.email).charAt(0).toUpperCase()}
                         </div>
                       )}
                       <div className="min-w-0 flex-1">
-                        <p className="font-bold text-dark-brown text-sm uppercase truncate">{s.name || s.email.split("@")[0]}</p>
+                        <p className="font-extrabold text-[#2A1810] text-sm uppercase truncate">{s.name || s.email.split("@")[0]}</p>
                         <div className="flex items-center gap-1.5 mt-0.5">
                           {s.employee_id && (
-                            <span className="px-1.5 py-0.5 rounded bg-dark-brown/8 text-dark-brown/40 text-[9px] font-mono font-bold tracking-wider flex-shrink-0">{s.employee_id}</span>
+                            <span className="px-2 py-0.5 rounded-md bg-[#2A1810]/8 text-[#2A1810]/60 text-[10px] font-mono font-bold tracking-wider flex-shrink-0">{s.employee_id}</span>
                           )}
-                          <span className={`flex items-center gap-0.5 text-[9px] font-bold uppercase ${s.is_active ? "text-green-600" : "text-red-400"}`}>
-                            <span className={`w-1 h-1 rounded-full ${s.is_active ? "bg-green-500" : "bg-red-400"}`}></span>
+                          <span className={`flex items-center gap-1 text-[10px] font-bold uppercase ${s.is_active ? "text-emerald-700" : "text-red-600"}`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${s.is_active ? "bg-emerald-500" : "bg-red-500"}`}></span>
                             {s.is_active ? "Active" : "Inactive"}
                           </span>
                         </div>
@@ -1322,16 +1445,16 @@ export default function StaffDashboardPage() {
                     </div>
 
                     {/* Contact Actions */}
-                    <div className="space-y-2">
+                    <div className="space-y-2.5">
                       {/* Email */}
-                      <div className="flex items-center gap-2 bg-dark-brown/[0.03] rounded-xl px-3 py-2.5 group/email">
-                        <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                      <div className="flex items-center gap-2.5 bg-[#2A1810]/[0.03] rounded-2xl px-3.5 py-2.5 group/email">
+                        <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
                           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgb(37,99,235)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
                         </div>
-                        <span className="flex-1 text-dark-brown/70 text-xs font-paragraph truncate">{s.email}</span>
+                        <span className="flex-1 text-[#2A1810]/80 text-xs font-paragraph truncate">{s.email}</span>
                         <button
                           onClick={() => { navigator.clipboard.writeText(s.email); showToast("Email copied!", "success"); }}
-                          className="opacity-0 group-hover/email:opacity-100 flex items-center justify-center w-7 h-7 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 transition-all flex-shrink-0"
+                          className="opacity-0 group-hover/email:opacity-100 flex items-center justify-center w-7 h-7 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-700 transition-all flex-shrink-0"
                           title="Copy email"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
@@ -1340,32 +1463,32 @@ export default function StaffDashboardPage() {
 
                       {/* Phone */}
                       {s.phone ? (
-                        <div className="flex items-center gap-2 bg-dark-brown/[0.03] rounded-xl px-3 py-2.5 group/phone">
-                          <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
+                        <div className="flex items-center gap-2.5 bg-[#2A1810]/[0.03] rounded-2xl px-3.5 py-2.5 group/phone">
+                          <div className="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0">
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgb(5,150,105)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                           </div>
-                          <span className="flex-1 text-dark-brown/70 text-xs font-paragraph truncate">{s.phone}</span>
+                          <span className="flex-1 text-[#2A1810]/80 text-xs font-paragraph truncate">{s.phone}</span>
                           <a
                             href={`tel:${s.phone}`}
-                            className="flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 transition-all flex-shrink-0"
+                            className="flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-100 hover:bg-emerald-200 text-emerald-700 transition-all flex-shrink-0"
                             title="Call"
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                           </a>
                           <button
                             onClick={() => { navigator.clipboard.writeText(s.phone); showToast("Phone number copied!", "success"); }}
-                            className="opacity-0 group-hover/phone:opacity-100 flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 transition-all flex-shrink-0"
+                            className="opacity-0 group-hover/phone:opacity-100 flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-100 hover:bg-emerald-200 text-emerald-700 transition-all flex-shrink-0"
                             title="Copy phone"
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
                           </button>
                         </div>
                       ) : (
-                        <div className="flex items-center gap-2 bg-dark-brown/[0.02] rounded-xl px-3 py-2.5">
-                          <div className="w-8 h-8 rounded-lg bg-dark-brown/5 flex items-center justify-center flex-shrink-0">
+                        <div className="flex items-center gap-2.5 bg-[#2A1810]/[0.02] rounded-2xl px-3.5 py-2.5">
+                          <div className="w-8 h-8 rounded-xl bg-[#2A1810]/5 flex items-center justify-center flex-shrink-0">
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgb(120,113,108)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                           </div>
-                          <span className="text-dark-brown/30 text-xs font-paragraph italic">No phone number</span>
+                          <span className="text-[#2A1810]/40 text-xs font-paragraph italic">No phone on file</span>
                         </div>
                       )}
                     </div>
@@ -1379,22 +1502,37 @@ export default function StaffDashboardPage() {
 
       {/* Void Modal */}
       {voidModalOrderId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="app-panel border rounded-3xl shadow-2xl p-6 md:p-8 w-[90%] max-w-md">
-            <h3 className="text-xl font-bold text-red-800 uppercase tracking-tight mb-2">Void Order</h3>
-            <p className="font-paragraph text-red-700 text-sm mb-4">Provide a reason for voiding this order. This action will restore inventory.</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md px-4">
+          <div className="bg-[#FFFDF9] border border-[#EBE3D7] rounded-3xl shadow-2xl p-6 md:p-8 w-full max-w-md">
+            <div className="flex items-center gap-3 mb-3 text-red-700">
+              <div className="w-10 h-10 rounded-2xl bg-red-100 flex items-center justify-center flex-shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+              </div>
+              <div>
+                <h3 className="text-xl font-extrabold text-[#2A1810] uppercase tracking-tight">Void Order</h3>
+                <p className="font-paragraph text-[#2A1810]/60 text-xs">{voidModalOrderId}</p>
+              </div>
+            </div>
+            <p className="font-paragraph text-[#2A1810]/70 text-sm mb-4">Please provide a reason for cancelling this order. This action will be logged and inventory will be returned.</p>
             <textarea
               value={voidReason}
               onChange={e => setVoidReason(e.target.value)}
-              placeholder="Reason for voiding..."
-              className="w-full bg-red-50 border border-red-200 text-red-900 font-paragraph rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-400 placeholder:text-red-400 mb-4 resize-none h-24"
+              placeholder="e.g. Customer changed mind, incorrect item..."
+              className="w-full bg-[#F5EFE6] border border-[#EBE3D7] text-[#2A1810] font-paragraph rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#A26833] placeholder:text-[#2A1810]/40 mb-5 resize-none h-24 text-sm"
             />
             <div className="flex gap-3">
-              <button onClick={() => { setVoidModalOrderId(null); setVoidReason(""); }} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold uppercase py-3 rounded-xl transition-colors">
+              <button
+                onClick={() => { setVoidModalOrderId(null); setVoidReason(""); }}
+                className="flex-1 bg-[#EBE3D7]/60 hover:bg-[#EBE3D7] text-[#2A1810] font-bold text-xs uppercase py-3 rounded-xl transition-all"
+              >
                 Cancel
               </button>
-              <button onClick={voidOrder} disabled={!voidReason.trim()} className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-red-300 disabled:cursor-not-allowed text-white font-bold uppercase py-3 rounded-xl transition-colors">
-                Void Order
+              <button
+                onClick={voidOrder}
+                disabled={!voidReason.trim()}
+                className="flex-1 bg-red-600 hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-extrabold text-xs uppercase py-3 rounded-xl transition-all shadow-md"
+              >
+                Confirm Void
               </button>
             </div>
           </div>
@@ -1403,81 +1541,216 @@ export default function StaffDashboardPage() {
 
       {/* Absence Request Modal */}
       {showAbsenceModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
-          <div className="bg-milk w-full max-w-lg rounded-3xl shadow-2xl p-6 md:p-7 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-start justify-between gap-3 mb-5">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center flex-shrink-0">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgb(79,70,229)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md px-4 py-6">
+          <div className="bg-[#FFFDF9] border border-[#EBE3D7] w-full max-w-xl rounded-3xl shadow-2xl p-6 sm:p-8 max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="flex items-start justify-between gap-3 mb-6 pb-4 border-b border-[#EBE3D7]/70">
+              <div className="flex items-start gap-3.5">
+                <div className="w-12 h-12 rounded-2xl bg-[#2A1810] text-[#FAEADE] flex items-center justify-center flex-shrink-0 shadow-md border border-[#E3A458]/40">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                  </svg>
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-dark-brown uppercase tracking-tight">Absence Request</h3>
-                  <p className="text-xs text-dark-brown/50 font-paragraph mt-0.5">
-                    Log a planned absence in advance — shown separately from unexpected absences
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-xl font-black text-[#2A1810] uppercase tracking-tight">
+                      Absence & Leave Request
+                    </h3>
+                    <span className="bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full">
+                      Advance Notice
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#2A1810]/60 font-paragraph mt-1">
+                    Log planned time-off in advance for shift coordination and kitchen manager roster review.
                   </p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setShowAbsenceModal(false)}
-                className="text-dark-brown/40 hover:text-dark-brown p-1"
+                className="w-8 h-8 rounded-full bg-[#2A1810]/5 hover:bg-[#2A1810]/10 text-[#2A1810]/60 hover:text-[#2A1810] flex items-center justify-center transition-all"
                 aria-label="Close"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
               </button>
             </div>
 
-            <div className="space-y-3 mb-5">
+            {/* Form Section */}
+            <div className="space-y-4 mb-6">
+              {/* Date Input with Quick Presets */}
               <div>
-                <label className="block text-[10px] font-bold uppercase text-dark-brown/50 mb-1">Date</label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-[11px] font-extrabold uppercase text-[#2A1810]/70 tracking-wider">
+                    Date of Planned Absence
+                  </label>
+                  {/* Quick date shortcuts */}
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const d = new Date();
+                        d.setDate(d.getDate() + 1);
+                        setAbsenceFormDate(d.toISOString().split("T")[0]);
+                      }}
+                      className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-[#F5EFE6] text-[#A26833] hover:bg-[#EBE3D7] transition-all"
+                    >
+                      Tomorrow
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const d = new Date();
+                        d.setDate(d.getDate() + 7);
+                        setAbsenceFormDate(d.toISOString().split("T")[0]);
+                      }}
+                      className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-[#F5EFE6] text-[#A26833] hover:bg-[#EBE3D7] transition-all"
+                    >
+                      Next Week
+                    </button>
+                  </div>
+                </div>
                 <input
                   type="date"
+                  min={new Date().toISOString().split("T")[0]}
                   value={absenceFormDate}
                   onChange={(e) => setAbsenceFormDate(e.target.value)}
-                  className="w-full bg-white/70 border border-dark-brown/15 rounded-xl px-3 py-2.5 text-sm text-dark-brown"
+                  className="w-full bg-[#F5EFE6] border border-[#EBE3D7] rounded-2xl px-4 py-3 text-sm text-[#2A1810] font-paragraph font-bold focus:outline-none focus:ring-2 focus:ring-[#A26833] cursor-pointer"
                 />
               </div>
+
+              {/* Quick Reason Chips */}
               <div>
-                <label className="block text-[10px] font-bold uppercase text-dark-brown/50 mb-1">Reason</label>
+                <label className="block text-[11px] font-extrabold uppercase text-[#2A1810]/70 tracking-wider mb-2">
+                  Reason for Time-Off
+                </label>
+                <div className="flex flex-wrap gap-1.5 mb-2.5">
+                  {[
+                    "🏥 Medical / Doctor Checkup",
+                    "👨‍👩‍👧 Family Obligation",
+                    "🎓 School / Exam",
+                    "✈️ Vacation / Travel",
+                    "🛋️ Rest Day / Personal",
+                  ].map((chip) => (
+                    <button
+                      key={chip}
+                      type="button"
+                      onClick={() => setAbsenceFormReason(chip)}
+                      className={`text-[11px] font-bold px-3 py-1 rounded-xl transition-all ${
+                        absenceFormReason === chip
+                          ? "bg-[#2A1810] text-[#FAEADE] shadow-xs"
+                          : "bg-[#F5EFE6] hover:bg-[#EBE3D7] text-[#2A1810]/70"
+                      }`}
+                    >
+                      {chip}
+                    </button>
+                  ))}
+                </div>
+
                 <textarea
                   value={absenceFormReason}
                   onChange={(e) => setAbsenceFormReason(e.target.value)}
                   rows={3}
-                  placeholder="Reason for planned absence..."
-                  className="w-full bg-white/70 border border-dark-brown/15 rounded-xl px-3 py-2.5 text-sm text-dark-brown font-paragraph resize-none"
+                  placeholder="Provide details for manager review (e.g. medical appointment, family emergency)..."
+                  className="w-full bg-[#F5EFE6] border border-[#EBE3D7] rounded-2xl px-4 py-3 text-sm text-[#2A1810] font-paragraph resize-none focus:outline-none focus:ring-2 focus:ring-[#A26833] placeholder:text-[#2A1810]/40"
                 />
               </div>
+
+              {/* Submit Button */}
               <button
                 type="button"
                 onClick={submitAbsenceRequest}
-                disabled={absenceFormLoading}
-                className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs uppercase disabled:opacity-50"
+                disabled={absenceFormLoading || !absenceFormDate || !absenceFormReason.trim()}
+                className="w-full py-3.5 rounded-2xl bg-[#2A1810] hover:bg-[#3D2519] text-[#FAEADE] font-extrabold text-xs uppercase disabled:opacity-40 disabled:cursor-not-allowed shadow-md hover:shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2"
               >
-                {absenceFormLoading ? "Submitting…" : "Submit Absence Request"}
+                {absenceFormLoading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-[#FAEADE]/30 border-t-[#FAEADE] rounded-full animate-spin" />
+                    <span>Submitting Request…</span>
+                  </>
+                ) : (
+                  <>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span>Submit Absence Request</span>
+                  </>
+                )}
               </button>
             </div>
 
-            <div className="border-t border-dark-brown/10 pt-4">
-              <p className="text-[10px] font-bold uppercase text-dark-brown/50 mb-2">My Planned Absences</p>
+            {/* List of My Active Planned Absences */}
+            <div className="border-t border-[#EBE3D7] pt-5">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-[11px] font-extrabold uppercase text-[#2A1810]/70 tracking-wider">
+                  My Active Planned Absences ({myAbsenceRequests.filter((r) => r.status === "approved").length})
+                </p>
+                <span className="text-[10px] text-[#2A1810]/40 font-paragraph">
+                  Auto-synced with kitchen roster
+                </span>
+              </div>
+
               {myAbsenceRequests.filter((r) => r.status === "approved").length === 0 ? (
-                <p className="text-xs text-dark-brown/45 font-paragraph">No planned absences logged</p>
+                <div className="bg-[#F5EFE6]/60 border border-[#EBE3D7] rounded-2xl p-6 text-center">
+                  <p className="text-2xl mb-1.5">📅</p>
+                  <p className="text-xs font-bold uppercase text-[#2A1810]/60">No upcoming planned absences</p>
+                  <p className="text-[11px] text-[#2A1810]/40 font-paragraph mt-0.5">
+                    Your attendance is scheduled for all upcoming shifts.
+                  </p>
+                </div>
               ) : (
-                <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {myAbsenceRequests.filter((r) => r.status === "approved").slice(0, 10).map((r) => (
-                    <div key={r.id} className="rounded-xl bg-indigo-50/70 border border-indigo-200/50 px-3 py-2 flex items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <p className="text-[11px] font-bold text-indigo-900">
-                          {new Date(`${r.absence_date}T12:00:00`).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}
-                        </p>
-                        <p className="text-[10px] text-indigo-800/70 font-paragraph truncate">{r.reason}</p>
+                <div className="space-y-2.5 max-h-56 overflow-y-auto pr-1">
+                  {myAbsenceRequests
+                    .filter((r) => r.status === "approved")
+                    .slice(0, 10)
+                    .map((r) => (
+                      <div
+                        key={r.id}
+                        className="rounded-2xl bg-[#F5EFE6] border border-[#EBE3D7] p-4 flex items-center justify-between gap-3 hover:shadow-xs transition-all"
+                      >
+                        <div className="flex items-start gap-3 min-w-0">
+                          <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-700 flex flex-col items-center justify-center flex-shrink-0">
+                            <span className="text-[9px] font-extrabold uppercase leading-none">
+                              {new Date(`${r.absence_date}T12:00:00`).toLocaleDateString([], { month: "short" })}
+                            </span>
+                            <span className="text-sm font-black font-mono leading-none mt-0.5">
+                              {new Date(`${r.absence_date}T12:00:00`).getDate()}
+                            </span>
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <p className="text-xs font-black text-[#2A1810]">
+                                {new Date(`${r.absence_date}T12:00:00`).toLocaleDateString([], {
+                                  weekday: "short",
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                })}
+                              </p>
+                              <span className="bg-indigo-100 text-indigo-900 text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded">
+                                Planned Off
+                              </span>
+                            </div>
+                            <p className="text-xs text-[#2A1810]/75 font-paragraph mt-0.5 truncate">
+                              {r.reason}
+                            </p>
+                          </div>
+                        </div>
+
+                        {r.absence_date >= new Date().toISOString().slice(0, 10) && (
+                          <button
+                            type="button"
+                            onClick={() => cancelMyAbsenceRequest(r.id)}
+                            className="text-[10px] font-extrabold uppercase text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 border border-red-200 px-3 py-1.5 rounded-xl transition-all flex-shrink-0"
+                          >
+                            Cancel
+                          </button>
+                        )}
                       </div>
-                      {r.absence_date >= new Date().toISOString().slice(0, 10) && (
-                        <button type="button" onClick={() => cancelMyAbsenceRequest(r.id)} className="text-[9px] font-bold uppercase text-red-600 flex-shrink-0">
-                          Cancel
-                        </button>
-                      )}
-                    </div>
-                  ))}
+                    ))}
                 </div>
               )}
             </div>

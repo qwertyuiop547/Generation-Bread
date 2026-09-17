@@ -136,9 +136,8 @@ export default function ScanPage() {
   const [scanned, setScanned] = useState(false);
   const [cameraReady, setCameraReady] = useState(false);
   const [usingFrontCamera, setUsingFrontCamera] = useState(false);
-  const [isLaptop, setIsLaptop] = useState(() =>
-    typeof window !== "undefined" ? !isLikelyMobile() : false
-  );
+  const [mounted, setMounted] = useState(false);
+  const [isLaptop, setIsLaptop] = useState(false);
   const [cameras, setCameras] = useState<CameraDevice[]>([]);
   const [activeCameraIndex, setActiveCameraIndex] = useState(0);
 
@@ -384,6 +383,8 @@ export default function ScanPage() {
   }, [activeCameraIndex, cameras, isLaptop, startWithCamera]);
 
   useEffect(() => {
+    setMounted(true);
+    setIsLaptop(!isLikelyMobile());
     let cancelled = false;
 
     const boot = async () => {
@@ -457,17 +458,17 @@ export default function ScanPage() {
             <h1 className="scan-heading text-3xl md:text-4xl font-bold text-milk uppercase tracking-tighter mb-2 text-center">
               Scan QR Code
             </h1>
-            <p className="scan-copy font-paragraph text-milk/60 mb-4 text-center">
-              {isLaptop
+            <p className="scan-copy font-paragraph text-milk/60 mb-4 text-center" suppressHydrationWarning>
+              {mounted && isLaptop
                 ? "Itutok ang laptop webcam sa QR code (para sa testing)"
                 : "Itutok ang rear camera sa QR code sa mesa"}
             </p>
-            {isLaptop && (
-              <p className="font-paragraph text-milk/40 text-xs mb-8 text-center max-w-xs">
+            {mounted && isLaptop && (
+              <p className="font-paragraph text-milk/40 text-xs mb-8 text-center max-w-xs" suppressHydrationWarning>
                 Walang rear camera ang laptop. Para sa totoong scan sa mesa, gamitin ang phone.
               </p>
             )}
-            {!isLaptop && <div className="mb-8" />}
+            {(!mounted || !isLaptop) && <div className="mb-8" />}
 
             <div className="scanner-shell w-full relative will-change-transform">
               <div
@@ -505,8 +506,8 @@ export default function ScanPage() {
                 <div className="mt-4 flex flex-col items-center gap-3">
                   <div className="flex items-center justify-center gap-2">
                     <div className="scan-status-dot w-2 h-2 bg-light-brown rounded-full will-change-transform"></div>
-                    <p className="font-paragraph text-milk/50 text-sm text-center">
-                      {isLaptop
+                    <p className="font-paragraph text-milk/50 text-sm text-center" suppressHydrationWarning>
+                      {mounted && isLaptop
                         ? "Ginagamit ang laptop webcam"
                         : usingFrontCamera
                           ? "Front camera — pindutin ang Switch Camera para sa rear"
@@ -514,7 +515,7 @@ export default function ScanPage() {
                     </p>
                   </div>
 
-                  {!isLaptop && cameras.length > 1 && (
+                  {mounted && !isLaptop && cameras.length > 1 && (
                     <button
                       type="button"
                       onClick={switchCamera}

@@ -135,7 +135,7 @@ function formatOrderLabel(orderId: number | string): string {
 async function showSystemNotification(title: string, body: string, orderLabel: string): Promise<void> {
   if (!("Notification" in window) || Notification.permission !== "granted") return;
 
-  const options: NotificationOptions = {
+  const options: NotificationOptions & { renotify?: boolean } = {
     body,
     icon: "/images/favicon-48.png",
     badge: "/images/favicon-32.png",

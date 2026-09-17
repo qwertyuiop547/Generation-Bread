@@ -39,7 +39,7 @@ def paginate_queryset(queryset, request, *, default_limit: int = 100, max_limit:
     return page, meta
 
 
-def paginated_response(serializer_data: list[Any], meta: dict) -> dict:
+def paginated_response(serializer_data: Any, meta: dict) -> dict:
     return {
         "results": serializer_data,
         "count": meta["count"],

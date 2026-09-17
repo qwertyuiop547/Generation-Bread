@@ -35,6 +35,7 @@ const BrandLogo = ({
       height={height}
       src={src}
       alt="Generation Bread"
+      unoptimized
       className={className}
     />
   );

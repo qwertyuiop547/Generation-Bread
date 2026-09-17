@@ -2,6 +2,7 @@
 import csv
 import json
 import logging
+from typing import Any
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -137,7 +138,7 @@ def jwt_login_view(request):
     # Authenticate using email as username
     user = authenticate(username=email, password=password)
     
-    if not user:
+    if not user or not isinstance(user, CustomUser):
         locked_now, retry_after = record_login_failure(request, email)
         log_security_event('login_failed', request=request, detail=email)
         if locked_now:
@@ -485,6 +486,110 @@ def resend_code_view(request):
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@throttle_classes([ResendCodeRateThrottle])
+def forgot_password_view(request):
+    """Generate and email a 6-digit password reset OTP."""
+    email, email_err = _require_email(request.data.get('email'))
+    if email_err:
+        return email_err
+
+    try:
+        user = CustomUser.objects.get(email=email)
+    except CustomUser.DoesNotExist:
+        return Response({
+            'message': 'If an account exists with this email, a reset code has been sent.',
+            'email': email,
+        }, status=status.HTTP_200_OK)
+
+    code = user.generate_verification_code()
+
+    try:
+        send_mail(
+            subject='🥐 Generation Bread - Password Reset Code',
+            message=f'Hi {user.first_name or "there"}!\n\nYour password reset code is: {code}\n\nThis code expires in 10 minutes.\n\nIf you did not request this, please ignore this email.',
+            html_message=f"""
+            <div style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 24px; background: #2a1810; border-radius: 24px; color: #faeade;">
+                <div style="text-align: center; margin-bottom: 24px;">
+                    <h1 style="color: #faeade; font-size: 26px; font-weight: 800; letter-spacing: 0.05em; margin: 0; text-transform: uppercase;">GENERATION <span style="color: #e3a458;">BREAD</span></h1>
+                    <p style="color: #e3a458; font-size: 11px; text-transform: uppercase; letter-spacing: 0.25em; margin: 6px 0 0;">Tacloban City · Fresh Bakes</p>
+                </div>
+                <div style="background: #3a2217; border: 1px solid rgba(227, 164, 88, 0.25); border-radius: 18px; padding: 28px 20px; text-align: center;">
+                    <h2 style="color: #faeade; font-size: 20px; margin: 0 0 12px; font-weight: 700;">Password Reset Request</h2>
+                    <p style="color: rgba(250, 234, 222, 0.8); font-size: 14px; line-height: 1.5; margin: 0 0 20px;">Use the 6-digit code below to set a new password for your account:</p>
+                    <div style="background: #523122; color: #faeade; border: 2px solid #e3a458; font-size: 32px; letter-spacing: 10px; padding: 14px 24px; border-radius: 14px; display: inline-block; font-weight: 800; font-family: monospace; margin: 0 auto;">
+                        {code}
+                    </div>
+                    <p style="color: rgba(250, 234, 222, 0.55); font-size: 12px; margin: 20px 0 0;">This code is valid for <strong>10 minutes</strong>. If you didn't request this reset, you can safely ignore this email.</p>
+                </div>
+            </div>
+            """,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            fail_silently=False,
+        )
+    except Exception as exc:
+        logger.warning('password_reset_email_failed email=%s error=%s', email, exc)
+        return Response({
+            'message': 'Reset code generated. (Email sending failed in demo mode — use the demo code below).',
+            'demo_code': code,
+            'email': user.email,
+        }, status=status.HTTP_200_OK)
+
+    return Response({
+        'message': 'Password reset code sent to your email!',
+        'email': user.email,
+    }, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+@throttle_classes([VerifyEmailRateThrottle])
+def reset_password_view(request):
+    """Verify 6-digit code and set new password."""
+    email, email_err = _require_email(request.data.get('email'))
+    if email_err:
+        return email_err
+
+    code = (request.data.get('code') or '').strip()
+    new_password = request.data.get('new_password') or ''
+
+    if not code:
+        return Response({'error': 'Verification code is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if not new_password:
+        return Response({'error': 'New password is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if len(new_password) < 10:
+        return Response({'error': 'Password must be at least 10 characters.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        user = CustomUser.objects.get(email=email)
+    except CustomUser.DoesNotExist:
+        return Response({'error': 'Account not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+    if user.verification_code_created:
+        if timezone.now() - user.verification_code_created > timedelta(minutes=10):
+            return Response({'error': 'Verification code has expired. Please request a new one.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if not user.verification_code or user.verification_code != code:
+        return Response({'error': 'Invalid verification code.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    user.set_password(new_password)
+    user.verification_code = None
+    user.verification_code_created = None
+    user.is_email_verified = True
+    user.save()
+
+    clear_login_failures(request, email)
+    log_security_event('password_reset_success', request=request, user=user)
+
+    return Response({
+        'message': 'Password reset successfully! You can now log in with your new password.',
+    }, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
 @throttle_classes([LoginRateThrottle])
 def login_view(request):
     """Login and return user data."""
@@ -575,9 +680,12 @@ def logout_view(request):
 def order_view(request):
     """Get current user orders (auth required) or create a new order."""
     if request.method == 'GET':
+        # Identity must come from the JWT: a caller-supplied email would expose
+        # every order of any customer whose address the caller happens to know.
         user, err = require_authenticated_user(request)
         if err:
             return err
+
         qs = (
             Order.objects.filter(user=user)
             .select_related('user', 'served_by')
@@ -629,7 +737,7 @@ def order_view(request):
 
     if table_number is not None and table_number != '':
         table_number = normalize_text(str(table_number), max_length=10, allow_empty=False)
-        if table_number is None or not str(table_number).isdigit():
+        if table_number is None or not table_number.isdigit():
             return Response({'error': 'Invalid table number.'}, status=status.HTTP_400_BAD_REQUEST)
 
     if normalized_order_type == 'scheduled' and not pickup_time:
@@ -638,15 +746,15 @@ def order_view(request):
     # Parse scheduled_at from pickup_time for auto-cancel logic
     scheduled_at = None
     if normalized_order_type == 'scheduled' and pickup_time:
+        from datetime import datetime as dt_parser
         try:
-            from datetime import datetime as dt
-            scheduled_at = dt.fromisoformat(pickup_time)
+            scheduled_at = dt_parser.fromisoformat(pickup_time)
         except (ValueError, TypeError):
             try:
-                scheduled_at = dt.strptime(pickup_time, '%Y-%m-%dT%H:%M')
+                scheduled_at = dt_parser.strptime(pickup_time, '%Y-%m-%dT%H:%M')
             except (ValueError, TypeError):
                 try:
-                    scheduled_at = dt.strptime(pickup_time, '%m/%d/%Y, %I:%M %p')
+                    scheduled_at = dt_parser.strptime(pickup_time, '%m/%d/%Y, %I:%M %p')
                 except (ValueError, TypeError):
                     scheduled_at = None
 
@@ -787,7 +895,7 @@ def user_cancel_order_view(request, order_id):
     ok, err = authorize_order_access(request, order, write=True)
     if not ok:
         log_security_event('order_cancel_denied', request=request, detail=f'order={order_id}')
-        return err
+        return err or Response({'error': 'Forbidden.'}, status=status.HTTP_403_FORBIDDEN)
 
     if order.status != 'pending':
         return Response({'error': 'Only pending orders can be cancelled.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -806,8 +914,7 @@ def user_cancel_order_view(request, order_id):
         order.void_reason = cancel_reason
         order.save(update_fields=['status', 'void_reason'])
 
-    channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)(
+    _safe_group_send(
         'orders',
         {
             'type': 'order_update',
@@ -816,11 +923,59 @@ def user_cancel_order_view(request, order_id):
                 'status': 'cancelled',
                 'cancel_reason': cancel_reason,
                 'cancelled_by': 'user',
-                'user_email': order.user.email,
-                'customer_name': order.customer_name or order.user.first_name or 'Guest',
-            }
-        }
+                'user_email': order.user.email if order.user else None,
+                'customer_name': order.customer_name or (order.user.first_name if order.user else '') or 'Guest',
+            },
+        },
     )
+
+    serializer = OrderSerializer(order)
+    return Response(serializer.data)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def user_complete_order_view(request, order_id):
+    """Order owner acknowledges pickup / completes ready order."""
+    try:
+        order = Order.objects.select_related('user').get(id=order_id)
+    except Order.DoesNotExist:
+        return Response({'error': 'Order not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+    ok, err = authorize_order_access(request, order, write=True)
+    if not ok:
+        return err or Response({'error': 'Forbidden.'}, status=status.HTTP_403_FORBIDDEN)
+
+    if order.status in ('ready', 'preparing', 'pending'):
+        order.status = 'completed'
+        order.save(update_fields=['status'])
+        OrderStatusLog.objects.create(
+            order=order,
+            status='completed',
+            changed_by=request.user if (request.user and request.user.is_authenticated) else None,
+        )
+        if order.user and order.user.email:
+            group_name = f"user_orders_{order.user.email.replace('@', '_').replace('.', '_')}"
+            _safe_group_send(
+                group_name,
+                {
+                    'type': 'order_status_update',
+                    'order_id': order.id,
+                    'status': 'completed',
+                },
+            )
+        _safe_group_send(
+            'orders',
+            {
+                'type': 'order_update',
+                'message': {
+                    'order_id': order.id,
+                    'status': 'completed',
+                    'user_email': order.user.email if order.user else None,
+                    'customer_name': order.customer_name or (order.user.first_name if order.user else '') or 'Guest',
+                },
+            },
+        )
 
     serializer = OrderSerializer(order)
     return Response(serializer.data)
@@ -849,7 +1004,7 @@ def user_set_payment_view(request, order_id):
     ok, err = authorize_order_access(request, order, write=True)
     if not ok:
         log_security_event('order_payment_denied', request=request, detail=f'order={order_id}')
-        return err
+        return err or Response({'error': 'Forbidden.'}, status=status.HTTP_403_FORBIDDEN)
 
     if order.status == 'cancelled':
         return Response({'error': 'Cannot set payment on a cancelled order.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -859,8 +1014,7 @@ def user_set_payment_view(request, order_id):
     order.payment_status = 'unpaid'
     order.save(update_fields=['payment_method', 'payment_status'])
 
-    channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)(
+    _safe_group_send(
         'orders',
         {
             'type': 'order_update',
@@ -869,8 +1023,8 @@ def user_set_payment_view(request, order_id):
                 'status': order.status,
                 'payment_method': order.payment_method,
                 'payment_status': order.payment_status,
-                'user_email': order.user.email,
-                'customer_name': order.customer_name or order.user.first_name or 'Guest',
+                'user_email': order.user.email if order.user else None,
+                'customer_name': order.customer_name or (order.user.first_name if order.user else '') or 'Guest',
             },
         },
     )
@@ -901,7 +1055,7 @@ def user_rate_order_view(request, order_id):
     ok, err = authorize_order_access(request, order, write=True)
     if not ok:
         log_security_event('order_rate_denied', request=request, detail=f'order={order_id}')
-        return err
+        return err or Response({'error': 'Forbidden.'}, status=status.HTTP_403_FORBIDDEN)
 
     if order.status != 'completed':
         return Response({'error': 'Only completed orders can be rated.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -963,34 +1117,33 @@ def admin_mark_payment_view(request, order_id):
 
     order.save(update_fields=update_fields)
 
-    channel_layer = get_channel_layer()
-    payment_payload = {
-        'order_id': order.id,
-        'status': order.status,
-        'payment_method': order.payment_method,
-        'payment_status': order.payment_status,
-        'user_email': order.user.email,
-        'customer_name': order.customer_name or order.user.first_name or 'Guest',
-        'marked_paid_by': admin_user.email,
-    }
-    async_to_sync(channel_layer.group_send)(
+    _safe_group_send(
         'orders',
         {
             'type': 'order_update',
-            'message': payment_payload,
+            'message': {
+                'order_id': order.id,
+                'status': order.status,
+                'payment_method': order.payment_method,
+                'payment_status': order.payment_status,
+                'user_email': order.user.email if order.user else None,
+                'customer_name': order.customer_name or (order.user.first_name if order.user else '') or 'Guest',
+                'marked_paid_by': admin_user.email if admin_user else '',
+            },
         },
     )
-    customer_group = f"user_orders_{order.user.email.replace('@', '_').replace('.', '_')}"
-    async_to_sync(channel_layer.group_send)(
-        customer_group,
-        {
-            'type': 'order_payment_update',
-            'order_id': order.id,
-            'payment_method': order.payment_method,
-            'payment_status': order.payment_status,
-            'status': order.status,
-        },
-    )
+    if order.user and order.user.email:
+        customer_group = f"user_orders_{order.user.email.replace('@', '_').replace('.', '_')}"
+        _safe_group_send(
+            customer_group,
+            {
+                'type': 'order_payment_update',
+                'order_id': order.id,
+                'payment_method': order.payment_method,
+                'payment_status': order.payment_status,
+                'status': order.status,
+            },
+        )
 
     return Response(OrderSerializer(order).data)
 
@@ -1032,17 +1185,17 @@ def admin_void_order_view(request, order_id):
         order.save(update_fields=['status', 'void_reason'])
 
     # Trigger WebSocket notification (customer + kitchen board)
-    channel_layer = get_channel_layer()
-    group_name = f"user_orders_{order.user.email.replace('@', '_').replace('.', '_')}"
-    async_to_sync(channel_layer.group_send)(
-        group_name,
-        {
-            'type': 'order_status_update',
-            'order_id': order.id,
-            'status': 'cancelled'
-        }
-    )
-    async_to_sync(channel_layer.group_send)(
+    if order.user and order.user.email:
+        group_name = f"user_orders_{order.user.email.replace('@', '_').replace('.', '_')}"
+        _safe_group_send(
+            group_name,
+            {
+                'type': 'order_status_update',
+                'order_id': order.id,
+                'status': 'cancelled',
+            },
+        )
+    _safe_group_send(
         'orders',
         {
             'type': 'order_update',
@@ -1051,10 +1204,10 @@ def admin_void_order_view(request, order_id):
                 'status': 'cancelled',
                 'void_reason': void_reason,
                 'cancelled_by': 'staff',
-                'user_email': order.user.email,
-                'customer_name': order.customer_name or order.user.first_name or 'Guest',
-            }
-        }
+                'user_email': order.user.email if order.user else None,
+                'customer_name': order.customer_name or (order.user.first_name if order.user else '') or 'Guest',
+            },
+        },
     )
 
     serializer = OrderSerializer(order)
@@ -1305,8 +1458,8 @@ def menu_view(request):
 def admin_menu_view(request, item_id=None):
     """Admin CRUD for menu items. Supports image upload via multipart/form-data."""
     admin_user, err = _require_staff_actor(request)
-    if err:
-        return err
+    if err or not admin_user:
+        return err or Response({'error': 'Unauthorized.'}, status=status.HTTP_401_UNAUTHORIZED)
     if request.method == 'GET':
         items = MenuItem.objects.all().order_by('id')
         serializer = MenuItemSerializer(items, many=True, context={'request': request})
@@ -1343,7 +1496,8 @@ def admin_menu_view(request, item_id=None):
                 return Response({'image': list(exc.messages)}, status=status.HTTP_400_BAD_REQUEST)
         # Handle image clearing: if 'image' key exists but is empty string, clear the image
         if 'image' in data and data['image'] == '':
-            item.image.delete(save=False)
+            if item.image:
+                item.image.delete(save=False)
             item.image_data = None
             item.image_content_type = ''
             item.save(update_fields=['image', 'image_data', 'image_content_type'])
@@ -1362,6 +1516,8 @@ def admin_menu_view(request, item_id=None):
         item.delete()
         _bust_menu_cache()
         return Response({'message': 'Menu item deleted.'}, status=status.HTTP_200_OK)
+
+    return Response({'error': 'Method not allowed.'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 @api_view(['GET'])
@@ -1441,7 +1597,7 @@ def admin_tables_view(request):
             'customer_name': order.customer_name or order.user.first_name or 'Guest',
             'total_price': str(order.total_price),
             'created_at': order.created_at.isoformat(),
-            'items_count': order.items_count,
+            'items_count': getattr(order, 'items_count', 0),
         }
         if existing is None or priority.get(order.status, 0) > priority.get(existing['status'], 0):
             table_map[tn] = payload
@@ -1664,8 +1820,8 @@ def admin_staff_list_view(request):
 def admin_staff_update_view(request, user_id):
     """Update a staff user's profile (name, role, is_active)."""
     admin_user, err = _require_staff_actor(request, admin_only=True)
-    if err:
-        return err
+    if err or admin_user is None:
+        return err or Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
     try:
         staff_user = CustomUser.objects.get(id=user_id, role__in=('staff', 'admin'))
     except CustomUser.DoesNotExist:
@@ -1696,7 +1852,8 @@ def admin_staff_update_view(request, user_id):
     if serializer.is_valid():
         # Handle avatar clearing: empty string in FormData means remove the photo
         if 'avatar' in request.data and request.data['avatar'] == '':
-            staff_user.avatar.delete(save=False)
+            if staff_user.avatar:
+                staff_user.avatar.delete(save=False)
         serializer.save()
         return Response(serializer.data)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -1719,7 +1876,7 @@ def clock_in_view(request):
     if user.shift_start and user.shift_end:
         from django.conf import settings
         from zoneinfo import ZoneInfo
-        local_tz = ZoneInfo(settings.TIME_ZONE)
+        local_tz = ZoneInfo(str(settings.TIME_ZONE or 'Asia/Manila'))
         local_now = now.astimezone(local_tz)
         current_time = local_now.time()
         # Allow clock-in from shift_start up to shift_end
@@ -1738,7 +1895,7 @@ def clock_in_view(request):
         from datetime import datetime, time as dt_time
         from zoneinfo import ZoneInfo
         from django.conf import settings
-        local_tz = ZoneInfo(settings.TIME_ZONE)
+        local_tz = ZoneInfo(str(settings.TIME_ZONE or 'Asia/Manila'))
         local_now = now.astimezone(local_tz)
         scheduled_start = datetime.combine(local_now.date(), user.shift_start, tzinfo=local_tz)
         diff = (local_now - scheduled_start).total_seconds() / 60
@@ -1795,7 +1952,7 @@ def shift_status_view(request):
     if can_clock_in and user.shift_start and user.shift_end:
         from django.conf import settings
         from zoneinfo import ZoneInfo
-        local_tz = ZoneInfo(settings.TIME_ZONE)
+        local_tz = ZoneInfo(str(settings.TIME_ZONE or 'Asia/Manila'))
         current_time = timezone.now().astimezone(local_tz).time()
         if current_time < user.shift_start or current_time > user.shift_end:
             can_clock_in = False
@@ -1878,15 +2035,15 @@ def staff_payroll_view(request):
 def payroll_summary_view(request):
     """Admin: weekly payroll summary for all staff with overtime flags."""
     admin_user, err = _require_staff_actor(request, admin_only=True)
-    if err:
-        return err
+    if err or not admin_user:
+        return err or Response({'error': 'Unauthorized.'}, status=status.HTTP_401_UNAUTHORIZED)
 
     multiplier = _parse_multiplier(request.query_params.get('multiplier'))
     if multiplier is None:
         multiplier = getattr(settings, 'OVERTIME_MULTIPLIER', 1.25)
 
     staff_filter = request.query_params.get('email')
-    staff_qs = CustomUser.objects.filter(role__in=('staff', 'admin'), is_active=True).order_by('name')
+    staff_qs = CustomUser.objects.filter(role__in=('staff', 'admin'), is_active=True).order_by('first_name')
     if staff_filter:
         staff_qs = staff_qs.filter(email=staff_filter)
 
@@ -2384,7 +2541,7 @@ def admin_shift_assignment_detail_view(request, assignment_id):
 
     start_time = updates.get('start_time', assignment.start_time)
     end_time = updates.get('end_time', assignment.end_time)
-    if start_time >= end_time:
+    if start_time is not None and end_time is not None and start_time >= end_time:
         return Response({'error': 'End time must be after start time.'}, status=status.HTTP_400_BAD_REQUEST)
 
     for field, value in updates.items():
@@ -2757,7 +2914,7 @@ def today_attendance_view(request):
         day_assignment = today_assignments.get(s.id)
         effective_start = day_assignment.start_time if day_assignment else s.shift_start
         effective_end = day_assignment.end_time if day_assignment else s.shift_end
-        entry = {
+        entry: dict[str, Any] = {
             'id': s.id,
             'shift_id': today_shift.id if today_shift else None,
             'name': s.first_name or s.email.split('@')[0],
@@ -2850,8 +3007,8 @@ def today_attendance_view(request):
 def approve_clock_in_view(request, shift_id):
     """Admin approves a pending clock-in as On Time. The original clock_in timestamp is preserved."""
     admin_user, err = _require_staff_actor(request, admin_only=True)
-    if err:
-        return err
+    if err or admin_user is None:
+        return err or Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
 
     try:
         shift = ShiftLog.objects.get(id=shift_id)
@@ -2884,8 +3041,8 @@ def approve_clock_in_view(request, shift_id):
 def mark_late_view(request, shift_id):
     """Admin approves a pending clock-in but marks it as Late."""
     admin_user, err = _require_staff_actor(request, admin_only=True)
-    if err:
-        return err
+    if err or admin_user is None:
+        return err or Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
 
     try:
         shift = ShiftLog.objects.get(id=shift_id)
@@ -2918,8 +3075,8 @@ def mark_late_view(request, shift_id):
 def mark_absent_view(request, shift_id):
     """Admin marks a pending clock-in as Absent."""
     admin_user, err = _require_staff_actor(request, admin_only=True)
-    if err:
-        return err
+    if err or admin_user is None:
+        return err or Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
 
     try:
         shift = ShiftLog.objects.get(id=shift_id)

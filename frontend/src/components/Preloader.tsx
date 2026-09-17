@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
+import CroissantLogoIcon from "@/components/CroissantLogoIcon";
 
 export type PreloaderVariant = "welcome" | "goodbye";
 
@@ -100,6 +101,7 @@ const Preloader: React.FC<PreloaderProps> = ({
     () => {
       if (!brandRef.current || !tagRef.current) return;
 
+      const logo = brandRef.current.querySelector(".preloader-logo");
       const words = brandRef.current.querySelectorAll(".preloader-word");
       const bar = brandRef.current.querySelector(".preloader-bar-track");
       const eyebrow = brandRef.current.querySelector(".preloader-eyebrow");
@@ -108,7 +110,7 @@ const Preloader: React.FC<PreloaderProps> = ({
       ).matches;
 
       if (reduceMotion) {
-        gsap.set([words, tagRef.current, bar, eyebrow, productRef.current], {
+        gsap.set([logo, words, tagRef.current, bar, eyebrow, productRef.current], {
           opacity: 1,
           y: 0,
           yPercent: 0,
@@ -130,16 +132,16 @@ const Preloader: React.FC<PreloaderProps> = ({
             0
           )
           .fromTo(
-            eyebrow,
-            { opacity: 0, y: 6 },
-            { opacity: 1, y: 0, duration: 0.5 },
-            0.2
+            logo,
+            { scale: 0.6, opacity: 0, rotation: -10 },
+            { scale: 1, opacity: 1, rotation: 0, duration: 0.65, ease: "back.out(1.8)" },
+            0.15
           )
           .fromTo(
             words,
             { yPercent: 100, opacity: 0 },
             { yPercent: 0, opacity: 1, duration: 0.75, stagger: 0.14 },
-            0.28
+            0.25
           )
           .fromTo(
             tagRef.current,
@@ -179,16 +181,16 @@ const Preloader: React.FC<PreloaderProps> = ({
             0
           )
           .fromTo(
-            eyebrow,
-            { opacity: 0, y: 8 },
-            { opacity: 1, y: 0, duration: 0.45 },
-            0.15
+            logo,
+            { scale: 0.55, opacity: 0, rotation: -12 },
+            { scale: 1, opacity: 1, rotation: 0, duration: 0.65, ease: "back.out(1.8)" },
+            0.12
           )
           .fromTo(
             words,
             { yPercent: 110, opacity: 0 },
             { yPercent: 0, opacity: 1, duration: 0.7, stagger: 0.12 },
-            0.2
+            0.22
           )
           .fromTo(
             tagRef.current,
@@ -199,7 +201,7 @@ const Preloader: React.FC<PreloaderProps> = ({
           .fromTo(
             bar,
             { scaleX: 0, opacity: 0 },
-            { scaleX: 1, opacity: 1, duration: 0.5, transformOrigin: "left center" },
+            { scaleX: 1, opacity: 1, duration: 0.5, transformOrigin: "center center" },
             "-=0.35"
           );
 
@@ -426,17 +428,17 @@ const Preloader: React.FC<PreloaderProps> = ({
         >
           {isGoodbye ? (
             <>
-              <p
-                className="preloader-eyebrow mb-6 font-paragraph text-[0.65rem] sm:text-xs uppercase tracking-[0.42em]"
-                style={{ color: "rgba(250,234,222,0.7)" }}
-              >
-                Generation Bread
-              </p>
+              {/* Emblem */}
+              <div className="preloader-logo mb-6 flex items-center justify-center">
+                <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 shadow-[0_0_35px_rgba(227,164,88,0.35)] flex items-center justify-center">
+                  <CroissantLogoIcon className="w-9 h-9 sm:w-11 sm:h-11 text-[#FAEADE] drop-shadow-md" />
+                </div>
+              </div>
 
               <h1 className="text-center font-bold uppercase leading-[0.88] tracking-[-0.03em]">
                 <span className="block overflow-hidden">
                   <span
-                    className="preloader-word inline-block text-[clamp(2.6rem,10vw,5rem)] drop-shadow-[0_2px_24px_rgba(0,0,0,0.35)]"
+                    className="preloader-word inline-block text-[clamp(2.75rem,10vw,5.2rem)] font-extrabold tracking-tight drop-shadow-[0_4px_30px_rgba(0,0,0,0.6)]"
                     style={{ color: tc.milk }}
                   >
                     Thank
@@ -444,8 +446,7 @@ const Preloader: React.FC<PreloaderProps> = ({
                 </span>
                 <span className="mt-1 block overflow-hidden">
                   <span
-                    className="preloader-word inline-block text-[clamp(2.6rem,10vw,5rem)] drop-shadow-[0_2px_24px_rgba(0,0,0,0.35)]"
-                    style={{ color: tc.lightBrown }}
+                    className="preloader-word inline-block text-[clamp(2.75rem,10vw,5.2rem)] font-extrabold tracking-tight drop-shadow-[0_4px_30px_rgba(0,0,0,0.6)] text-transparent bg-clip-text bg-gradient-to-r from-[#F5D09D] via-[#E3A458] to-[#D48B38]"
                   >
                     You
                   </span>
@@ -453,99 +454,78 @@ const Preloader: React.FC<PreloaderProps> = ({
               </h1>
 
               <div
-                className="preloader-bar-track relative mt-9 h-[2px] w-full max-w-[11rem] origin-center overflow-visible rounded-full"
-                style={{ backgroundColor: "rgba(250,234,222,0.12)" }}
+                className="preloader-bar-track relative mt-8 h-2 w-full max-w-[12rem] rounded-full p-[1px] bg-black/50 border border-[#E3A458]/30 shadow-inner overflow-hidden"
               >
-                <div className="absolute inset-0 overflow-hidden rounded-full">
-                  <div
-                    ref={barFillRef}
-                    className="h-full w-0 rounded-full"
-                    style={{
-                      background: `linear-gradient(90deg, transparent, ${tc.lightBrown}, transparent)`,
-                    }}
-                  />
-                </div>
                 <div
-                  ref={barGlowRef}
-                  className="pointer-events-none absolute top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full opacity-0"
+                  ref={barFillRef}
+                  className="h-full w-0 rounded-full transition-all duration-75 shadow-[0_0_12px_rgba(227,164,88,0.8)]"
                   style={{
-                    left: 0,
-                    backgroundColor: tc.milk,
-                    boxShadow: `0 0 10px 3px ${tc.lightBrown}a6`,
+                    background: `linear-gradient(90deg, #A26833, #E3A458, #FAEADE)`,
                   }}
                 />
               </div>
 
               <p
                 ref={tagRef}
-                className="mt-8 max-w-[16rem] text-center font-paragraph text-sm leading-relaxed tracking-wide sm:max-w-xs sm:text-base"
-                style={{ color: "rgba(250,234,222,0.55)" }}
+                className="mt-6 max-w-[18rem] text-center font-paragraph text-xs sm:text-sm leading-relaxed tracking-wide text-[#FAEADE]/75"
               >
                 Salamat for visiting.
-                <span className="mt-1.5 block" style={{ color: "rgba(250,234,222,0.4)" }}>
+                <span className="mt-1 block font-bold text-[#FAEADE]/90">
                   Come back hungry · Tacloban City
                 </span>
               </p>
             </>
           ) : (
             <>
-              <p
-                className="preloader-eyebrow mb-5 font-paragraph text-[0.65rem] sm:text-xs uppercase tracking-[0.45em]"
-                style={{ color: "rgba(250,234,222,0.65)" }}
-              >
-                Cheese loaded
-              </p>
+              {/* Emblem */}
+              <div className="preloader-logo mb-6 flex items-center justify-center">
+                <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl border border-white/25 shadow-[0_0_40px_rgba(227,164,88,0.4)] flex items-center justify-center">
+                  <CroissantLogoIcon className="w-9 h-9 sm:w-11 sm:h-11 text-[#FAEADE] drop-shadow-md" />
+                </div>
+              </div>
 
+              {/* Brand Title */}
               <h1 className="text-center font-bold uppercase leading-[0.88] tracking-[-0.03em]">
                 <span className="block overflow-hidden">
                   <span
-                    className="preloader-word inline-block text-[clamp(2.4rem,9vw,4.75rem)] drop-shadow-[0_2px_24px_rgba(0,0,0,0.35)]"
+                    className="preloader-word inline-block text-[clamp(2.75rem,10vw,5.2rem)] font-extrabold tracking-tight drop-shadow-[0_4px_30px_rgba(0,0,0,0.6)]"
                     style={{ color: tc.milk }}
                   >
                     Generation
                   </span>
                 </span>
-                <span className="mt-1 block overflow-hidden">
+                <span className="mt-1.5 block overflow-hidden">
                   <span
-                    className="preloader-word inline-block text-[clamp(2.4rem,9vw,4.75rem)] drop-shadow-[0_2px_24px_rgba(0,0,0,0.35)]"
-                    style={{ color: tc.lightBrown }}
+                    className="preloader-word inline-block text-[clamp(2.75rem,10vw,5.2rem)] font-extrabold tracking-tight drop-shadow-[0_4px_30px_rgba(0,0,0,0.6)] text-transparent bg-clip-text bg-gradient-to-r from-[#F5D09D] via-[#E3A458] to-[#D48B38]"
                   >
                     Bread
                   </span>
                 </span>
               </h1>
 
+              {/* Luminous Capsule Progress Bar */}
               <div
-                className="preloader-bar-track relative mt-9 h-[3px] w-full max-w-[15rem] origin-left overflow-visible rounded-full"
-                style={{ backgroundColor: "rgba(250,234,222,0.12)" }}
+                className="preloader-bar-track relative mt-8 h-2 w-full max-w-[15rem] sm:max-w-[17rem] rounded-full p-[1px] bg-black/50 border border-[#E3A458]/35 shadow-inner overflow-hidden"
               >
-                <div className="absolute inset-0 overflow-hidden rounded-full">
-                  <div
-                    ref={barFillRef}
-                    className="h-full w-0 rounded-full"
-                    style={{
-                      background: `linear-gradient(90deg, ${tc.midBrown}, ${tc.lightBrown}, ${tc.milk})`,
-                    }}
-                  />
-                </div>
                 <div
-                  ref={barGlowRef}
-                  className="pointer-events-none absolute top-1/2 h-3 w-3 -translate-y-1/2 rounded-full opacity-0"
+                  ref={barFillRef}
+                  className="h-full w-0 rounded-full transition-all duration-75 shadow-[0_0_14px_rgba(227,164,88,0.9)]"
                   style={{
-                    left: 0,
-                    backgroundColor: tc.milk,
-                    boxShadow: `0 0 12px 4px ${tc.lightBrown}bf`,
+                    background: `linear-gradient(90deg, #A26833, #E3A458, #FAEADE)`,
                   }}
                 />
               </div>
 
-              <p
+              {/* Location Tag */}
+              <div
                 ref={tagRef}
-                className="mt-7 font-paragraph text-center text-sm tracking-wide"
-                style={{ color: "rgba(250,234,222,0.5)" }}
+                className="mt-6 flex flex-col items-center gap-1 text-center"
               >
-                Tacloban City
-              </p>
+                <div className="flex items-center gap-1.5 font-paragraph text-xs sm:text-sm tracking-widest uppercase font-extrabold text-[#FAEADE]">
+                  <span className="text-amber-400">📍</span>
+                  <span>Tacloban City, Leyte</span>
+                </div>
+              </div>
             </>
           )}
         </div>

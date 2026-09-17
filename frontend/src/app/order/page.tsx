@@ -16,6 +16,7 @@ import { getMenuItemImage } from "@/constants";
 import { authFetch, withWsToken } from "@/lib/authHeaders";
 import QueuePositionCard from "@/components/QueuePositionCard";
 import ProductLightbox from "@/components/ProductLightbox";
+import CroissantLogoIcon from "@/components/CroissantLogoIcon";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
 const CART_API_URL = `${API_BASE_URL}/api/auth/cart/`;
@@ -133,6 +134,8 @@ export default function OrderPage() {
   }, [accessToken]);
 
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<"all" | "food" | "drink">("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [customizingItem, setCustomizingItem] = useState<MenuItem | null>(null);
   const [previewProduct, setPreviewProduct] = useState<{ src: string; alt: string } | null>(null);
   const [customSize, setCustomSize] = useState<CustomSize>("Small");
@@ -798,106 +801,263 @@ export default function OrderPage() {
         </div>
       </div>
 
-      {/* Page Title */}
-      <div className="text-center pt-8 md:pt-12 pb-6 px-5">
-        <h1 className="text-4xl md:text-6xl font-bold text-dark-brown uppercase tracking-tighter">{t("Our Menu")}</h1>
-        <p className="font-paragraph text-dark-brown/60 mt-2 text-lg">{t("Pick your favorites and place your order")}</p>
+      {/* Page Title & Category Toolbar */}
+      <div className="text-center pt-8 md:pt-12 pb-8 px-5">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-light-brown/15 border border-light-brown/30 text-dark-brown text-xs font-bold uppercase tracking-widest mb-3 shadow-2xs">
+          <CroissantLogoIcon className="w-4 h-4 text-[#0f766e]" />
+          <span>{t("Fresh Bakes & Drinks") || "Fresh Bakes & Drinks"}</span>
+        </div>
+        <h1 className="text-4xl md:text-6xl font-bold text-dark-brown uppercase tracking-tight drop-shadow-xs">{t("Our Menu")}</h1>
+        <p className="font-paragraph text-dark-brown/70 mt-2 text-base md:text-lg max-w-lg mx-auto leading-relaxed">{t("Pick your favorites and place your order")}</p>
+
+        {/* Category Filter Tabs & Search Bar */}
+        <div className="mt-8 max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+          {/* Category Filter Pills */}
+          <div className="flex items-center gap-1.5 p-1.5 rounded-full bg-dark-brown/8 border border-dark-brown/10 backdrop-blur-sm w-full sm:w-auto overflow-x-auto justify-center sm:justify-start shadow-2xs">
+            <button
+              onClick={() => setSelectedCategory("all")}
+              className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap ${
+                selectedCategory === "all"
+                  ? "bg-dark-brown text-milk shadow-md"
+                  : "text-dark-brown/70 hover:text-dark-brown hover:bg-dark-brown/5"
+              }`}
+            >
+              <span>✨</span>
+              <span>{t("All") || "All"}</span>
+              <span className={`text-[10px] px-1.5 py-0.5 rounded-full ml-0.5 ${selectedCategory === "all" ? "bg-white/20 text-milk" : "bg-dark-brown/10 text-dark-brown"}`}>
+                {menuItems.length}
+              </span>
+            </button>
+
+            <button
+              onClick={() => setSelectedCategory("food")}
+              className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap ${
+                selectedCategory === "food"
+                  ? "bg-dark-brown text-milk shadow-md"
+                  : "text-dark-brown/70 hover:text-dark-brown hover:bg-dark-brown/5"
+              }`}
+            >
+              <span>🥐</span>
+              <span>{t("Bakes & Pastries") || "Bakes & Pastries"}</span>
+              <span className={`text-[10px] px-1.5 py-0.5 rounded-full ml-0.5 ${selectedCategory === "food" ? "bg-white/20 text-milk" : "bg-dark-brown/10 text-dark-brown"}`}>
+                {menuItems.filter(i => (i.category || "drink") === "food").length}
+              </span>
+            </button>
+
+            <button
+              onClick={() => setSelectedCategory("drink")}
+              className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap ${
+                selectedCategory === "drink"
+                  ? "bg-dark-brown text-milk shadow-md"
+                  : "text-dark-brown/70 hover:text-dark-brown hover:bg-dark-brown/5"
+              }`}
+            >
+              <span>☕</span>
+              <span>{t("Drinks") || "Drinks"}</span>
+              <span className={`text-[10px] px-1.5 py-0.5 rounded-full ml-0.5 ${selectedCategory === "drink" ? "bg-white/20 text-milk" : "bg-dark-brown/10 text-dark-brown"}`}>
+                {menuItems.filter(i => (i.category || "drink") === "drink").length}
+              </span>
+            </button>
+          </div>
+
+          {/* Search Input */}
+          <div className="relative w-full sm:w-72">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={t("Search our menu...") || "Search our menu..."}
+              className="w-full bg-white/90 border border-dark-brown/15 focus:border-light-brown focus:ring-2 focus:ring-light-brown/20 rounded-full py-2.5 pl-9 pr-8 text-xs font-paragraph text-dark-brown placeholder:text-dark-brown/40 transition-all outline-none shadow-2xs"
+            />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-dark-brown/45 pointer-events-none"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth="2.5"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+            </svg>
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-dark-brown/10 hover:bg-dark-brown/20 text-dark-brown text-[10px] flex items-center justify-center font-bold"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Menu Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-5 md:px-10 max-w-6xl mx-auto">
-        {menuItems.map((item) => {
-          const baseQty = cart.filter(c => c.name === item.name || c.name.startsWith(item.name + " (")).reduce((sum, c) => sum + c.qty, 0);
-          return (
-            <div
-              key={item.id ?? item.name}
-              className="group relative app-panel border rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all hover:-translate-y-2 flex flex-col h-full"
-            >
-              {/* Item image — tap for full view */}
-              <button
-                type="button"
-                className="relative aspect-[5/4] w-full overflow-hidden cursor-zoom-in focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-light-brown sm:aspect-[4/3]"
-                style={{ backgroundColor: item.bgColor }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setPreviewProduct({
-                    src: getMenuItemImage(item.name, item.image_url, item.color),
-                    alt: item.name,
-                  });
-                }}
-                aria-label={`View ${item.name}`}
-              >
-                {/* Native img keeps object-fit reliable on mobile (no Next/Image fill stretch). */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={getMenuItemImage(item.name, item.image_url, item.color)}
-                  alt={item.name}
-                  className="absolute inset-0 h-full w-full object-cover object-center drop-shadow-xl transition-transform duration-500 pointer-events-none group-hover:scale-105"
-                  draggable={false}
-                />
-                <span className="absolute bottom-3 right-3 rounded-full bg-black/45 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-milk backdrop-blur-sm opacity-90 transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
-                  View
-                </span>
-              </button>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7 px-5 md:px-10 max-w-6xl mx-auto pb-12">
+        {(() => {
+          const displayedItems = menuItems.filter((item) => {
+            const matchesCategory =
+              selectedCategory === "all" ||
+              (item.category || "drink") === selectedCategory;
+            const matchesSearch =
+              !searchQuery.trim() ||
+              item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              item.description.toLowerCase().includes(searchQuery.toLowerCase());
+            return matchesCategory && matchesSearch;
+          });
 
-              {/* Details */}
-              <div className="p-5 md:p-6 flex-1 flex flex-col">
-                <div className="flex justify-between items-start mb-1">
-                  <h2 className="text-xl md:text-2xl font-bold text-dark-brown uppercase tracking-tight leading-tight">{item.name}</h2>
-                  <span className="text-xl md:text-2xl font-bold text-light-brown whitespace-nowrap ml-3">₱{item.price}</span>
+          if (displayedItems.length === 0) {
+            return (
+              <div className="col-span-full py-16 text-center">
+                <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-3xl bg-light-brown/20 border border-light-brown/30 shadow-inner text-[#0f766e]">
+                  <CroissantLogoIcon className="w-12 h-12" />
                 </div>
-                
-                {/* Rating display */}
-                {(() => {
-                  const itemReviews = reviewsData[item.name] || [];
-                  const avgRating = itemReviews.length > 0 
-                    ? (itemReviews.reduce((sum, r) => sum + r.rating, 0) / itemReviews.length).toFixed(1) 
-                    : "New";
-                  const ratingValue = Number(avgRating) || 5;
-                  
-                  return (
+                <h3 className="text-xl font-bold uppercase tracking-tight text-dark-brown">
+                  {t("No items found") || "No items found"}
+                </h3>
+                <p className="font-paragraph text-dark-brown/60 text-sm mt-1 max-w-sm mx-auto">
+                  {t("Try adjusting your search or category filter.") || "Try adjusting your search or category filter."}
+                </p>
+                <button
+                  onClick={() => {
+                    setSelectedCategory("all");
+                    setSearchQuery("");
+                  }}
+                  className="mt-4 px-5 py-2.5 rounded-full bg-dark-brown text-milk font-bold text-xs uppercase tracking-wider hover:bg-dark-brown-hover transition-all shadow-md"
+                >
+                  {t("Reset Filters") || "Reset Filters"}
+                </button>
+              </div>
+            );
+          }
+
+          return displayedItems.map((item) => {
+            const baseQty = cart
+              .filter(c => c.name === item.name || c.name.startsWith(item.name + " ("))
+              .reduce((sum, c) => sum + c.qty, 0);
+            const itemReviews = reviewsData[item.name] || [];
+            const avgRating = itemReviews.length > 0 
+              ? (itemReviews.reduce((sum, r) => sum + r.rating, 0) / itemReviews.length).toFixed(1) 
+              : "5.0";
+            const isFood = (item.category || "drink") === "food";
+
+            return (
+              <div
+                key={item.id ?? item.name}
+                className="group relative bg-[#FFFDF9] rounded-[28px] border border-[#EBE3D7] hover:border-[#D4A373]/80 shadow-[0_4px_20px_rgba(42,24,16,0.05)] hover:shadow-[0_22px_45px_rgba(42,24,16,0.14)] transition-all duration-400 hover:-translate-y-2 flex flex-col h-full overflow-hidden"
+              >
+                {/* Image Stage */}
+                <div className="p-3 pb-0">
+                  <button
+                    type="button"
+                    className="relative aspect-[4/3] w-full overflow-hidden rounded-[20px] cursor-zoom-in focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-light-brown group/img bg-[#F7F2EC]"
+                    style={{ backgroundColor: item.bgColor }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setPreviewProduct({
+                        src: getMenuItemImage(item.name, item.image_url, item.color),
+                        alt: item.name,
+                      });
+                    }}
+                    aria-label={`View ${item.name}`}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={getMenuItemImage(item.name, item.image_url, item.color)}
+                      alt={item.name}
+                      className="absolute inset-0 h-full w-full object-cover object-center drop-shadow-md transition-transform duration-700 ease-out group-hover:scale-108 pointer-events-none"
+                      draggable={false}
+                    />
+                    
+                    {/* Floating Category Pill (Top-Left) */}
+                    <div className="absolute top-3 left-3 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-white/95 text-dark-brown shadow-sm backdrop-blur-md border border-dark-brown/10 flex items-center gap-1.5">
+                      <span>{isFood ? "🥐" : "☕"}</span>
+                      <span>{isFood ? (t("Pastry") || "Pastry") : (t("Drink") || "Drink")}</span>
+                    </div>
+
+                    {/* Floating Rating Pill (Top-Right) */}
                     <div 
-                      className="inline-flex items-center gap-2 mb-3 cursor-pointer group/rating w-fit" 
-                      onClick={() => setReviewingItem(item)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setReviewingItem(item);
+                      }}
+                      className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-white/95 text-dark-brown shadow-sm backdrop-blur-md border border-dark-brown/10 flex items-center gap-1 text-[11px] font-bold hover:bg-white transition-colors cursor-pointer"
+                      title="Leave a review"
                     >
-                      <div className="flex text-light-brown text-sm">
-                        {"★".repeat(Math.round(ratingValue))}{"☆".repeat(5 - Math.round(ratingValue))}
-                      </div>
-                      <span className="text-dark-brown/60 text-xs font-bold uppercase group-hover/rating:text-dark-brown transition-colors">
-                        {itemReviews.length > 0 ? `${avgRating} (${itemReviews.length} ${t("reviews")})` : t("Leave a review")}
+                      <span className="text-amber-500 text-xs">★</span>
+                      <span>{itemReviews.length > 0 ? avgRating : "5.0"}</span>
+                      {itemReviews.length > 0 && (
+                        <span className="text-dark-brown/50 text-[10px]">({itemReviews.length})</span>
+                      )}
+                    </div>
+
+                    {/* Quick View Pill (Center Bottom on Hover) */}
+                    <div className="absolute bottom-3 right-3 rounded-full bg-dark-brown/85 hover:bg-dark-brown text-milk px-3 py-1 text-[10px] font-bold uppercase tracking-wider backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-md flex items-center gap-1 transform translate-y-1 group-hover:translate-y-0">
+                      <span>🔍</span>
+                      <span>{t("View") || "View"}</span>
+                    </div>
+                  </button>
+                </div>
+
+                {/* Details & Actions Body */}
+                <div className="p-5 md:p-6 flex-1 flex flex-col justify-between">
+                  <div>
+                    {/* Item Title */}
+                    <h2 className="text-xl sm:text-2xl font-bold text-dark-brown uppercase tracking-tight leading-tight group-hover:text-mid-brown transition-colors">
+                      {item.name}
+                    </h2>
+
+                    {/* Description */}
+                    <p className="font-paragraph text-dark-brown/65 text-xs sm:text-[13px] line-clamp-2 leading-relaxed mt-2 mb-4">
+                      {item.description}
+                    </p>
+                  </div>
+
+                  {/* Price & Action Row */}
+                  <div className="pt-3 border-t border-[#F0E6D8] flex items-center justify-between gap-3">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] uppercase font-bold tracking-widest text-dark-brown/40">
+                        {t("Price") || "Price"}
+                      </span>
+                      <span className="text-xl sm:text-2xl font-extrabold text-dark-brown tracking-tight">
+                        ₱{Number(item.price).toFixed(2)}
                       </span>
                     </div>
-                  );
-                })()}
 
-                <p className="font-paragraph text-dark-brown/60 text-sm mb-5 flex-1">{item.description}</p>
-
-                {/* Add / Quantity Controls */}
-                {baseQty > 0 ? (
-                  <div className="flex items-center justify-between">
-                    <div className="text-dark-brown font-bold text-sm bg-dark-brown/10 px-4 py-2 rounded-full">
-                      {baseQty} in cart
-                    </div>
-                    <button
-                      onClick={() => openCustomizer(item)}
-                      className="bg-light-brown hover:bg-mid-brown text-dark-brown hover:text-milk uppercase font-bold text-sm rounded-full py-2 px-5 shadow-md hover:shadow-lg transition-all"
-                    >
-                      {t("Add More")}
-                    </button>
+                    {/* Action Controls */}
+                    {baseQty > 0 ? (
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100/90 border border-emerald-300/40 px-3 py-2 rounded-full shadow-2xs">
+                          <span>✓</span>
+                          <span>{baseQty}</span>
+                        </div>
+                        <button
+                          onClick={() => openCustomizer(item)}
+                          className="h-9 px-4 rounded-full bg-light-brown hover:bg-mid-brown text-dark-brown hover:text-milk font-bold text-xs uppercase tracking-wider shadow-sm hover:shadow-md transition-all active:scale-95 flex items-center gap-1"
+                        >
+                          <span>+</span>
+                          <span>{t("Add More") || "Add More"}</span>
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => openCustomizer(item)}
+                        className={`px-5 py-2.5 sm:px-6 sm:py-3 rounded-full font-bold text-xs uppercase tracking-wider shadow-md hover:shadow-xl hover:scale-[1.03] active:scale-95 transition-all duration-300 flex items-center gap-2 ${
+                          isFood
+                            ? "bg-[#523122] hover:bg-[#381F14] text-[#FAEADE] hover:text-white"
+                            : "bg-[#A26833] hover:bg-[#854F22] text-[#FAEADE] hover:text-white"
+                        }`}
+                      >
+                        <span>{isFood ? (t("Add to Cart") || "Add to Cart") : (t("Customize") || "Customize")}</span>
+                        <span className="text-sm leading-none font-black">{isFood ? "+" : "→"}</span>
+                      </button>
+                    )}
                   </div>
-                ) : (
-                  <button
-                    onClick={() => openCustomizer(item)}
-                    className="w-full bg-light-brown hover:bg-mid-brown text-dark-brown hover:text-milk uppercase font-bold text-sm rounded-full py-3 shadow-md hover:shadow-lg transition-all"
-                  >
-                    {item.category === "food" ? t("Add to Cart") : t("Customize & Add")}
-                  </button>
-                )}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          });
+        })()}
       </div>
 
       {/* Floating Cart Summary */}
@@ -924,45 +1084,145 @@ export default function OrderPage() {
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowCart(false)}></div>
           <div className="absolute right-0 top-0 h-full w-full max-w-md bg-milk shadow-2xl flex flex-col pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
             {/* Cart Header */}
-            <div className="flex items-center justify-between p-5 border-b border-dark-brown/10 shrink-0">
-              <h2 className="text-2xl font-bold text-dark-brown uppercase tracking-tight">{t("Your Cart")}</h2>
-              <button onClick={() => setShowCart(false)} className="text-dark-brown hover:text-light-brown transition-colors text-2xl font-bold">✕</button>
+            <div className="flex items-center justify-between p-4 sm:p-5 border-b border-dark-brown/10 shrink-0 bg-milk">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">🧺</span>
+                <h2 className="text-xl sm:text-2xl font-bold text-dark-brown uppercase tracking-tight">
+                  {t("Your Cart")}
+                </h2>
+                {cart.length > 0 && (
+                  <span className="rounded-full bg-dark-brown/10 px-2.5 py-0.5 text-xs font-bold text-dark-brown tabular-nums">
+                    {cart.reduce((acc, i) => acc + i.qty, 0)}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                {cart.length > 0 && (
+                  <button
+                    onClick={() => setCart([])}
+                    className="text-xs font-bold uppercase tracking-wider text-dark-brown/50 hover:text-red-600 transition-colors px-2 py-1"
+                  >
+                    Clear
+                  </button>
+                )}
+                <button
+                  onClick={() => setShowCart(false)}
+                  className="h-8 w-8 rounded-full bg-dark-brown/10 text-dark-brown hover:bg-dark-brown hover:text-milk transition-all flex items-center justify-center text-sm font-bold"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
 
             {/* Cart Items + order details (scrollable) */}
-            <div className="flex-1 overflow-y-auto p-5 min-h-0">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-5 min-h-0">
               {cart.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-center">
-                  <p className="text-5xl mb-4">🛒</p>
-                  <p className="font-paragraph text-dark-brown/50 text-lg">{t("Your cart is empty")}</p>
-                  <p className="font-paragraph text-dark-brown/40 text-sm mt-1">{t("Add drinks or food to get started!")}</p>
+                <div className="flex flex-col items-center justify-center py-6 text-center">
+                  <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-3xl bg-light-brown/20 border border-light-brown/30 shadow-inner text-[#0f766e]">
+                    <CroissantLogoIcon className="w-12 h-12" />
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-bold uppercase tracking-tight text-dark-brown">
+                    {t("Your Basket is Empty") || "Your Basket is Empty"}
+                  </h3>
+                  <p className="font-paragraph text-dark-brown/60 text-xs sm:text-sm mt-1.5 max-w-xs leading-relaxed">
+                    {t("Craving fresh bakes or handcrafted drinks? Explore our favorites below!") ||
+                      "Craving fresh bakes or handcrafted drinks? Explore our favorites below!"}
+                  </p>
+
+                  {/* Quick Add Recommendations */}
+                  <div className="w-full mt-6 text-left border-t border-dark-brown/10 pt-5">
+                    <span className="font-paragraph text-[11px] font-bold uppercase tracking-wider text-dark-brown/50 block mb-3">
+                      ⭐ Popular Bakes & Drinks:
+                    </span>
+                    <div className="space-y-2.5">
+                      {(menuItems.length > 0 ? menuItems : defaultMenu).slice(0, 3).map((item) => (
+                        <div
+                          key={item.name}
+                          className="group flex items-center justify-between gap-3 rounded-2xl border border-dark-brown/10 bg-white/70 p-3 shadow-2xs transition-all hover:bg-white hover:border-dark-brown/30 hover:shadow-xs"
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-xl border border-dark-brown/10 bg-milk">
+                              <Image
+                                src={getMenuItemImage(item.name)}
+                                alt={item.name}
+                                fill
+                                sizes="44px"
+                                className="object-cover"
+                              />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="font-bold text-dark-brown text-sm uppercase tracking-tight truncate">
+                                {item.name}
+                              </p>
+                              <p className="font-paragraph text-xs text-dark-brown/60">
+                                ₱{Number(item.price).toFixed(2)}
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (item.category === "food") {
+                                addToCart(item.name, item.price);
+                              } else {
+                                openCustomizer(item);
+                              }
+                            }}
+                            className="shrink-0 rounded-full bg-dark-brown hover:bg-dark-brown-hover text-milk px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider shadow-2xs transition-all hover:scale-105 active:scale-95 flex items-center gap-1"
+                          >
+                            <span>+ Add</span>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowCart(false)}
+                    className="mt-6 inline-flex items-center gap-2 rounded-full bg-dark-brown hover:bg-dark-brown-hover text-milk uppercase font-bold text-xs sm:text-sm py-3 px-8 shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all"
+                  >
+                    <span>Browse Full Menu</span>
+                    <span>→</span>
+                  </button>
                 </div>
               ) : (
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-3.5">
                   {cart.map((item) => (
-                    <div key={item.lineId} className="app-panel border rounded-2xl p-4 flex items-center justify-between">
-                      <div className="flex-1 pr-2">
-                        <p className="font-bold text-dark-brown text-sm uppercase tracking-tight leading-tight">{item.name}</p>
+                    <div key={item.lineId} className="app-panel border rounded-2xl p-3 sm:p-4 flex items-center justify-between gap-3 shadow-2xs">
+                      <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl border border-dark-brown/15 bg-milk">
+                        <Image
+                          src={getMenuItemImage(item.name)}
+                          alt={item.name}
+                          fill
+                          sizes="48px"
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0 pr-1">
+                        <p className="font-bold text-dark-brown text-sm uppercase tracking-tight leading-tight truncate">
+                          {item.name}
+                        </p>
                         {item.notes && (
-                          <p className="font-paragraph text-dark-brown/60 text-xs italic mt-1 bg-white/40 p-1.5 rounded">
+                          <p className="font-paragraph text-dark-brown/60 text-xs italic mt-0.5 bg-dark-brown/5 px-2 py-0.5 rounded truncate">
                             Note: {item.notes}
                           </p>
                         )}
-                        <p className="font-paragraph text-dark-brown/60 text-sm mt-1">₱{item.price} each</p>
+                        <p className="font-paragraph text-dark-brown/60 text-xs mt-0.5">₱{item.price} each</p>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <p className="font-bold text-dark-brown text-lg">₱{(item.price * item.qty).toFixed(2)}</p>
-                        <div className="flex items-center bg-white rounded-full border border-dark-brown/20 p-0.5 shadow-sm">
+                      <div className="flex items-center gap-2.5 shrink-0">
+                        <p className="font-bold text-dark-brown text-sm sm:text-base tabular-nums">₱{(item.price * item.qty).toFixed(2)}</p>
+                        <div className="flex items-center bg-white rounded-full border border-dark-brown/20 p-0.5 shadow-2xs">
                           <button
                             onClick={() => removeFromCart(item.lineId)}
-                            className="w-6 h-6 flex items-center justify-center rounded-full text-dark-brown hover:bg-dark-brown/10 transition-colors"
+                            className="w-6 h-6 flex items-center justify-center rounded-full text-dark-brown hover:bg-dark-brown/10 transition-colors font-bold text-xs"
                           >
                             −
                           </button>
-                          <span className="px-2 text-sm font-bold text-dark-brown">{item.qty}</span>
+                          <span className="px-2 text-xs sm:text-sm font-bold text-dark-brown tabular-nums">{item.qty}</span>
                           <button
                             onClick={() => bumpCartLine(item.lineId)}
-                            className="w-6 h-6 flex items-center justify-center rounded-full text-dark-brown hover:bg-dark-brown/10 transition-colors"
+                            className="w-6 h-6 flex items-center justify-center rounded-full text-dark-brown hover:bg-dark-brown/10 transition-colors font-bold text-xs"
                           >
                             +
                           </button>

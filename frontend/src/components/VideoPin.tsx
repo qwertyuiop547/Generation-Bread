@@ -92,7 +92,6 @@ const VideoPinSection = () => {
               pin: true,
               pinSpacing: true,
               anticipatePin: 1,
-              invalidateOnRefresh: true,
               ...scroll,
             },
           });

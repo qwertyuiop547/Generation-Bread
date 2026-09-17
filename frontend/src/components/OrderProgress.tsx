@@ -130,7 +130,6 @@ export default function OrderProgress({
   const statusTitleRef = useRef<HTMLHeadingElement>(null);
   const statusBadgeRef = useRef<HTMLSpanElement>(null);
   const statusBannerRef = useRef<HTMLDivElement>(null);
-  const completeStampRef = useRef<HTMLDivElement>(null);
   const prevStepRef = useRef<number>(-1);
   const prevStatusRef = useRef<OrderProgressStatus | null>(null);
 
@@ -156,7 +155,6 @@ export default function OrderProgress({
 
       if (prefersReduced) {
         if (progressFillRef.current) gsap.set(progressFillRef.current, { width: `${progressPct}%` });
-        if (completeStampRef.current && isCompleted) gsap.set(completeStampRef.current, { autoAlpha: 1, scale: 1 });
         return;
       }
 
@@ -252,32 +250,6 @@ export default function OrderProgress({
           isAdvance || justCompleted ? 0.45 : 0.1
         );
       }
-
-      if (completeStampRef.current) {
-        if (justCompleted) {
-          tl.fromTo(
-            completeStampRef.current,
-            { autoAlpha: 0, scale: 0.4, rotation: -12 },
-            {
-              autoAlpha: 1,
-              scale: 1,
-              rotation: -6,
-              duration: 0.65,
-              ease: "back.out(2)",
-            },
-            0.55
-          );
-          tl.to(
-            completeStampRef.current,
-            { scale: 1.06, duration: 0.28, yoyo: true, repeat: 1, ease: GB_EASE.inOut },
-            1.1
-          );
-        } else if (isCompleted) {
-          gsap.set(completeStampRef.current, { autoAlpha: 1, scale: 1, rotation: -6 });
-        } else {
-          gsap.set(completeStampRef.current, { autoAlpha: 0, scale: 0.4 });
-        }
-      }
     },
     { scope: rootRef, dependencies: [currentStep, status, isCompleted] }
   );
@@ -300,14 +272,6 @@ export default function OrderProgress({
       ref={rootRef}
       className={`app-panel relative overflow-hidden border rounded-3xl shadow-lg ${pad} ${className}`}
     >
-      <div
-        ref={completeStampRef}
-        className="pointer-events-none absolute -right-2 top-4 z-20 rotate-[-6deg] rounded-xl border-2 border-[#2a1810]/80 bg-[#e3a458]/25 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-[#2a1810] opacity-0 md:right-4 md:top-6"
-        aria-hidden
-      >
-        Complete
-      </div>
-
       <div className="mb-5 flex flex-wrap items-center justify-between gap-2 md:mb-6">
         <div>
           <p className="font-paragraph text-[10px] uppercase tracking-[0.28em] text-dark-brown/45">
@@ -322,17 +286,18 @@ export default function OrderProgress({
         </div>
         <span
           ref={statusBadgeRef}
-          className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold uppercase ${
+          className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-xs font-bold uppercase tracking-wide shadow-2xs ${
             isCompleted
-              ? "bg-emerald-100 text-emerald-800"
+              ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
               : status === "ready"
-                ? "bg-light-brown/40 text-dark-brown"
+                ? "bg-emerald-500 text-white animate-pulse"
                 : status === "preparing"
-                  ? "bg-yellow-brown/25 text-dark-brown"
+                  ? "bg-amber-100 text-amber-800 border border-amber-200"
                   : "bg-dark-brown/10 text-dark-brown"
           }`}
         >
-          {status}
+          {isCompleted && <span>✓</span>}
+          {isCompleted ? "Completed" : status}
         </span>
       </div>
 

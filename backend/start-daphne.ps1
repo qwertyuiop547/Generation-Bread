@@ -12,14 +12,13 @@ if ($venvActivate) {
 }
 
 $port = if ($env:PORT) { $env:PORT } else { "8000" }
-# Use 0.0.0.0 for Docker/Render; 127.0.0.1 for local-only
 $hostBind = if ($env:DAPHNE_BIND) { $env:DAPHNE_BIND } else { "127.0.0.1" }
 
 Write-Host "Starting Daphne (ASGI) on http://${hostBind}:${port}" -ForegroundColor Green
 if ($env:REDIS_URL) {
   Write-Host "Redis channel layer: ENABLED (multi-instance ready)" -ForegroundColor Green
 } else {
-  Write-Host "Redis channel layer: OFF (InMemory — single process only)" -ForegroundColor Yellow
+  Write-Host "Redis channel layer: OFF (InMemory single process only)" -ForegroundColor Yellow
 }
 Write-Host "WebSockets: ws://${hostBind}:${port}/ws/..." -ForegroundColor DarkGray
 Write-Host "Health: http://${hostBind}:${port}/api/health/" -ForegroundColor DarkGray

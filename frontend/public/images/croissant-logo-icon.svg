@@ -1,0 +1,27 @@
+<svg viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g stroke="#098086" stroke-width="24" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Outer Croissant Outline -->
+    <path d="
+      M 142 278
+      C 142 196 190 172 256 172
+      C 322 172 370 196 370 278
+      C 370 298 356 312 344 300
+      C 324 280 300 274 276 274
+      L 236 274
+      C 212 274 188 280 168 300
+      C 156 312 142 298 142 278 Z
+    " />
+    
+    <!-- Left Spoke -->
+    <path d="M 160 238 C 178 254 196 266 214 274" />
+    
+    <!-- Center-Left Spoke -->
+    <path d="M 218 178 L 236 274" />
+    
+    <!-- Center-Right Spoke -->
+    <path d="M 294 178 L 276 274" />
+    
+    <!-- Right Spoke -->
+    <path d="M 352 238 C 334 254 316 266 298 274" />
+  </g>
+</svg>

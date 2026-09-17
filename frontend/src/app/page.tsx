@@ -61,7 +61,7 @@ export default function Home() {
           normalizeScroll: {
             allowNestedScroll: ".testimonials-pin-box",
             debounce: true,
-          },
+          } as any,
           smoothTouch: 0.1,
         });
       }

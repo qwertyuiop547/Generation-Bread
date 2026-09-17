@@ -11,6 +11,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { signOut } from "next-auth/react";
 import { performLogout } from "@/lib/logoutTransition";
 import NotificationBell from "@/components/NotificationBell";
+import CroissantLogoIcon from "@/components/CroissantLogoIcon";
 import { STAFF_POSITIONS } from "@/constants";
 import { useStaffOrdersRealtime } from "@/hooks/useStaffOrdersRealtime";
 import gsap from "gsap";
@@ -1394,98 +1395,120 @@ export default function AdminPage() {
       <div className="admin-stagger-item absolute bottom-[-10%] left-[-10%] w-[40vw] h-[40vw] bg-mid-brown rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
 
       {/* Header */}
-      <div className="admin-header sticky top-0 z-40 app-header-bar backdrop-blur-xl border-b border-dark-brown/10">
-        <div className="flex items-center justify-between px-5 md:px-10 py-4">
-          <div className="flex items-center gap-4">
-            <h1 className="admin-nav-item text-dark-brown font-bold uppercase text-lg md:text-xl tracking-tight">Admin Panel</h1>
-          </div>
-          <div className="flex items-center gap-2 sm:gap-4 justify-end relative">
-            <div className="admin-nav-item">
-              <NotificationBell userEmail={user?.email} />
+      <div className="admin-header sticky top-0 z-40 bg-[#FFFDF9]/85 backdrop-blur-xl border-b border-[#EBE3D7] shadow-xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-20 gap-3">
+            {/* Brand Title */}
+            <div className="flex items-center gap-3 min-w-0">
+              <Link href="/admin" className="flex items-center gap-3 group">
+                <div className="w-11 h-11 rounded-2xl bg-[#2A1810] border border-[#E3A458]/40 flex items-center justify-center shadow-md group-hover:scale-105 transition-all">
+                  <CroissantLogoIcon className="w-6 h-6 text-[#FAEADE] transition-transform duration-300 group-hover:rotate-6" />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1">
+                    <span className="font-extrabold tracking-tight text-[#2A1810] text-sm uppercase">GENERATION</span>
+                    <span className="font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#E3A458] to-[#A26833] text-sm uppercase">
+                      BREAD
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#A26833] truncate">
+                      Operations & Kitchen Portal
+                    </span>
+                  </div>
+                </div>
+              </Link>
             </div>
-            <button
-              onClick={toggleLanguage}
-              className="admin-nav-item bg-light-brown/20 hover:bg-light-brown/40 text-dark-brown font-bold text-xs md:text-sm rounded-full py-1.5 px-3 md:py-2 md:px-4 transition-all uppercase"
-            >
-              {language}
-            </button>
-            
-            {/* Hamburger Button for Mobile */}
-            <button
-              type="button"
-              aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
-              aria-expanded={isMobileMenuOpen}
-              className="admin-nav-item xl:hidden p-2 text-dark-brown hover:bg-dark-brown/10 rounded-full transition-colors"
-              onClick={toggleMobileMenu}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.25"
-                strokeLinecap="round"
-                className="overflow-visible"
-              >
-                <line className="ham-top" x1="3" y1="6" x2="21" y2="6" />
-                <line className="ham-mid" x1="3" y1="12" x2="21" y2="12" />
-                <line className="ham-bot" x1="3" y1="18" x2="21" y2="18" />
-              </svg>
-            </button>
 
-            {/* Desktop Navigation */}
-            <div className="hidden xl:flex items-center gap-4">
-              <Link
-                href="/profile"
-                className="admin-nav-item group flex items-center gap-2 bg-dark-brown/10 hover:bg-dark-brown text-dark-brown hover:text-milk font-bold text-sm uppercase rounded-full py-2 px-4 transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="12" cy="7" r="4"></circle>
-                </svg>
-                <span>{t("Profile") || "Profile"}</span>
-              </Link>
-              <Link
-                href="/admin-dashboard"
-                className="admin-nav-item group flex items-center gap-2 bg-dark-brown/10 hover:bg-dark-brown text-dark-brown hover:text-milk font-bold text-sm uppercase rounded-full py-2 px-4 transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
-                <span>Analytics</span>
-              </Link>
-              <Link
-                href="/admin-menu"
-                className="admin-nav-item group flex items-center gap-2 bg-dark-brown/10 hover:bg-dark-brown text-dark-brown hover:text-milk font-bold text-sm uppercase rounded-full py-2 px-4 transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
-                <span>Menu</span>
-              </Link>
-              <Link
-                href="/admin-sales"
-                className="admin-nav-item group flex items-center gap-2 bg-dark-brown/10 hover:bg-dark-brown text-dark-brown hover:text-milk font-bold text-sm uppercase rounded-full py-2 px-4 transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                <span>{t("Sales")}</span>
-              </Link>
-              <Link
-                href="/admin-tables"
-                className="admin-nav-item group flex items-center gap-2 bg-dark-brown/10 hover:bg-dark-brown text-dark-brown hover:text-milk font-bold text-sm uppercase rounded-full py-2 px-4 transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-                <span>Tables</span>
-              </Link>
+            <div className="flex items-center gap-2 sm:gap-3 justify-end relative shrink-0">
+              <div className="admin-nav-item">
+                <NotificationBell userEmail={user?.email} />
+              </div>
               <button
-                onClick={() => { void performLogout(signOut); }}
-                className="admin-nav-item group flex items-center gap-2 bg-red-brown/10 hover:bg-red-brown text-red-brown hover:text-milk font-bold text-sm uppercase rounded-full py-2 px-4 transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5"
+                onClick={toggleLanguage}
+                className="admin-nav-item bg-[#F5EFE6] hover:bg-[#EBE3D7] border border-[#EBE3D7] text-[#2A1810] font-extrabold text-xs rounded-full py-1.5 px-3.5 transition-all uppercase"
               >
-                <span>{t("Logout")}</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:translate-x-1 transition-transform">
-                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                  <polyline points="16 17 21 12 16 7"></polyline>
-                  <line x1="21" y1="12" x2="9" y2="12"></line>
+                {language}
+              </button>
+              
+              {/* Hamburger Button for Mobile */}
+              <button
+                type="button"
+                aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+                aria-expanded={isMobileMenuOpen}
+                className="admin-nav-item xl:hidden p-2 text-[#2A1810] hover:bg-[#2A1810]/5 rounded-2xl transition-colors"
+                onClick={toggleMobileMenu}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.25"
+                  strokeLinecap="round"
+                  className="overflow-visible"
+                >
+                  <line className="ham-top" x1="3" y1="6" x2="21" y2="6" />
+                  <line className="ham-mid" x1="3" y1="12" x2="21" y2="12" />
+                  <line className="ham-bot" x1="3" y1="18" x2="21" y2="18" />
                 </svg>
               </button>
+
+              {/* Desktop Navigation */}
+              <div className="hidden xl:flex items-center gap-2">
+                <Link
+                  href="/admin-dashboard"
+                  className="admin-nav-item flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-extrabold uppercase tracking-wider text-[#2A1810]/75 hover:text-[#2A1810] bg-[#FFFDF9] hover:bg-[#F5EFE6] border border-[#EBE3D7] transition-all shadow-xs"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+                  <span>Analytics</span>
+                </Link>
+                <Link
+                  href="/admin-menu"
+                  className="admin-nav-item flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-extrabold uppercase tracking-wider text-[#2A1810]/75 hover:text-[#2A1810] bg-[#FFFDF9] hover:bg-[#F5EFE6] border border-[#EBE3D7] transition-all shadow-xs"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                  <span>Menu</span>
+                </Link>
+                <Link
+                  href="/admin-sales"
+                  className="admin-nav-item flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-extrabold uppercase tracking-wider text-[#2A1810]/75 hover:text-[#2A1810] bg-[#FFFDF9] hover:bg-[#F5EFE6] border border-[#EBE3D7] transition-all shadow-xs"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  <span>Sales Ledger</span>
+                </Link>
+                <Link
+                  href="/admin-tables"
+                  className="admin-nav-item flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-extrabold uppercase tracking-wider text-[#2A1810]/75 hover:text-[#2A1810] bg-[#FFFDF9] hover:bg-[#F5EFE6] border border-[#EBE3D7] transition-all shadow-xs"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                  <span>Tables</span>
+                </Link>
+                <Link
+                  href="/staff"
+                  className="admin-nav-item flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-extrabold uppercase tracking-wider text-[#2A1810]/75 hover:text-[#2A1810] bg-[#FFFDF9] hover:bg-[#F5EFE6] border border-[#EBE3D7] transition-all shadow-xs"
+                  title="Switch to Kitchen Station Live Order Display"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M6 13.87A4 4 0 0 1 7.41 6a5.11 5.11 0 0 1 1.05-1.54 5 5 0 0 1 7.08 0A5.11 5.11 0 0 1 16.59 6 4 4 0 0 1 18 13.87V21H6Z"/><line x1="6" y1="17" x2="18" y2="17"/></svg>
+                  <span>Kitchen View</span>
+                </Link>
+                <Link
+                  href="/profile"
+                  className="admin-nav-item flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-extrabold uppercase tracking-wider text-[#2A1810]/75 hover:text-[#2A1810] bg-[#FFFDF9] hover:bg-[#F5EFE6] border border-[#EBE3D7] transition-all shadow-xs"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                  <span>Profile</span>
+                </Link>
+                <button
+                  onClick={() => { void performLogout(signOut); }}
+                  className="admin-nav-item flex items-center gap-1 px-3.5 py-2 rounded-full text-xs font-extrabold uppercase tracking-wider text-[#7F3B2D] hover:text-white bg-red-50 hover:bg-[#7F3B2D] border border-red-200 hover:border-transparent transition-all shadow-xs"
+                >
+                  <span>{t("Logout")}</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -1539,6 +1562,13 @@ export default function AdminPage() {
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
               Tables
             </Link>
+            <Link
+              href="/staff"
+              onClick={closeMobileMenu}
+              className="mobile-nav-item flex items-center gap-3 w-[90%] bg-white hover:bg-dark-brown/5 text-dark-brown font-bold text-sm uppercase rounded-xl py-3 px-5 transition-all shadow-sm active:scale-[0.98]"
+            >
+              <span>🍳 Kitchen View</span>
+            </Link>
             <button
               onClick={() => { void performLogout(signOut); }}
               className="mobile-nav-item flex items-center justify-between gap-3 w-[90%] bg-red-50 hover:bg-red-100 text-red-700 font-bold text-sm uppercase rounded-xl py-3 px-5 transition-all shadow-sm active:scale-[0.98]"
@@ -1554,260 +1584,314 @@ export default function AdminPage() {
         )}
       </div>
 
-      <div className="max-w-6xl mx-auto px-5 md:px-10 py-8 md:py-12 relative z-10">
-        {/* Welcome */}
-        <div className="admin-stagger-item mb-8 md:mb-10">
-          <h2 className="text-3xl md:text-4xl font-bold text-dark-brown uppercase tracking-tighter">{t("Hello,")} {user?.name}</h2>
-          <p className="font-paragraph text-dark-brown/60 mt-1">{t("Manage orders and monitor store performance.")}</p>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-8 md:mb-10">
-          <div className="admin-stagger-item app-panel border rounded-3xl p-5 md:p-6 shadow-lg">
-            <p className="font-paragraph text-dark-brown/50 text-sm mb-1">{t("Total Orders")}</p>
-            <p className="text-3xl md:text-4xl font-bold text-dark-brown">{totalOrders}</p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
+        {/* Welcome Hero */}
+        <div className="admin-stagger-item flex flex-col sm:flex-row sm:items-end justify-between gap-5 mb-8">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EBE3D7]/70 text-[#A26833] text-[11px] font-extrabold uppercase tracking-widest mb-2 border border-[#EBE3D7]">
+              <span>👑 Operations Command Hub</span>
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-black text-[#2A1810] tracking-tight uppercase">
+              {t("Hello,")} {user?.name || "Administrator"}
+            </h1>
+            <p className="font-paragraph text-[#2A1810]/60 text-sm sm:text-base mt-1">
+              {t("Manage orders and monitor store performance.")}
+            </p>
           </div>
-          <div className="admin-stagger-item app-panel border rounded-3xl p-5 md:p-6 shadow-lg">
-            <p className="font-paragraph text-dark-brown/50 text-sm mb-1">{t("Sales")}</p>
-            <p className="text-2xl md:text-3xl font-bold text-dark-brown">₱{totalRevenue.toFixed(0)}</p>
-          </div>
-          <div className="admin-stagger-item app-panel border rounded-3xl p-5 md:p-6 shadow-lg">
-            <p className="font-paragraph text-dark-brown/50 text-sm mb-1">{t("Pending")}</p>
-            <p className="text-3xl md:text-4xl font-bold text-dark-brown">{pendingOrders}</p>
-          </div>
-          <div className="admin-stagger-item app-panel border rounded-3xl p-5 md:p-6 shadow-lg">
-            <p className="font-paragraph text-dark-brown/50 text-sm mb-1">{t("Customer")}</p>
-            <p className="text-3xl md:text-4xl font-bold text-dark-brown">{totalUsers}</p>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/admin-dashboard"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#2A1810] text-[#FAEADE] font-extrabold text-xs uppercase tracking-wider transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5"
+            >
+              <span>📊 Executive Analytics</span>
+              <span>→</span>
+            </Link>
           </div>
         </div>
 
-        {/* Section Tabs */}
-        <div className="admin-stagger-item flex flex-wrap gap-2 mb-6">
-          <button
-            onClick={() => setAdminSection("orders")}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold uppercase transition-all shadow-sm ${
-              adminSection === "orders"
-                ? "bg-dark-brown text-milk shadow-md"
-                : "bg-white/60 border border-white/60 text-dark-brown/70 hover:bg-white hover:text-dark-brown"
-            }`}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-            Orders
-          </button>
-          <button
-            onClick={() => setAdminSection("staff")}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold uppercase transition-all shadow-sm ${
-              adminSection === "staff"
-                ? "bg-dark-brown text-milk shadow-md"
-                : "bg-white/60 border border-white/60 text-dark-brown/70 hover:bg-white hover:text-dark-brown"
-            }`}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            Staff Accounts
-          </button>
-          <button
-            onClick={() => setAdminSection("roles")}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold uppercase transition-all shadow-sm ${
-              adminSection === "roles"
-                ? "bg-dark-brown text-milk shadow-md"
-                : "bg-white/60 border border-white/60 text-dark-brown/70 hover:bg-white hover:text-dark-brown"
-            }`}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-            Staff Roles
-          </button>
-          <button
-            onClick={() => setAdminSection("contacts")}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold uppercase transition-all shadow-sm ${
-              adminSection === "contacts"
-                ? "bg-dark-brown text-milk shadow-md"
-                : "bg-white/60 border border-white/60 text-dark-brown/70 hover:bg-white hover:text-dark-brown"
-            }`}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-            Contacts
-          </button>
-          <button
-            onClick={() => setAdminSection("attendance")}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold uppercase transition-all shadow-sm ${
-              adminSection === "attendance"
-                ? "bg-dark-brown text-milk shadow-md"
-                : "bg-white/60 border border-white/60 text-dark-brown/70 hover:bg-white hover:text-dark-brown"
-            }`}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            Attendance
-          </button>
-          <button
-            onClick={() => setAdminSection("activity")}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold uppercase transition-all shadow-sm ${
-              adminSection === "activity"
-                ? "bg-dark-brown text-milk shadow-md"
-                : "bg-white/60 border border-white/60 text-dark-brown/70 hover:bg-white hover:text-dark-brown"
-            }`}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-            Activity Feed
-          </button>
+        {/* 4 Luxury KPI Stat Metric Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          {/* Total Orders */}
+          <div className="admin-stagger-item bg-[#FFFDF9] border border-[#EBE3D7] rounded-3xl p-5 sm:p-6 shadow-[0_4px_20px_rgba(42,24,16,0.05)] hover:shadow-md transition-all">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#2A1810]/50">
+                {t("Total Orders")}
+              </span>
+              <div className="w-9 h-9 rounded-xl bg-[#2A1810]/5 text-[#2A1810] flex items-center justify-center text-base font-bold border border-[#EBE3D7]">
+                📦
+              </div>
+            </div>
+            <p className="text-2xl sm:text-3xl font-black text-[#2A1810] font-mono tracking-tight">
+              {totalOrders}
+            </p>
+            <p className="text-[11px] text-[#2A1810]/50 font-paragraph mt-1">Active order records</p>
+          </div>
+
+          {/* Gross Sales */}
+          <div className="admin-stagger-item bg-[#FFFDF9] border border-[#EBE3D7] rounded-3xl p-5 sm:p-6 shadow-[0_4px_20px_rgba(42,24,16,0.05)] hover:shadow-md transition-all">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#2A1810]/50">
+                {t("Sales")}
+              </span>
+              <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-extrabold text-sm border border-emerald-200">
+                ₱
+              </div>
+            </div>
+            <p className="text-2xl sm:text-3xl font-black text-[#2A1810] font-mono tracking-tight">
+              ₱{totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+            </p>
+            <p className="text-[11px] text-[#2A1810]/50 font-paragraph mt-1">Fulfilled store revenue</p>
+          </div>
+
+          {/* Pending Queue */}
+          <div className="admin-stagger-item bg-[#FFFDF9] border border-[#EBE3D7] rounded-3xl p-5 sm:p-6 shadow-[0_4px_20px_rgba(42,24,16,0.05)] hover:shadow-md transition-all">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#2A1810]/50">
+                {t("Pending")}
+              </span>
+              <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-800 flex items-center justify-center font-bold text-sm border border-amber-200">
+                ⏳
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <p className="text-2xl sm:text-3xl font-black text-[#2A1810] font-mono tracking-tight">
+                {pendingOrders}
+              </p>
+              {pendingOrders > 0 && (
+                <span className="text-[10px] font-extrabold uppercase bg-amber-100 text-amber-900 border border-amber-200 px-2 py-0.5 rounded-full animate-pulse">
+                  Active
+                </span>
+              )}
+            </div>
+            <p className="text-[11px] text-[#2A1810]/50 font-paragraph mt-1">Kitchen prep queue</p>
+          </div>
+
+          {/* Registered Customers */}
+          <div className="admin-stagger-item bg-[#FFFDF9] border border-[#EBE3D7] rounded-3xl p-5 sm:p-6 shadow-[0_4px_20px_rgba(42,24,16,0.05)] hover:shadow-md transition-all">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#2A1810]/50">
+                {t("Customer")}
+              </span>
+              <div className="w-9 h-9 rounded-xl bg-[#2A1810]/5 text-[#A26833] flex items-center justify-center font-bold text-sm border border-[#EBE3D7]">
+                👥
+              </div>
+            </div>
+            <p className="text-2xl sm:text-3xl font-black text-[#2A1810] font-mono tracking-tight">
+              {totalUsers}
+            </p>
+            <p className="text-[11px] text-[#2A1810]/50 font-paragraph mt-1">Registered patron accounts</p>
+          </div>
+        </div>
+
+        {/* Section Navigation Tabs */}
+        <div className="admin-stagger-item flex flex-wrap items-center gap-1.5 p-1.5 rounded-full bg-[#EBE3D7]/60 border border-[#EBE3D7] w-fit mb-8 shadow-inner">
+          {[
+            { key: "orders", label: "Orders & Kitchen", icon: "📦" },
+            { key: "staff", label: "Staff Accounts", icon: "👥" },
+            { key: "roles", label: "Staff Roles", icon: "⭐" },
+            { key: "contacts", label: "Staff Directory", icon: "📞" },
+            { key: "attendance", label: "Attendance", icon: "⏱️" },
+            { key: "activity", label: "Activity Feed", icon: "⚡" },
+          ].map((s) => (
+            <button
+              key={s.key}
+              onClick={() => setAdminSection(s.key as any)}
+              className={`flex items-center gap-2 px-5 py-2 rounded-full text-xs font-extrabold uppercase tracking-wider transition-all duration-200 ${
+                adminSection === s.key
+                  ? "bg-[#2A1810] text-[#FAEADE] shadow-md -translate-y-0.5"
+                  : "text-[#2A1810]/70 hover:text-[#2A1810] hover:bg-white/60"
+              }`}
+            >
+              <span>{s.icon}</span>
+              <span>{s.label}</span>
+            </button>
+          ))}
         </div>
 
         {adminSection === "orders" && (<>
-        {/* Filters */}
-        <div className="admin-stagger-item flex flex-wrap items-center gap-2 mb-6">
+        {/* Orders Command & Filter Bar */}
+        <div className="admin-stagger-item flex flex-wrap items-center justify-between gap-3 mb-6">
           {/* Active / Archived Tabs */}
-          <div className="flex flex-wrap gap-1 bg-white/60 border border-white/60 rounded-xl md:rounded-full p-1 mr-3">
-            <button
-              onClick={() => { setViewTab("active"); setFilter("all"); }}
-              className={`px-4 py-2 rounded-full text-xs font-bold uppercase transition-all ${
-                viewTab === "active"
-                  ? "bg-dark-brown text-milk shadow-md"
-                  : "text-dark-brown/70 hover:bg-white"
-              }`}
-            >
-              Active
-            </button>
-            <button
-              onClick={() => { setViewTab("archived"); setFilter("all"); }}
-              className={`px-4 py-2 rounded-full text-xs font-bold uppercase transition-all ${
-                viewTab === "archived"
-                  ? "bg-dark-brown text-milk shadow-md"
-                  : "text-dark-brown/70 hover:bg-white"
-              }`}
-            >
-              Archive <span className="ml-1 text-[10px] opacity-70">({archivedOrders.length})</span>
-            </button>
-          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-1 bg-[#EBE3D7]/60 border border-[#EBE3D7] rounded-full p-1 shadow-inner">
+              <button
+                onClick={() => { setViewTab("active"); setFilter("all"); }}
+                className={`px-4 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-wider transition-all ${
+                  viewTab === "active"
+                    ? "bg-[#2A1810] text-[#FAEADE] shadow-sm"
+                    : "text-[#2A1810]/70 hover:text-[#2A1810]"
+                }`}
+              >
+                Active Orders
+              </button>
+              <button
+                onClick={() => { setViewTab("archived"); setFilter("all"); }}
+                className={`px-4 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-wider transition-all ${
+                  viewTab === "archived"
+                    ? "bg-[#2A1810] text-[#FAEADE] shadow-sm"
+                    : "text-[#2A1810]/70 hover:text-[#2A1810]"
+                }`}
+              >
+                Archive <span className="ml-1 text-[10px] opacity-75 font-mono">({archivedOrders.length})</span>
+              </button>
+            </div>
 
-          {viewTab === "active" && (["all", "pending", "preparing", "ready", "completed", "cancelled"] as const).map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`px-4 py-2 rounded-full text-xs font-bold uppercase transition-all ${
-                filter === f
-                  ? "bg-dark-brown text-milk shadow-md"
-                  : "bg-white/60 text-dark-brown/70 hover:bg-white border border-white/60"
-              }`}
-            >
-              {f}
-            </button>
-          ))}
+            {/* Status Filter Pills */}
+            {viewTab === "active" && (
+              <div className="flex flex-wrap items-center gap-1.5">
+                {(["all", "pending", "preparing", "ready", "completed", "cancelled"] as const).map((f) => (
+                  <button
+                    key={f}
+                    onClick={() => setFilter(f)}
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-wider transition-all ${
+                      filter === f
+                        ? "bg-[#2A1810] text-[#FAEADE] shadow-xs"
+                        : "bg-[#FFFDF9] text-[#2A1810]/70 hover:bg-[#F5EFE6] hover:text-[#2A1810] border border-[#EBE3D7]"
+                    }`}
+                  >
+                    {f}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
           {viewTab === "active" && (
             <button
               onClick={autoArchive}
-              className="ml-auto flex items-center gap-1.5 bg-dark-brown/5 hover:bg-dark-brown/10 text-dark-brown/60 hover:text-dark-brown font-bold text-[10px] uppercase rounded-full py-2 px-4 transition-all border border-dark-brown/10"
+              className="flex items-center gap-1.5 bg-[#FFFDF9] hover:bg-[#F5EFE6] text-[#2A1810]/70 hover:text-[#2A1810] font-extrabold text-xs uppercase tracking-wider rounded-full py-2 px-4 transition-all border border-[#EBE3D7] shadow-xs"
               title="Auto-archive completed/cancelled orders older than 30 days"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg>
-              Auto-Archive 30d
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg>
+              <span>Auto-Archive 30d</span>
             </button>
           )}
         </div>
 
-        {/* Orders Table */}
-        <div className="admin-stagger-item app-panel border rounded-3xl shadow-lg overflow-hidden">
-          <div className="p-5 md:p-6 border-b border-dark-brown/10 flex items-center justify-between">
-            <h3 className="text-lg md:text-xl font-bold text-dark-brown uppercase tracking-tight">{viewTab === "archived" ? "Archived Orders" : "Orders"}</h3>
-            <span className="font-paragraph text-dark-brown/50 text-sm">{filteredOrders.length} result{filteredOrders.length !== 1 ? "s" : ""}</span>
+        {/* Orders Ledger Card */}
+        <div className="admin-stagger-item bg-[#FFFDF9] border border-[#EBE3D7] rounded-3xl shadow-[0_4px_24px_rgba(42,24,16,0.06)] overflow-hidden mb-8">
+          <div className="p-6 border-b border-[#EBE3D7]/70 flex items-center justify-between">
+            <div>
+              <h3 className="text-xl font-black text-[#2A1810] uppercase tracking-tight">
+                {viewTab === "archived" ? "Archived Orders Record" : "Live Store Orders"}
+              </h3>
+              <p className="text-xs text-[#2A1810]/50 font-paragraph mt-0.5">
+                Real-time tracking of dine-in, takeout, and advance pre-order requests
+              </p>
+            </div>
+            <span className="font-extrabold text-xs uppercase px-3 py-1 rounded-full bg-[#2A1810]/5 text-[#2A1810]/70 border border-[#EBE3D7]">
+              {filteredOrders.length} result{filteredOrders.length !== 1 ? "s" : ""}
+            </span>
           </div>
 
           {filteredOrders.length === 0 ? (
-            <div className="p-10 md:p-16 text-center">
-              <p className="text-5xl mb-4">📋</p>
-              <p className="font-paragraph text-dark-brown/60 text-lg">No orders found</p>
+            <div className="p-12 text-center">
+              <p className="text-4xl mb-2">📋</p>
+              <p className="font-extrabold uppercase text-sm text-[#2A1810]">No orders found</p>
+              <p className="font-paragraph text-xs text-[#2A1810]/50 mt-1">There are no orders matching your current filter selection.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left">
+              <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-dark-brown/5">
-                    <th className="px-5 py-3 text-xs font-bold uppercase text-dark-brown/60">{t("Order ID")}</th>
-                    <th className="px-5 py-3 text-xs font-bold uppercase text-dark-brown/60 hidden md:table-cell">{t("Customer")}</th>
-                    <th className="px-5 py-3 text-xs font-bold uppercase text-dark-brown/60">{t("Items")}</th>
-                    <th className="px-5 py-3 text-xs font-bold uppercase text-dark-brown/60">{t("Total")}</th>
-                    <th className="px-5 py-3 text-xs font-bold uppercase text-dark-brown/60 hidden sm:table-cell">{t("Date")}</th>
-                    <th className="px-5 py-3 text-xs font-bold uppercase text-dark-brown/60">{t("Status")}</th>
-                    <th className="px-5 py-3 text-xs font-bold uppercase text-dark-brown/60">{t("Action")}</th>
+                  <tr className="bg-[#FAF6F0] text-[11px] font-extrabold uppercase text-[#2A1810]/60 border-b border-[#EBE3D7]">
+                    <th className="px-6 py-4">{t("Order ID")}</th>
+                    <th className="px-6 py-4 hidden md:table-cell">{t("Customer")}</th>
+                    <th className="px-6 py-4">{t("Items")}</th>
+                    <th className="px-6 py-4">{t("Total")}</th>
+                    <th className="px-6 py-4 hidden sm:table-cell">{t("Date")}</th>
+                    <th className="px-6 py-4">{t("Status")}</th>
+                    <th className="px-6 py-4">{t("Action")}</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-[#EBE3D7]/60 text-sm">
                   {displayedOrders.map((order) => (
-                    <tr key={order.id} className="paginated-order border-t border-dark-brown/10 hover:bg-dark-brown/5 transition-colors">
-                      <td className="px-5 py-4">
-                        <p className="font-bold text-dark-brown text-sm uppercase mb-1">{order.id}</p>
+                    <tr key={order.id} className="paginated-order hover:bg-[#FAF6F0] transition-colors">
+                      <td className="px-6 py-4">
+                        <p className="font-extrabold font-mono text-[#2A1810] text-sm uppercase mb-1.5">{order.id}</p>
                         {order.orderType && (
-                          <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${
-                            order.orderType === "Dine-In" ? "bg-light-brown/30 text-dark-brown" 
-                            : order.orderType === "Scheduled" ? "bg-blue-100 text-blue-800" 
-                            : "bg-dark-brown/10 text-dark-brown"
+                          <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase border shadow-2xs ${
+                            order.orderType === "Dine-In"
+                              ? "bg-[#2A1810] text-[#FAEADE] border-[#2A1810]" 
+                              : order.orderType === "Scheduled"
+                              ? "bg-blue-50 text-blue-800 border-blue-200" 
+                              : "bg-[#E3A458]/15 text-[#A26833] border-[#E3A458]/40"
                           }`}>
                             {order.orderType === "Dine-In" 
-                              ? `Dine-In${order.tableNumber ? ` (T-${order.tableNumber})` : ""}` 
+                              ? `🍽️ Dine-In${order.tableNumber ? ` (T-${order.tableNumber})` : ""}` 
                               : order.orderType === "Scheduled" 
-                                ? `Pre-Order${order.pickupTime ? ` @ ${(() => { try { const d = new Date(order.pickupTime); return isNaN(d.getTime()) ? order.pickupTime : d.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch { return order.pickupTime; } })()}` : ""}` 
-                                : "Takeout"}
+                                ? `⏰ Pre-Order${order.pickupTime ? ` @ ${(() => { try { const d = new Date(order.pickupTime); return isNaN(d.getTime()) ? order.pickupTime : d.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch { return order.pickupTime; } })()}` : ""}` 
+                                : "🛍️ Takeout"}
                           </span>
                         )}
                       </td>
-                      <td className="px-5 py-4 hidden md:table-cell">
-                        <p className="font-paragraph text-dark-brown text-sm">{order.userName}</p>
-                        <p className="font-paragraph text-dark-brown/50 text-xs">{order.userEmail}</p>
+                      <td className="px-6 py-4 hidden md:table-cell">
+                        <p className="font-bold text-[#2A1810] text-sm">{order.userName}</p>
+                        <p className="font-paragraph text-[#2A1810]/45 text-xs truncate max-w-xs">{order.userEmail}</p>
                       </td>
-                      <td className="px-5 py-4">
-                        <p className="font-paragraph text-dark-brown text-sm">{order.totalItems} item{order.totalItems > 1 ? "s" : ""}</p>
-                        <div className="flex flex-col gap-1 mt-1">
+                      <td className="px-6 py-4">
+                        <p className="font-bold text-xs text-[#2A1810] bg-[#2A1810]/5 px-2 py-0.5 rounded-md w-fit mb-1.5">
+                          {order.totalItems} item{order.totalItems > 1 ? "s" : ""}
+                        </p>
+                        <div className="flex flex-col gap-1">
                           {order.items.map((i, idx) => (
                             <div key={idx} className="group/item relative">
-                              <p className="font-paragraph text-dark-brown/70 text-xs truncate max-w-[200px]">
-                                <span className="font-bold text-light-brown">{i.qty}x</span> {i.name}
+                              <p className="font-paragraph text-[#2A1810]/80 text-xs truncate max-w-[220px]">
+                                <span className="font-extrabold text-[#A26833]">{i.qty}x</span> {i.name}
                               </p>
                               {i.notes && (
-                                <p className="text-[10px] bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded italic font-bold w-fit mt-0.5">
-                                  "{i.notes}"
+                                <p className="text-[10px] bg-amber-50 border border-amber-200/60 text-amber-900 px-2 py-0.5 rounded-md italic font-bold w-fit mt-0.5">
+                                  &ldquo;{i.notes}&rdquo;
                                 </p>
                               )}
                             </div>
                           ))}
                         </div>
                       </td>
-                      <td className="px-5 py-4">
-                        <p className="font-bold text-dark-brown text-sm">₱{order.total.toFixed(2)}</p>
+                      <td className="px-6 py-4">
+                        <p className="font-black text-[#2A1810] font-mono text-base">₱{order.total.toFixed(2)}</p>
                         {order.paymentMethod ? (
-                          <p className={`mt-1 text-[10px] font-bold uppercase ${
-                            order.paymentStatus === "paid" ? "text-emerald-700" : "text-amber-700"
+                          <span className={`inline-block mt-1 text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md border ${
+                            order.paymentStatus === "paid"
+                              ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                              : "bg-amber-50 text-amber-800 border-amber-200"
                           }`}>
                             {order.paymentMethod}
                             {order.paymentStatus === "paid" ? " · paid" : " · unpaid"}
-                          </p>
+                          </span>
                         ) : (
-                          <p className="mt-1 text-[10px] font-bold uppercase text-dark-brown/35">No payment yet</p>
+                          <span className="inline-block mt-1 text-[10px] font-extrabold uppercase text-[#2A1810]/40">
+                            Unspecified
+                          </span>
                         )}
                         {!order.isArchived && order.status !== "cancelled" && order.paymentStatus !== "paid" && (
-                          <button
-                            type="button"
-                            onClick={() => markOrderPaid(order.id)}
-                            className="mt-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] uppercase rounded-lg px-2 py-1 transition-colors"
-                          >
-                            Mark Paid
-                          </button>
+                          <div>
+                            <button
+                              type="button"
+                              onClick={() => markOrderPaid(order.id)}
+                              className="mt-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-[10px] uppercase rounded-lg px-2.5 py-1 transition-all shadow-2xs active:scale-95"
+                            >
+                              Mark Paid
+                            </button>
+                          </div>
                         )}
                       </td>
-                      <td className="px-5 py-4 hidden sm:table-cell">
-                        <p className="font-paragraph text-dark-brown/60 text-xs">{new Date(order.date).toLocaleDateString()}</p>
-                        <p className="font-paragraph text-dark-brown/40 text-xs">{new Date(order.date).toLocaleTimeString()}</p>
+                      <td className="px-6 py-4 hidden sm:table-cell">
+                        <p className="font-extrabold text-[#2A1810] text-xs">{new Date(order.date).toLocaleDateString()}</p>
+                        <p className="font-paragraph text-[#2A1810]/40 text-xs mt-0.5 font-mono">{new Date(order.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                       </td>
-                      <td className="px-5 py-4">
+                      <td className="px-6 py-4">
                         <span
-                          className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold uppercase ${
+                          className={`inline-flex items-center rounded-full px-3 py-1 text-[10px] font-extrabold uppercase border shadow-2xs ${
                             order.status === "completed"
-                              ? "bg-green-100 text-green-700"
+                              ? "bg-emerald-50 text-emerald-800 border-emerald-200"
                               : order.status === "ready"
-                              ? "bg-blue-100 text-blue-700"
+                              ? "bg-blue-50 text-blue-800 border-blue-200"
                               : order.status === "preparing"
-                              ? "bg-yellow-100 text-yellow-700"
+                              ? "bg-amber-50 text-amber-800 border-amber-200"
                               : order.status === "cancelled"
-                              ? "bg-red-100 text-red-700"
-                              : "bg-gray-100 text-gray-700"
+                              ? "bg-red-50 text-red-800 border-red-200"
+                              : "bg-gray-50 text-gray-800 border-gray-200"
                           }`}
                         >
                           {order.status}
@@ -1816,18 +1900,18 @@ export default function AdminPage() {
                           <div className="mt-1.5">
                             {renderStarRating(order.rating, 10)}
                             {order.servedByName && (
-                              <p className="text-[9px] text-dark-brown/45 font-paragraph mt-0.5">Served by {order.servedByName}</p>
+                              <p className="text-[9px] text-[#2A1810]/50 font-paragraph mt-0.5">Served by {order.servedByName}</p>
                             )}
                           </div>
                         )}
                       </td>
-                      <td className="px-5 py-4">
+                      <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
                           {!order.isArchived && (
                             <select
                               value={order.status}
                               onChange={(e) => updateStatus(order.id, e.target.value as Order["status"])}
-                              className="bg-white/60 border border-white/40 text-dark-brown font-paragraph text-xs rounded-xl px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-light-brown cursor-pointer"
+                              className="bg-[#FAF6F0] border border-[#EBE3D7] text-[#2A1810] font-extrabold text-xs rounded-xl px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#A26833]/40 cursor-pointer shadow-2xs"
                             >
                               <option value="pending">Pending</option>
                               <option value="preparing">Preparing</option>
@@ -1839,7 +1923,7 @@ export default function AdminPage() {
                           {!order.isArchived && order.status !== "cancelled" && order.status !== "ready" && order.status !== "completed" && (
                             <button
                               onClick={() => { setVoidModalOrderId(order.id); setVoidReason(""); }}
-                              className="bg-red-100 hover:bg-red-200 text-red-700 font-bold text-[10px] uppercase rounded-lg px-2 py-1 transition-colors"
+                              className="bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 font-extrabold text-[10px] uppercase rounded-xl px-2.5 py-1.5 transition-all shadow-2xs"
                               title="Void this order"
                             >
                               Void
@@ -1847,10 +1931,10 @@ export default function AdminPage() {
                           )}
                           <button
                             onClick={() => archiveOrder(order.id, !order.isArchived)}
-                            className={`font-bold text-[10px] uppercase rounded-lg px-2 py-1 transition-colors ${
+                            className={`font-extrabold text-[10px] uppercase rounded-xl px-2.5 py-1.5 transition-all shadow-2xs border ${
                               order.isArchived
-                                ? "bg-green-100 hover:bg-green-200 text-green-700"
-                                : "bg-dark-brown/5 hover:bg-dark-brown/10 text-dark-brown/60 hover:text-dark-brown"
+                                ? "bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-200"
+                                : "bg-[#FAF6F0] hover:bg-[#F5EFE6] text-[#2A1810]/70 hover:text-[#2A1810] border-[#EBE3D7]"
                             }`}
                             title={order.isArchived ? "Unarchive order" : "Archive order"}
                           >
@@ -1860,10 +1944,10 @@ export default function AdminPage() {
                         {order.voidReason && (
                           <button
                             onClick={() => setViewReasonData({ orderId: order.id, reason: order.voidReason! })}
-                            className="flex items-center gap-1 text-[10px] text-red-600 mt-1 italic font-bold hover:text-red-800 hover:underline transition-colors cursor-pointer"
+                            className="flex items-center gap-1 text-[10px] text-red-600 mt-1.5 italic font-extrabold hover:text-red-800 hover:underline transition-colors cursor-pointer"
                           >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                            View Reason
+                            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            <span>View Void Reason</span>
                           </button>
                         )}
                       </td>
@@ -1875,21 +1959,21 @@ export default function AdminPage() {
           )}
           
           {totalPages > 1 && (
-            <div className="p-5 md:p-6 border-t border-dark-brown/10 flex items-center justify-between">
+            <div className="p-6 border-t border-[#EBE3D7]/70 flex items-center justify-between">
               <button
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="bg-dark-brown/10 disabled:opacity-50 hover:bg-dark-brown text-dark-brown hover:text-milk font-bold text-xs md:text-sm uppercase rounded-full py-2 px-4 transition-all duration-300 shadow-sm hover:shadow-md"
+                className="bg-[#FAF6F0] hover:bg-[#F5EFE6] border border-[#EBE3D7] disabled:opacity-40 text-[#2A1810] font-extrabold text-xs uppercase tracking-wider rounded-full py-2 px-5 transition-all shadow-xs"
               >
-                Prev
+                Previous
               </button>
-              <span className="text-dark-brown font-bold text-sm">
+              <span className="text-[#2A1810] font-extrabold text-xs uppercase tracking-wider font-mono">
                 Page {currentPage} of {totalPages}
               </span>
               <button
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
-                className="bg-dark-brown/10 disabled:opacity-50 hover:bg-dark-brown text-dark-brown hover:text-milk font-bold text-xs md:text-sm uppercase rounded-full py-2 px-4 transition-all duration-300 shadow-sm hover:shadow-md"
+                className="bg-[#FAF6F0] hover:bg-[#F5EFE6] border border-[#EBE3D7] disabled:opacity-40 text-[#2A1810] font-extrabold text-xs uppercase tracking-wider rounded-full py-2 px-5 transition-all shadow-xs"
               >
                 Next
               </button>
@@ -1900,113 +1984,115 @@ export default function AdminPage() {
 
         {adminSection === "staff" && (<>
         {/* Staff Management Section */}
-        <div className="admin-stagger-item mt-10">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-          <div>
-            <h3 className="text-xl md:text-2xl font-bold text-dark-brown uppercase tracking-tight">Staff Accounts</h3>
-            <p className="font-paragraph text-dark-brown/50 text-sm mt-1">{staffUsers.length} staff member{staffUsers.length !== 1 ? "s" : ""} · click a card to view attendance history</p>
+        <div className="admin-stagger-item mt-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div>
+              <h3 className="text-xl sm:text-2xl font-black text-[#2A1810] uppercase tracking-tight">Staff Accounts</h3>
+              <p className="font-paragraph text-[#2A1810]/50 text-xs sm:text-sm mt-0.5">
+                {staffUsers.length} staff member{staffUsers.length !== 1 ? "s" : ""} · click a card to view detailed attendance history
+              </p>
+            </div>
           </div>
-        </div>
 
-        {staffUsers.length === 0 ? (
-          <div className="app-panel border rounded-3xl p-10 text-center shadow-lg">
-            <p className="text-4xl mb-3">👥</p>
-            <p className="font-paragraph text-dark-brown/50">No staff accounts found</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {staffUsers.map((s) => (
-              <div
-                key={s.id}
-                onClick={() => openAttendanceHistory(s)}
-                className="app-panel border rounded-3xl p-5 shadow-lg hover:shadow-xl transition-all group hover:-translate-y-1 cursor-pointer"
-              >
-                <div className="flex items-start gap-4">
-                  {/* Avatar */}
-                  {s.avatar ? (
-                    <Image src={s.avatar} alt={s.name || s.email} width={48} height={48} className="w-12 h-12 rounded-2xl object-cover flex-shrink-0" />
-                  ) : (
-                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 text-lg font-bold uppercase ${
-                      s.role === "admin" ? "bg-dark-brown text-milk" : "bg-light-brown/20 text-dark-brown"
-                    }`}>
-                      {(s.name || s.email).charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="font-bold text-dark-brown text-sm uppercase truncate">{s.name || s.email.split("@")[0]}</p>
-                      {s.employee_id && (
-                        <span className="px-2 py-0.5 rounded-md bg-dark-brown/8 text-dark-brown/50 text-[10px] font-mono font-bold tracking-wider">{s.employee_id}</span>
-                      )}
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                        s.role === "admin" ? "bg-dark-brown/10 text-dark-brown" : "bg-light-brown/20 text-dark-brown/70"
+          {staffUsers.length === 0 ? (
+            <div className="bg-[#FFFDF9] border border-[#EBE3D7] rounded-3xl p-12 text-center shadow-[0_4px_24px_rgba(42,24,16,0.06)]">
+              <p className="text-4xl mb-2">👥</p>
+              <p className="font-extrabold uppercase text-sm text-[#2A1810]">No staff accounts found</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {staffUsers.map((s) => (
+                <div
+                  key={s.id}
+                  onClick={() => openAttendanceHistory(s)}
+                  className="bg-[#FFFDF9] border border-[#EBE3D7] hover:border-[#A26833]/40 rounded-3xl p-5 shadow-[0_4px_20px_rgba(42,24,16,0.05)] hover:shadow-md transition-all group hover:-translate-y-0.5 cursor-pointer"
+                >
+                  <div className="flex items-start gap-4">
+                    {/* Avatar */}
+                    {s.avatar ? (
+                      <Image src={s.avatar} alt={s.name || s.email} width={48} height={48} className="w-12 h-12 rounded-2xl object-cover flex-shrink-0 border border-[#EBE3D7]" />
+                    ) : (
+                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 text-base font-extrabold uppercase border border-[#EBE3D7] ${
+                        s.role === "admin" ? "bg-[#2A1810] text-[#FAEADE]" : "bg-[#F5EFE6] text-[#2A1810]"
                       }`}>
-                        {s.role}
-                      </span>
-                    </div>
-                    <p className="font-paragraph text-dark-brown/50 text-xs truncate mt-0.5">{s.email}</p>
-                    {s.position && (() => {
-                      const pos = STAFF_POSITIONS.find(p => p.key === s.position);
-                      return pos ? (
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase mt-1.5 ${pos.badge} ${pos.badgeText}`}>
-                          <span>{pos.icon}</span>
-                          {pos.label}
+                        {(s.name || s.email).charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <p className="font-extrabold text-[#2A1810] text-sm uppercase truncate">{s.name || s.email.split("@")[0]}</p>
+                        {s.employee_id && (
+                          <span className="px-2 py-0.5 rounded-md bg-[#2A1810]/5 text-[#2A1810]/60 text-[9px] font-mono font-extrabold tracking-wider border border-[#EBE3D7]">{s.employee_id}</span>
+                        )}
+                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase ${
+                          s.role === "admin" ? "bg-[#2A1810] text-[#FAEADE]" : "bg-[#E3A458]/15 text-[#A26833] border border-[#E3A458]/30"
+                        }`}>
+                          {s.role}
                         </span>
-                      ) : null;
-                    })()}
-                    <div className="flex items-center gap-3 mt-2">
-                      <span className={`flex items-center gap-1 text-[10px] font-bold uppercase ${
-                        s.is_active ? "text-green-600" : "text-red-500"
-                      }`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${s.is_active ? "bg-green-500" : "bg-red-400"}`}></span>
-                        {s.is_active ? "Active" : "Inactive"}
-                      </span>
-                      {s.is_email_verified && (
-                        <span className="flex items-center gap-1 text-[10px] font-bold uppercase text-blue-600">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                          Verified
+                      </div>
+                      <p className="font-paragraph text-[#2A1810]/50 text-xs truncate mt-0.5">{s.email}</p>
+                      {s.position && (() => {
+                        const pos = STAFF_POSITIONS.find(p => p.key === s.position);
+                        return pos ? (
+                          <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-extrabold uppercase mt-1.5 shadow-2xs ${pos.badge} ${pos.badgeText}`}>
+                            <span>{pos.icon}</span>
+                            {pos.label}
+                          </span>
+                        ) : null;
+                      })()}
+                      <div className="flex items-center gap-3 mt-2">
+                        <span className={`flex items-center gap-1 text-[10px] font-extrabold uppercase ${
+                          s.is_active ? "text-emerald-700" : "text-red-600"
+                        }`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${s.is_active ? "bg-emerald-500" : "bg-red-400"}`}></span>
+                          {s.is_active ? "Active" : "Inactive"}
                         </span>
-                      )}
-                      {s.phone && (
-                        <span className="flex items-center gap-1 text-[10px] font-bold text-dark-brown/40">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                          {s.phone}
-                        </span>
-                      )}
+                        {s.is_email_verified && (
+                          <span className="flex items-center gap-1 text-[10px] font-extrabold uppercase text-blue-700">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            Verified
+                          </span>
+                        )}
+                        {s.phone && (
+                          <span className="flex items-center gap-1 text-[10px] font-extrabold text-[#2A1810]/50">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                            {s.phone}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
+                  {/* Action buttons */}
+                  <div className="flex items-center gap-2 mt-4 pt-3 border-t border-[#EBE3D7]/70">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); openAttendanceHistory(s); }}
+                      className="flex-1 flex items-center justify-center gap-1.5 bg-[#FAF6F0] hover:bg-[#F5EFE6] text-[#2A1810] font-extrabold text-[10px] uppercase rounded-xl py-2 transition-all border border-[#EBE3D7] shadow-2xs"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                      <span>History</span>
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); openEditStaff(s); }}
+                      className="flex-1 flex items-center justify-center gap-1.5 bg-[#2A1810]/5 hover:bg-[#2A1810]/10 text-[#2A1810] font-extrabold text-[10px] uppercase rounded-xl py-2 transition-all border border-[#EBE3D7] shadow-2xs"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                      <span>Edit Profile</span>
+                    </button>
+                  </div>
                 </div>
-                {/* Action buttons */}
-                <div className="flex items-center gap-2 mt-4 pt-3 border-t border-dark-brown/5">
-                  <button
-                    onClick={(e) => { e.stopPropagation(); openAttendanceHistory(s); }}
-                    className="flex-1 flex items-center justify-center gap-1.5 bg-light-brown/15 hover:bg-light-brown/30 text-dark-brown font-bold text-[10px] uppercase rounded-xl py-2 transition-all"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    History
-                  </button>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); openEditStaff(s); }}
-                    className="flex-1 flex items-center justify-center gap-1.5 bg-dark-brown/5 hover:bg-dark-brown/10 text-dark-brown/70 hover:text-dark-brown font-bold text-[10px] uppercase rounded-xl py-2 transition-all"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
-                    Edit Profile
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Customer Feedback Tied to Staff */}
         <div className="admin-stagger-item mt-12">
           <div className="mb-6 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
             <div>
-              <h3 className="text-xl md:text-2xl font-bold text-dark-brown uppercase tracking-tight">Customer Feedback by Staff</h3>
-              <p className="font-paragraph text-dark-brown/50 text-sm mt-1">
-                Tag which staff served rated orders — aggregated per staff member
+              <h3 className="text-xl sm:text-2xl font-black text-[#2A1810] uppercase tracking-tight">Customer Feedback by Staff</h3>
+              <p className="font-paragraph text-[#2A1810]/50 text-xs sm:text-sm mt-0.5">
+                Tag which staff served rated orders — aggregated performance metrics per staff member
               </p>
             </div>
             <div className="flex gap-2">
@@ -2015,8 +2101,10 @@ export default function AdminPage() {
                   key={d}
                   type="button"
                   onClick={() => setFeedbackDays(d)}
-                  className={`px-3 py-2 rounded-full text-xs font-bold uppercase transition-all ${
-                    feedbackDays === d ? "bg-dark-brown text-milk shadow-md" : "bg-white/60 text-dark-brown/70 hover:bg-white border border-white/60"
+                  className={`px-4 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-wider transition-all ${
+                    feedbackDays === d
+                      ? "bg-[#2A1810] text-[#FAEADE] shadow-sm"
+                      : "bg-[#FFFDF9] text-[#2A1810]/70 hover:bg-[#F5EFE6] hover:text-[#2A1810] border border-[#EBE3D7]"
                   }`}
                 >
                   {d} Days
@@ -2027,61 +2115,61 @@ export default function AdminPage() {
 
           {feedbackLoading ? (
             <div className="py-12 flex items-center justify-center">
-              <div className="w-7 h-7 border-2 border-light-brown/30 border-t-light-brown rounded-full animate-spin" />
+              <div className="w-8 h-8 border-3 border-[#E3A458]/30 border-t-[#A26833] rounded-full animate-spin" />
             </div>
           ) : !feedbackData ? (
-            <p className="font-paragraph text-dark-brown/45 text-sm">Unable to load feedback data.</p>
+            <p className="font-paragraph text-[#2A1810]/45 text-sm">Unable to load feedback data.</p>
           ) : (
             <>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-                <div className="rounded-2xl bg-yellow-50/80 border border-yellow-200/60 p-4 text-center">
-                  <p className="text-2xl font-bold text-yellow-800">{feedbackData.summary.overall_avg_label}</p>
-                  <p className="text-[10px] font-bold uppercase text-yellow-700/70 mt-0.5">Overall Avg</p>
+                <div className="rounded-2xl bg-amber-50/80 border border-amber-200/60 p-4 text-center">
+                  <p className="text-2xl font-black text-amber-900 font-mono">{feedbackData.summary.overall_avg_label}</p>
+                  <p className="text-[10px] font-extrabold uppercase text-amber-800/70 mt-0.5">Overall Avg</p>
                 </div>
-                <div className="rounded-2xl bg-dark-brown/5 border border-dark-brown/10 p-4 text-center">
-                  <p className="text-2xl font-bold text-dark-brown tabular-nums">{feedbackData.summary.total_ratings}</p>
-                  <p className="text-[10px] font-bold uppercase text-dark-brown/50 mt-0.5">Total Reviews</p>
+                <div className="rounded-2xl bg-[#F5EFE6] border border-[#EBE3D7] p-4 text-center">
+                  <p className="text-2xl font-black text-[#2A1810] font-mono">{feedbackData.summary.total_ratings}</p>
+                  <p className="text-[10px] font-extrabold uppercase text-[#2A1810]/60 mt-0.5">Total Reviews</p>
                 </div>
                 <div className="rounded-2xl bg-emerald-50/80 border border-emerald-200/60 p-4 text-center">
-                  <p className="text-2xl font-bold text-emerald-800 tabular-nums">{feedbackData.summary.tagged_ratings}</p>
-                  <p className="text-[10px] font-bold uppercase text-emerald-700/70 mt-0.5">Tagged</p>
+                  <p className="text-2xl font-black text-emerald-900 font-mono">{feedbackData.summary.tagged_ratings}</p>
+                  <p className="text-[10px] font-extrabold uppercase text-emerald-800/70 mt-0.5">Tagged</p>
                 </div>
                 <div className="rounded-2xl bg-indigo-50/80 border border-indigo-200/60 p-4 text-center">
-                  <p className="text-2xl font-bold text-indigo-800 tabular-nums">{feedbackData.summary.untagged_ratings}</p>
-                  <p className="text-[10px] font-bold uppercase text-indigo-700/70 mt-0.5">Needs Tagging</p>
+                  <p className="text-2xl font-black text-indigo-900 font-mono">{feedbackData.summary.untagged_ratings}</p>
+                  <p className="text-[10px] font-extrabold uppercase text-indigo-800/70 mt-0.5">Needs Tagging</p>
                 </div>
               </div>
 
               {feedbackData.staff.length > 0 && (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-8">
                   {feedbackData.staff.map((s: any) => (
-                    <div key={s.user_id} className="app-panel border rounded-3xl p-5 shadow-lg">
+                    <div key={s.user_id} className="bg-[#FFFDF9] border border-[#EBE3D7] rounded-3xl p-5 shadow-[0_4px_20px_rgba(42,24,16,0.05)]">
                       <div className="flex items-start justify-between gap-3 mb-3">
                         <div>
-                          <p className="font-bold text-dark-brown uppercase">{s.name}</p>
-                          <p className="text-[10px] text-dark-brown/45 font-mono">{s.employee_id || s.email}</p>
-                          <p className="text-[10px] text-dark-brown/50 uppercase font-bold mt-1">{s.position_display}</p>
+                          <p className="font-extrabold text-[#2A1810] uppercase">{s.name}</p>
+                          <p className="text-[10px] text-[#2A1810]/45 font-mono">{s.employee_id || s.email}</p>
+                          <p className="text-[10px] text-[#2A1810]/55 uppercase font-extrabold mt-1">{s.position_display}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-xl font-bold text-yellow-700">{s.avg_rating_label}</p>
-                          <p className="text-[10px] font-bold uppercase text-dark-brown/45">{s.review_count} review{s.review_count !== 1 ? "s" : ""}</p>
+                          <p className="text-xl font-black text-amber-700 font-mono">{s.avg_rating_label}</p>
+                          <p className="text-[10px] font-extrabold uppercase text-[#2A1810]/45">{s.review_count} review{s.review_count !== 1 ? "s" : ""}</p>
                         </div>
                       </div>
-                      <div className="flex flex-wrap gap-1.5 text-[9px] font-bold uppercase">
+                      <div className="flex flex-wrap gap-1.5 text-[9px] font-extrabold uppercase">
                         <span className="px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800">5★ {s.five_star}</span>
                         <span className="px-2 py-0.5 rounded-full bg-amber-50 text-amber-800">4★ {s.four_star}</span>
                         <span className="px-2 py-0.5 rounded-full bg-orange-50 text-orange-800">3★ {s.three_star}</span>
                         <span className="px-2 py-0.5 rounded-full bg-red-50 text-red-700">≤2★ {s.two_star + s.one_star}</span>
                       </div>
                       {s.recent_reviews?.length > 0 && (
-                        <div className="mt-3 space-y-2 border-t border-dark-brown/8 pt-3">
+                        <div className="mt-3 space-y-2 border-t border-[#EBE3D7]/70 pt-3">
                           {s.recent_reviews.slice(0, 2).map((r: any) => (
                             <div key={`${s.user_id}-${r.order_id}`} className="text-xs">
                               <div className="flex items-center gap-2">
                                 {renderStarRating(r.rating, 10)}
-                                <span className="font-bold text-dark-brown/60">{r.order_label}</span>
+                                <span className="font-extrabold text-[#2A1810]/60">{r.order_label}</span>
                               </div>
-                              {r.comment && <p className="text-dark-brown/55 font-paragraph mt-0.5 line-clamp-2">&ldquo;{r.comment}&rdquo;</p>}
+                              {r.comment && <p className="text-[#2A1810]/65 font-paragraph mt-0.5 line-clamp-2">&ldquo;{r.comment}&rdquo;</p>}
                             </div>
                           ))}
                         </div>
@@ -2091,26 +2179,26 @@ export default function AdminPage() {
                 </div>
               )}
 
-              <div className="app-panel border rounded-3xl p-6 shadow-lg">
-                <p className="text-[10px] font-bold uppercase text-dark-brown/50 mb-4">Tag Staff on Customer Reviews</p>
+              <div className="bg-[#FFFDF9] border border-[#EBE3D7] rounded-3xl p-6 shadow-[0_4px_24px_rgba(42,24,16,0.06)]">
+                <p className="text-xs font-extrabold uppercase text-[#2A1810]/60 mb-4 tracking-wider">Tag Staff on Customer Reviews</p>
                 {feedbackData.untagged_reviews.length === 0 && feedbackData.summary.total_ratings === 0 ? (
-                  <p className="font-paragraph text-dark-brown/45 text-sm">No customer reviews yet. Ratings appear after customers rate completed orders.</p>
+                  <p className="font-paragraph text-[#2A1810]/45 text-sm">No customer reviews yet. Ratings appear after customers rate completed orders.</p>
                 ) : feedbackData.untagged_reviews.length === 0 ? (
-                  <p className="font-paragraph text-dark-brown/45 text-sm">All reviews in this period are tagged to staff.</p>
+                  <p className="font-paragraph text-[#2A1810]/45 text-sm">All reviews in this period are tagged to staff.</p>
                 ) : (
                   <div className="space-y-3">
                     {feedbackData.untagged_reviews.map((review: any) => (
-                      <div key={review.order_id} className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-2xl bg-white/50 border border-dark-brown/8">
+                      <div key={review.order_id} className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-2xl bg-[#FAF6F0] border border-[#EBE3D7]">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-bold text-dark-brown uppercase text-xs">{review.order_label}</span>
+                            <span className="font-extrabold text-[#2A1810] uppercase text-xs">{review.order_label}</span>
                             {renderStarRating(review.rating, 12)}
-                            <span className="text-[10px] text-dark-brown/45 font-paragraph">{review.customer_name}</span>
+                            <span className="text-[10px] text-[#2A1810]/45 font-paragraph">{review.customer_name}</span>
                           </div>
                           {review.rating_comment && (
-                            <p className="text-sm text-dark-brown/70 font-paragraph mt-1">&ldquo;{review.rating_comment}&rdquo;</p>
+                            <p className="text-sm text-[#2A1810]/70 font-paragraph mt-1">&ldquo;{review.rating_comment}&rdquo;</p>
                           )}
-                          <p className="text-[10px] text-dark-brown/40 mt-1">
+                          <p className="text-[10px] text-[#2A1810]/40 mt-1 font-mono">
                             {review.rated_at ? new Date(review.rated_at).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : ""}
                           </p>
                         </div>
@@ -2121,7 +2209,7 @@ export default function AdminPage() {
                             const val = e.target.value;
                             if (val) tagOrderStaff(review.order_id, val);
                           }}
-                          className="bg-white/70 border border-dark-brown/15 rounded-xl px-3 py-2 text-xs font-bold text-dark-brown min-w-[180px]"
+                          className="bg-white border border-[#EBE3D7] rounded-xl px-3 py-2 text-xs font-extrabold text-[#2A1810] min-w-[180px] shadow-2xs"
                         >
                           <option value="" disabled>Tag staff who served…</option>
                           {staffUsers.map((s) => (
@@ -2140,524 +2228,508 @@ export default function AdminPage() {
 
         {adminSection === "roles" && (<>
         {/* Staff Role Assignment Section */}
-        <div className="admin-stagger-item mt-10">
-        <div className="mb-6">
-          <h3 className="text-xl md:text-2xl font-bold text-dark-brown uppercase tracking-tight">Staff Role Assignment</h3>
-          <p className="font-paragraph text-dark-brown/50 text-sm mt-1">Assign a role to each staff member — roles appear as colored badges</p>
-        </div>
-
-        {staffUsers.length === 0 ? (
-          <div className="app-panel border rounded-3xl p-10 text-center shadow-lg">
-            <p className="text-4xl mb-3">📋</p>
-            <p className="font-paragraph text-dark-brown/50">No staff accounts to assign roles</p>
+        <div className="admin-stagger-item mt-8">
+          <div className="mb-6">
+            <h3 className="text-xl sm:text-2xl font-black text-[#2A1810] uppercase tracking-tight">Staff Role Assignment</h3>
+            <p className="font-paragraph text-[#2A1810]/50 text-xs sm:text-sm mt-0.5">Assign a role to each staff member — roles appear as colored badges</p>
           </div>
-        ) : (
-          <div className="app-panel border rounded-3xl shadow-lg overflow-hidden">
-            {/* Header */}
-            <div className="hidden md:grid grid-cols-[1fr_1fr_1fr] gap-4 px-6 py-3 bg-dark-brown/5 border-b border-dark-brown/10 text-[10px] font-bold text-dark-brown/50 uppercase tracking-wider">
-              <span>Staff</span>
-              <span>Current Role</span>
-              <span>Assign Role</span>
+
+          {staffUsers.length === 0 ? (
+            <div className="bg-[#FFFDF9] border border-[#EBE3D7] rounded-3xl p-12 text-center shadow-[0_4px_24px_rgba(42,24,16,0.06)]">
+              <p className="text-4xl mb-2">📋</p>
+              <p className="font-extrabold uppercase text-sm text-[#2A1810]">No staff accounts to assign roles</p>
             </div>
-            {/* Rows */}
-            {staffUsers.map((s) => {
-              const currentPos = STAFF_POSITIONS.find(p => p.key === s.position);
-              return (
-                <div key={s.id} className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr] gap-3 md:gap-4 px-6 py-4 border-b border-dark-brown/5 last:border-b-0 items-center hover:bg-dark-brown/[0.02] transition-colors">
-                  {/* Staff info */}
-                  <div className="flex items-center gap-3">
-                    {s.avatar ? (
-                      <Image src={s.avatar} alt={s.name || s.email} width={36} height={36} className="w-9 h-9 rounded-xl object-cover flex-shrink-0" />
-                    ) : (
-                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-sm font-bold uppercase ${
-                        s.role === "admin" ? "bg-dark-brown text-milk" : "bg-light-brown/20 text-dark-brown"
-                      }`}>
-                        {(s.name || s.email).charAt(0).toUpperCase()}
+          ) : (
+            <div className="bg-[#FFFDF9] border border-[#EBE3D7] rounded-3xl shadow-[0_4px_24px_rgba(42,24,16,0.06)] overflow-hidden">
+              {/* Header */}
+              <div className="hidden md:grid grid-cols-[1fr_1fr_1fr] gap-4 px-6 py-4 bg-[#FAF6F0] border-b border-[#EBE3D7] text-[11px] font-extrabold text-[#2A1810]/60 uppercase tracking-wider">
+                <span>Staff Member</span>
+                <span>Current Station Role</span>
+                <span>Assign Station Role</span>
+              </div>
+              {/* Rows */}
+              <div className="divide-y divide-[#EBE3D7]/60">
+                {staffUsers.map((s) => {
+                  const currentPos = STAFF_POSITIONS.find(p => p.key === s.position);
+                  return (
+                    <div key={s.id} className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr] gap-3 md:gap-4 px-6 py-4 items-center hover:bg-[#FAF6F0] transition-colors">
+                      {/* Staff info */}
+                      <div className="flex items-center gap-3">
+                        {s.avatar ? (
+                          <Image src={s.avatar} alt={s.name || s.email} width={36} height={36} className="w-9 h-9 rounded-xl object-cover flex-shrink-0 border border-[#EBE3D7]" />
+                        ) : (
+                          <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-sm font-extrabold uppercase border border-[#EBE3D7] ${
+                            s.role === "admin" ? "bg-[#2A1810] text-[#FAEADE]" : "bg-[#F5EFE6] text-[#2A1810]"
+                          }`}>
+                            {(s.name || s.email).charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <button type="button" onClick={() => openAttendanceHistory(s)} className="font-extrabold text-[#2A1810] text-xs uppercase truncate hover:underline text-left">
+                              {s.name || s.email.split("@")[0]}
+                            </button>
+                            {s.employee_id && (
+                              <span className="px-1.5 py-0.5 rounded bg-[#2A1810]/5 text-[#2A1810]/50 text-[9px] font-mono font-extrabold tracking-wider border border-[#EBE3D7] flex-shrink-0">{s.employee_id}</span>
+                            )}
+                          </div>
+                          <p className="font-paragraph text-[#2A1810]/40 text-[10px] truncate">{s.email}</p>
+                        </div>
                       </div>
-                    )}
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <button type="button" onClick={() => openAttendanceHistory(s)} className="font-bold text-dark-brown text-xs uppercase truncate hover:underline text-left">
-                          {s.name || s.email.split("@")[0]}
-                        </button>
-                        {s.employee_id && (
-                          <span className="px-1.5 py-0.5 rounded bg-dark-brown/8 text-dark-brown/40 text-[9px] font-mono font-bold tracking-wider flex-shrink-0">{s.employee_id}</span>
+                      {/* Current role badge */}
+                      <div className="flex items-center">
+                        {currentPos ? (
+                          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold uppercase shadow-2xs ${currentPos.badge} ${currentPos.badgeText}`}>
+                            <span>{currentPos.icon}</span>
+                            {currentPos.label}
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold uppercase bg-gray-100 text-gray-500 border border-gray-200">
+                            <span>—</span>
+                            No Role
+                          </span>
                         )}
                       </div>
-                      <p className="font-paragraph text-dark-brown/40 text-[10px] truncate">{s.email}</p>
+                      {/* Role selector */}
+                      <div className="flex flex-wrap gap-1.5">
+                        {STAFF_POSITIONS.map((pos) => (
+                          <button
+                            key={pos.key}
+                            onClick={() => {
+                              if (s.position !== pos.key) {
+                                setStaffForm({ name: s.name, role: s.role, phone: s.phone, position: pos.key, shift_start: s.shift_start || "", shift_end: s.shift_end || "", bio: s.bio, is_active: s.is_active });
+                                setEditingStaff(s);
+                                assignStaffRole(s.id, pos.key);
+                              }
+                            }}
+                            className={`px-3 py-1 rounded-full text-[10px] font-extrabold uppercase transition-all border shadow-2xs ${
+                              s.position === pos.key
+                                ? `${pos.badge} ${pos.badgeText} border-current shadow-xs`
+                                : "bg-white border-[#EBE3D7] text-[#2A1810]/60 hover:border-[#A26833]/40 hover:text-[#2A1810]"
+                            }`}
+                          >
+                            {pos.icon} {pos.label}
+                          </button>
+                        ))}
+                        <button
+                          onClick={() => {
+                            if (s.position !== "") {
+                              setStaffForm({ name: s.name, role: s.role, phone: s.phone, position: "", shift_start: s.shift_start || "", shift_end: s.shift_end || "", bio: s.bio, is_active: s.is_active });
+                              setEditingStaff(s);
+                              assignStaffRole(s.id, "");
+                            }
+                          }}
+                          className={`px-3 py-1 rounded-full text-[10px] font-extrabold uppercase transition-all border shadow-2xs ${
+                            s.position === ""
+                              ? "bg-gray-100 text-gray-700 border-gray-300"
+                              : "bg-white border-[#EBE3D7] text-[#2A1810]/50 hover:border-[#A26833]/40 hover:text-[#2A1810]"
+                          }`}
+                        >
+                          — None
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                  {/* Current role badge */}
-                  <div className="flex items-center">
-                    {currentPos ? (
-                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase ${currentPos.badge} ${currentPos.badgeText}`}>
-                        <span>{currentPos.icon}</span>
-                        {currentPos.label}
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase bg-gray-100 text-gray-500">
-                        <span>—</span>
-                        No Role
-                      </span>
-                    )}
-                  </div>
-                  {/* Role selector */}
-                  <div className="flex flex-wrap gap-1.5">
-                    {STAFF_POSITIONS.map((pos) => (
-                      <button
-                        key={pos.key}
-                        onClick={() => {
-                          if (s.position !== pos.key) {
-                            setStaffForm({ name: s.name, role: s.role, phone: s.phone, position: pos.key, shift_start: s.shift_start || "", shift_end: s.shift_end || "", bio: s.bio, is_active: s.is_active });
-                            setEditingStaff(s);
-                            assignStaffRole(s.id, pos.key);
-                          }
-                        }}
-                        className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase transition-all border ${
-                          s.position === pos.key
-                            ? `${pos.badge} ${pos.badgeText} border-current shadow-sm`
-                            : "bg-white border-dark-brown/10 text-dark-brown/50 hover:border-dark-brown/25 hover:text-dark-brown/70"
-                        }`}
-                      >
-                        {pos.icon} {pos.label}
-                      </button>
-                    ))}
-                    <button
-                      onClick={() => {
-                        if (s.position !== "") {
-                          setStaffForm({ name: s.name, role: s.role, phone: s.phone, position: "", shift_start: s.shift_start || "", shift_end: s.shift_end || "", bio: s.bio, is_active: s.is_active });
-                          setEditingStaff(s);
-                          assignStaffRole(s.id, "");
-                        }
-                      }}
-                      className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase transition-all border ${
-                        s.position === ""
-                          ? "bg-gray-100 text-gray-600 border-gray-400 shadow-sm"
-                          : "bg-white border-dark-brown/10 text-dark-brown/50 hover:border-dark-brown/25 hover:text-dark-brown/70"
-                      }`}
-                    >
-                      — None
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
         </>)}
 
         {adminSection === "contacts" && (<>
         {/* Staff Contact Directory */}
-        <div className="admin-stagger-item mt-10">
-        <div className="mb-6">
-          <h3 className="text-xl md:text-2xl font-bold text-dark-brown uppercase tracking-tight">Staff Contact Directory</h3>
-          <p className="font-paragraph text-dark-brown/50 text-sm mt-1">All staff phone numbers and emails in one place — tap to call or copy</p>
-        </div>
-
-        {staffUsers.length === 0 ? (
-          <div className="app-panel border rounded-3xl p-10 text-center shadow-lg">
-            <p className="text-4xl mb-3">📞</p>
-            <p className="font-paragraph text-dark-brown/50">No staff contacts to display</p>
+        <div className="admin-stagger-item mt-8">
+          <div className="mb-6">
+            <h3 className="text-xl sm:text-2xl font-black text-[#2A1810] uppercase tracking-tight">Staff Contact Directory</h3>
+            <p className="font-paragraph text-[#2A1810]/50 text-xs sm:text-sm mt-0.5">All staff phone numbers and emails in one place — tap to call or copy</p>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {staffUsers.map((s) => {
-              const pos = STAFF_POSITIONS.find(p => p.key === s.position);
-              return (
-                <div
-                  key={s.id}
-                  className="app-panel border rounded-2xl p-5 shadow-md hover:shadow-lg transition-all group"
-                >
-                  {/* Top: Avatar + Name + Role */}
-                  <div className="flex items-center gap-3 mb-4">
-                    {s.avatar ? (
-                      <Image src={s.avatar} alt={s.name || s.email} width={44} height={44} className="w-11 h-11 rounded-xl object-cover flex-shrink-0" />
-                    ) : (
-                      <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 text-sm font-bold uppercase ${
-                        s.role === "admin" ? "bg-dark-brown text-milk" : "bg-light-brown/20 text-dark-brown"
-                      }`}>
-                        {(s.name || s.email).charAt(0).toUpperCase()}
-                      </div>
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <p className="font-bold text-dark-brown text-sm uppercase truncate">{s.name || s.email.split("@")[0]}</p>
-                        {s.employee_id && (
-                          <span className="px-1.5 py-0.5 rounded bg-dark-brown/8 text-dark-brown/40 text-[9px] font-mono font-bold tracking-wider flex-shrink-0">{s.employee_id}</span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-1.5 mt-0.5">
-                        {pos && (
-                          <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase ${pos.badge} ${pos.badgeText}`}>
-                            <span>{pos.icon}</span>{pos.label}
-                          </span>
-                        )}
-                        <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase ${
-                          s.role === "admin" ? "bg-dark-brown/10 text-dark-brown" : "bg-light-brown/15 text-dark-brown/60"
-                        }`}>
-                          {s.role}
-                        </span>
-                        <span className={`flex items-center gap-0.5 text-[9px] font-bold uppercase ${
-                          s.is_active ? "text-green-600" : "text-red-400"
-                        }`}>
-                          <span className={`w-1 h-1 rounded-full ${s.is_active ? "bg-green-500" : "bg-red-400"}`}></span>
-                          {s.is_active ? "Active" : "Inactive"}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
 
-                  {/* Contact Actions */}
-                  <div className="space-y-2">
-                    {/* Email */}
-                    <div className="flex items-center gap-2 bg-dark-brown/[0.03] rounded-xl px-3 py-2.5 group/email">
-                      <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgb(37,99,235)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-                      </div>
-                      <span className="flex-1 text-dark-brown/70 text-xs font-paragraph truncate">{s.email}</span>
-                      <button
-                        onClick={() => { navigator.clipboard.writeText(s.email); showToast("Email copied!", "success"); }}
-                        className="opacity-0 group-hover/email:opacity-100 flex items-center justify-center w-7 h-7 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 transition-all flex-shrink-0"
-                        title="Copy email"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-                      </button>
-                    </div>
-
-                    {/* Phone */}
-                    {s.phone ? (
-                      <div className="flex items-center gap-2 bg-dark-brown/[0.03] rounded-xl px-3 py-2.5 group/phone">
-                        <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgb(5,150,105)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          {staffUsers.length === 0 ? (
+            <div className="bg-[#FFFDF9] border border-[#EBE3D7] rounded-3xl p-12 text-center shadow-[0_4px_24px_rgba(42,24,16,0.06)]">
+              <p className="text-4xl mb-2">📞</p>
+              <p className="font-extrabold uppercase text-sm text-[#2A1810]">No staff contacts to display</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {staffUsers.map((s) => {
+                const pos = STAFF_POSITIONS.find(p => p.key === s.position);
+                return (
+                  <div
+                    key={s.id}
+                    className="bg-[#FFFDF9] border border-[#EBE3D7] rounded-3xl p-5 shadow-[0_4px_20px_rgba(42,24,16,0.05)] hover:shadow-md transition-all group"
+                  >
+                    {/* Top: Avatar + Name + Role */}
+                    <div className="flex items-center gap-3 mb-4">
+                      {s.avatar ? (
+                        <Image src={s.avatar} alt={s.name || s.email} width={44} height={44} className="w-11 h-11 rounded-2xl object-cover flex-shrink-0 border border-[#EBE3D7]" />
+                      ) : (
+                        <div className={`w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 text-sm font-extrabold uppercase border border-[#EBE3D7] ${
+                          s.role === "admin" ? "bg-[#2A1810] text-[#FAEADE]" : "bg-[#F5EFE6] text-[#2A1810]"
+                        }`}>
+                          {(s.name || s.email).charAt(0).toUpperCase()}
                         </div>
-                        <span className="flex-1 text-dark-brown/70 text-xs font-paragraph truncate">{s.phone}</span>
-                        <a
-                          href={`tel:${s.phone}`}
-                          className="flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 transition-all flex-shrink-0"
-                          title="Call"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                        </a>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="font-extrabold text-[#2A1810] text-sm uppercase truncate">{s.name || s.email.split("@")[0]}</p>
+                          {s.employee_id && (
+                            <span className="px-1.5 py-0.5 rounded bg-[#2A1810]/5 text-[#2A1810]/50 text-[9px] font-mono font-extrabold tracking-wider border border-[#EBE3D7] flex-shrink-0">{s.employee_id}</span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                          {pos && (
+                            <span className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase shadow-2xs ${pos.badge} ${pos.badgeText}`}>
+                              <span>{pos.icon}</span>{pos.label}
+                            </span>
+                          )}
+                          <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase ${
+                            s.role === "admin" ? "bg-[#2A1810] text-[#FAEADE]" : "bg-[#E3A458]/15 text-[#A26833] border border-[#E3A458]/30"
+                          }`}>
+                            {s.role}
+                          </span>
+                          <span className={`flex items-center gap-0.5 text-[9px] font-extrabold uppercase ${
+                            s.is_active ? "text-emerald-700" : "text-red-500"
+                          }`}>
+                            <span className={`w-1 h-1 rounded-full ${s.is_active ? "bg-emerald-500" : "bg-red-400"}`}></span>
+                            {s.is_active ? "Active" : "Inactive"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Contact Actions */}
+                    <div className="space-y-2">
+                      {/* Email */}
+                      <div className="flex items-center gap-2 bg-[#FAF6F0] rounded-2xl px-3 py-2.5 group/email border border-[#EBE3D7]">
+                        <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center flex-shrink-0 border border-blue-200">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                        </div>
+                        <span className="flex-1 text-[#2A1810]/70 text-xs font-paragraph truncate">{s.email}</span>
                         <button
-                          onClick={() => { navigator.clipboard.writeText(s.phone!); showToast("Phone number copied!", "success"); }}
-                          className="opacity-0 group-hover/phone:opacity-100 flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 transition-all flex-shrink-0"
-                          title="Copy phone"
+                          onClick={() => { navigator.clipboard.writeText(s.email); showToast("Email copied!", "success"); }}
+                          className="opacity-0 group-hover/email:opacity-100 flex items-center justify-center w-7 h-7 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 transition-all flex-shrink-0 border border-blue-200"
+                          title="Copy email"
                         >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
                         </button>
                       </div>
-                    ) : (
-                      <div className="flex items-center gap-2 bg-dark-brown/[0.02] rounded-xl px-3 py-2.5">
-                        <div className="w-8 h-8 rounded-lg bg-dark-brown/5 flex items-center justify-center flex-shrink-0">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgb(120,113,108)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+
+                      {/* Phone */}
+                      {s.phone ? (
+                        <div className="flex items-center gap-2 bg-[#FAF6F0] rounded-2xl px-3 py-2.5 group/phone border border-[#EBE3D7]">
+                          <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center flex-shrink-0 border border-emerald-200">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                          </div>
+                          <span className="flex-1 text-[#2A1810]/70 text-xs font-paragraph truncate font-mono">{s.phone}</span>
+                          <a
+                            href={`tel:${s.phone}`}
+                            className="flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition-all flex-shrink-0 border border-emerald-200"
+                            title="Call"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                          </a>
+                          <button
+                            onClick={() => { navigator.clipboard.writeText(s.phone!); showToast("Phone number copied!", "success"); }}
+                            className="opacity-0 group-hover/phone:opacity-100 flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition-all flex-shrink-0 border border-emerald-200"
+                            title="Copy phone"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                          </button>
                         </div>
-                        <span className="text-dark-brown/30 text-xs font-paragraph italic">No phone number</span>
-                      </div>
-                    )}
+                      ) : (
+                        <div className="flex items-center gap-2 bg-[#FAF6F0] rounded-2xl px-3 py-2.5 border border-[#EBE3D7]">
+                          <div className="w-8 h-8 rounded-xl bg-[#2A1810]/5 flex items-center justify-center flex-shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                          </div>
+                          <span className="text-[#2A1810]/40 text-xs font-paragraph italic">No phone number listed</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+                );
+              })}
+            </div>
+          )}
         </div>
         </>)}
 
         {adminSection === "attendance" && (<>
         {/* Today's Attendance Log */}
-        <div className="admin-stagger-item mt-10">
-        <div className="mb-6">
-          <h3 className="text-xl md:text-2xl font-bold text-dark-brown uppercase tracking-tight">Today's Attendance</h3>
-          <p className="font-paragraph text-dark-brown/50 text-sm mt-1">
-            Compares scheduled staff vs clock-ins — click a staff name to view full history
-          </p>
-        </div>
-
-        {attendanceData?.summary && attendanceData.summary.absent_today > 0 && (
-          <div className="mb-4 flex items-start gap-3 rounded-2xl border border-red-200/80 bg-red-50/90 px-4 py-3">
-            <span className="text-lg leading-none" aria-hidden>⚠️</span>
-            <div>
-              <p className="text-sm font-bold text-red-800 uppercase tracking-wide">Absent today</p>
-              <p className="text-xs text-red-700/80 font-paragraph mt-0.5">
-                {attendanceData.summary.absent_today} scheduled staff did not clock in within the{" "}
-                {attendanceData.summary.grace_minutes ?? 15}-minute grace period.
-              </p>
-            </div>
+        <div className="admin-stagger-item mt-8">
+          <div className="mb-6">
+            <h3 className="text-xl sm:text-2xl font-black text-[#2A1810] uppercase tracking-tight">Today&apos;s Attendance</h3>
+            <p className="font-paragraph text-[#2A1810]/50 text-xs sm:text-sm mt-0.5">
+              Compares scheduled staff vs clock-ins — click a staff name to view detailed history
+            </p>
           </div>
-        )}
 
-        {/* Summary Cards */}
-        {attendanceData?.summary && (
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 mb-6">
-            <div className="bg-blue-50/80 border border-blue-200/60 rounded-2xl p-4 text-center">
-              <p className="text-2xl font-bold text-blue-700">{attendanceData.summary.pending}</p>
-              <p className="text-[10px] font-bold uppercase text-blue-600/70 mt-0.5">Pending</p>
+          {attendanceData?.summary && attendanceData.summary.absent_today > 0 && (
+            <div className="mb-4 flex items-start gap-3 rounded-2xl border border-red-200/80 bg-red-50/90 px-4 py-3">
+              <span className="text-lg leading-none" aria-hidden>⚠️</span>
+              <div>
+                <p className="text-sm font-extrabold text-red-800 uppercase tracking-wide">Absent today</p>
+                <p className="text-xs text-red-700/80 font-paragraph mt-0.5">
+                  {attendanceData.summary.absent_today} scheduled staff did not clock in within the{" "}
+                  {attendanceData.summary.grace_minutes ?? 15}-minute grace period.
+                </p>
+              </div>
             </div>
-            <div className="bg-emerald-50/80 border border-emerald-200/60 rounded-2xl p-4 text-center">
-              <p className="text-2xl font-bold text-emerald-700">{attendanceData.summary.clocked_in}</p>
-              <p className="text-[10px] font-bold uppercase text-emerald-600/70 mt-0.5">On Time</p>
-            </div>
-            <div className="bg-orange-50/80 border border-orange-200/60 rounded-2xl p-4 text-center">
-              <p className="text-2xl font-bold text-orange-700">{attendanceData.summary.late}</p>
-              <p className="text-[10px] font-bold uppercase text-orange-600/70 mt-0.5">Late</p>
-            </div>
-            <div className="bg-amber-50/80 border border-amber-200/60 rounded-2xl p-4 text-center">
-              <p className="text-2xl font-bold text-amber-700">{attendanceData.summary.on_break}</p>
-              <p className="text-[10px] font-bold uppercase text-amber-600/70 mt-0.5">On Break</p>
-            </div>
-            <div className="bg-dark-brown/5 border border-dark-brown/10 rounded-2xl p-4 text-center">
-              <p className="text-2xl font-bold text-dark-brown/60">{attendanceData.summary.clocked_out}</p>
-              <p className="text-[10px] font-bold uppercase text-dark-brown/40 mt-0.5">Clocked Out</p>
-            </div>
-            <div className="bg-red-50/80 border border-red-200/60 rounded-2xl p-4 text-center ring-2 ring-red-300/50">
-              <p className="text-2xl font-bold text-red-700">{attendanceData.summary.absent_today ?? 0}</p>
-              <p className="text-[10px] font-bold uppercase text-red-600/70 mt-0.5">Absent Today</p>
-            </div>
-            <div className="bg-yellow-50/80 border border-yellow-200/60 rounded-2xl p-4 text-center">
-              <p className="text-2xl font-bold text-yellow-700">{attendanceData.summary.within_grace ?? 0}</p>
-              <p className="text-[10px] font-bold uppercase text-yellow-600/70 mt-0.5">Grace Period</p>
-            </div>
-            <div className="bg-indigo-50/80 border border-indigo-200/60 rounded-2xl p-4 text-center">
-              <p className="text-2xl font-bold text-indigo-700">{attendanceData.summary.planned_absent ?? 0}</p>
-              <p className="text-[10px] font-bold uppercase text-indigo-600/70 mt-0.5">Planned Absence</p>
-            </div>
-            <div className="bg-red-50/40 border border-red-100/60 rounded-2xl p-4 text-center">
-              <p className="text-2xl font-bold text-red-600/80">{attendanceData.summary.absent}</p>
-              <p className="text-[10px] font-bold uppercase text-red-500/60 mt-0.5">Marked Absent</p>
-            </div>
-            <div className="bg-gray-50/80 border border-gray-200/60 rounded-2xl p-4 text-center">
-              <p className="text-2xl font-bold text-gray-600">{attendanceData.summary.not_clocked_in}</p>
-              <p className="text-[10px] font-bold uppercase text-gray-500/70 mt-0.5">Not Clocked In</p>
-            </div>
-          </div>
-        )}
+          )}
 
-        {/* Attendance Table */}
-        {!attendanceData?.attendance?.length ? (
-          <div className="app-panel border rounded-3xl p-10 text-center shadow-lg">
-            <p className="text-4xl mb-3">📋</p>
-            <p className="font-paragraph text-dark-brown/50">No staff attendance data yet</p>
-          </div>
-        ) : (
-          <div className="app-panel border rounded-2xl overflow-hidden shadow-lg">
-            {/* Desktop Table */}
-            <div className="hidden md:block overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-dark-brown/10">
-                    <th className="text-left px-5 py-3 text-[10px] font-bold uppercase text-dark-brown/40 tracking-wider">Staff</th>
-                    <th className="text-left px-5 py-3 text-[10px] font-bold uppercase text-dark-brown/40 tracking-wider">Position</th>
-                    <th className="text-left px-5 py-3 text-[10px] font-bold uppercase text-dark-brown/40 tracking-wider">Status</th>
-                    <th className="text-left px-5 py-3 text-[10px] font-bold uppercase text-dark-brown/40 tracking-wider">Clock In</th>
-                    <th className="text-left px-5 py-3 text-[10px] font-bold uppercase text-dark-brown/40 tracking-wider">Break</th>
-                    <th className="text-left px-5 py-3 text-[10px] font-bold uppercase text-dark-brown/40 tracking-wider">Clock Out</th>
-                    <th className="text-right px-5 py-3 text-[10px] font-bold uppercase text-dark-brown/40 tracking-wider">Duration</th>
-                    <th className="text-right px-5 py-3 text-[10px] font-bold uppercase text-dark-brown/40 tracking-wider">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {attendanceData.attendance.map((a: any) => {
-                    const cfg = getAttendanceStatusConfig(a);
-                    const handleApprove = async () => {
-                      try {
-                        const res = await authFetch(`${API_BASE_URL}/api/auth/admin/shift/${a.shift_id}/approve/`, {
-                          method: "POST", headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ admin_email: user?.email })});
-                        if (res.ok) { showToast("Approved — On Time!", "success"); fetchAttendance(); }
-                        else { const d = await res.json(); showToast(d.error || "Failed to approve", "error"); }
-                      } catch { showToast("Failed to approve", "error"); }
-                    };
-                    const handleMarkLate = async () => {
-                      try {
-                        const res = await authFetch(`${API_BASE_URL}/api/auth/admin/shift/${a.shift_id}/mark-late/`, {
-                          method: "POST", headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ admin_email: user?.email })});
-                        if (res.ok) { showToast("Marked as Late", "success"); fetchAttendance(); }
-                        else { const d = await res.json(); showToast(d.error || "Failed to mark late", "error"); }
-                      } catch { showToast("Failed to mark late", "error"); }
-                    };
-                    const handleMarkAbsent = async () => {
-                      try {
-                        const res = await authFetch(`${API_BASE_URL}/api/auth/admin/shift/${a.shift_id}/mark-absent/`, {
-                          method: "POST", headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ admin_email: user?.email })});
-                        if (res.ok) { showToast("Marked as Absent", "success"); fetchAttendance(); }
-                        else { const d = await res.json(); showToast(d.error || "Failed to mark absent", "error"); }
-                      } catch { showToast("Failed to mark absent", "error"); }
-                    };
-                    return (
-                      <tr key={a.id} className={`border-b border-dark-brown/5 hover:bg-dark-brown/[0.02] transition-colors ${a.status === 'pending' ? 'bg-blue-50/30' : ''} ${a.absent_today ? 'bg-red-50/40' : ''}`}>
-                        <td className="px-5 py-3">
-                          <button
-                            type="button"
-                            onClick={() => openAttendanceHistory(a)}
-                            className="flex items-center gap-3 text-left hover:opacity-80 transition-opacity"
-                          >
-                            {a.avatar ? (
-                              <Image src={a.avatar} alt={a.name} width={32} height={32} className="w-8 h-8 rounded-lg object-cover flex-shrink-0" />
-                            ) : (
-                              <div className="w-8 h-8 rounded-lg bg-light-brown/20 flex items-center justify-center text-xs font-bold uppercase text-dark-brown flex-shrink-0">{a.name.charAt(0)}</div>
+          {/* Summary Cards */}
+          {attendanceData?.summary && (
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 mb-6">
+              <div className="bg-blue-50/80 border border-blue-200/60 rounded-2xl p-4 text-center">
+                <p className="text-2xl font-black text-blue-800 font-mono">{attendanceData.summary.pending}</p>
+                <p className="text-[10px] font-extrabold uppercase text-blue-700/70 mt-0.5">Pending</p>
+              </div>
+              <div className="bg-emerald-50/80 border border-emerald-200/60 rounded-2xl p-4 text-center">
+                <p className="text-2xl font-black text-emerald-800 font-mono">{attendanceData.summary.clocked_in}</p>
+                <p className="text-[10px] font-extrabold uppercase text-emerald-700/70 mt-0.5">On Time</p>
+              </div>
+              <div className="bg-orange-50/80 border border-orange-200/60 rounded-2xl p-4 text-center">
+                <p className="text-2xl font-black text-orange-800 font-mono">{attendanceData.summary.late}</p>
+                <p className="text-[10px] font-extrabold uppercase text-orange-700/70 mt-0.5">Late</p>
+              </div>
+              <div className="bg-amber-50/80 border border-amber-200/60 rounded-2xl p-4 text-center">
+                <p className="text-2xl font-black text-amber-800 font-mono">{attendanceData.summary.on_break}</p>
+                <p className="text-[10px] font-extrabold uppercase text-amber-700/70 mt-0.5">On Break</p>
+              </div>
+              <div className="bg-[#FAF6F0] border border-[#EBE3D7] rounded-2xl p-4 text-center">
+                <p className="text-2xl font-black text-[#2A1810]/70 font-mono">{attendanceData.summary.clocked_out}</p>
+                <p className="text-[10px] font-extrabold uppercase text-[#2A1810]/50 mt-0.5">Clocked Out</p>
+              </div>
+              <div className="bg-red-50/80 border border-red-200/60 rounded-2xl p-4 text-center ring-2 ring-red-300/50">
+                <p className="text-2xl font-black text-red-800 font-mono">{attendanceData.summary.absent_today ?? 0}</p>
+                <p className="text-[10px] font-extrabold uppercase text-red-700/70 mt-0.5">Absent Today</p>
+              </div>
+              <div className="bg-yellow-50/80 border border-yellow-200/60 rounded-2xl p-4 text-center">
+                <p className="text-2xl font-black text-yellow-800 font-mono">{attendanceData.summary.within_grace ?? 0}</p>
+                <p className="text-[10px] font-extrabold uppercase text-yellow-700/70 mt-0.5">Grace Period</p>
+              </div>
+              <div className="bg-indigo-50/80 border border-indigo-200/60 rounded-2xl p-4 text-center">
+                <p className="text-2xl font-black text-indigo-800 font-mono">{attendanceData.summary.planned_absent ?? 0}</p>
+                <p className="text-[10px] font-extrabold uppercase text-indigo-700/70 mt-0.5">Planned Off</p>
+              </div>
+            </div>
+          )}
+
+          {/* Attendance Table */}
+          {!attendanceData?.attendance?.length ? (
+            <div className="bg-[#FFFDF9] border border-[#EBE3D7] rounded-3xl p-12 text-center shadow-[0_4px_24px_rgba(42,24,16,0.06)]">
+              <p className="text-4xl mb-2">📋</p>
+              <p className="font-extrabold uppercase text-sm text-[#2A1810]">No staff attendance data yet</p>
+            </div>
+          ) : (
+            <div className="bg-[#FFFDF9] border border-[#EBE3D7] rounded-3xl overflow-hidden shadow-[0_4px_24px_rgba(42,24,16,0.06)] mb-8">
+              {/* Desktop Table */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-[#FAF6F0] text-[11px] font-extrabold uppercase text-[#2A1810]/60 border-b border-[#EBE3D7]">
+                      <th className="px-6 py-4">Staff</th>
+                      <th className="px-6 py-4">Position</th>
+                      <th className="px-6 py-4">Status</th>
+                      <th className="px-6 py-4">Clock In</th>
+                      <th className="px-6 py-4">Break</th>
+                      <th className="px-6 py-4">Clock Out</th>
+                      <th className="px-6 py-4 text-right">Duration</th>
+                      <th className="px-6 py-4 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#EBE3D7]/60 text-sm">
+                    {attendanceData.attendance.map((a: any) => {
+                      const cfg = getAttendanceStatusConfig(a);
+                      const handleApprove = async () => {
+                        try {
+                          const res = await authFetch(`${API_BASE_URL}/api/auth/admin/shift/${a.shift_id}/approve/`, {
+                            method: "POST", headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ admin_email: user?.email })});
+                          if (res.ok) { showToast("Approved — On Time!", "success"); fetchAttendance(); }
+                          else { const d = await res.json(); showToast(d.error || "Failed to approve", "error"); }
+                        } catch { showToast("Failed to approve", "error"); }
+                      };
+                      const handleMarkLate = async () => {
+                        try {
+                          const res = await authFetch(`${API_BASE_URL}/api/auth/admin/shift/${a.shift_id}/mark-late/`, {
+                            method: "POST", headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ admin_email: user?.email })});
+                          if (res.ok) { showToast("Marked as Late", "success"); fetchAttendance(); }
+                          else { const d = await res.json(); showToast(d.error || "Failed to mark late", "error"); }
+                        } catch { showToast("Failed to mark late", "error"); }
+                      };
+                      const handleMarkAbsent = async () => {
+                        try {
+                          const res = await authFetch(`${API_BASE_URL}/api/auth/admin/shift/${a.shift_id}/mark-absent/`, {
+                            method: "POST", headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ admin_email: user?.email })});
+                          if (res.ok) { showToast("Marked as Absent", "success"); fetchAttendance(); }
+                          else { const d = await res.json(); showToast(d.error || "Failed to mark absent", "error"); }
+                        } catch { showToast("Failed to mark absent", "error"); }
+                      };
+                      return (
+                        <tr key={a.id} className={`hover:bg-[#FAF6F0] transition-colors ${a.status === 'pending' ? 'bg-blue-50/30' : ''} ${a.absent_today ? 'bg-red-50/40' : ''}`}>
+                          <td className="px-6 py-4">
+                            <button
+                              type="button"
+                              onClick={() => openAttendanceHistory(a)}
+                              className="flex items-center gap-3 text-left hover:opacity-80 transition-opacity"
+                            >
+                              {a.avatar ? (
+                                <Image src={a.avatar} alt={a.name} width={36} height={36} className="w-9 h-9 rounded-xl object-cover flex-shrink-0 border border-[#EBE3D7]" />
+                              ) : (
+                                <div className="w-9 h-9 rounded-xl bg-[#F5EFE6] flex items-center justify-center text-xs font-extrabold uppercase text-[#2A1810] flex-shrink-0 border border-[#EBE3D7]">{a.name.charAt(0)}</div>
+                              )}
+                              <div>
+                                <p className="text-sm font-extrabold text-[#2A1810] uppercase truncate hover:underline">{a.name}</p>
+                                <p className="text-[10px] text-[#2A1810]/40 font-mono">{a.employee_id || a.email}</p>
+                              </div>
+                            </button>
+                          </td>
+                          <td className="px-6 py-4 text-xs text-[#2A1810]/70 capitalize font-bold">
+                            {a.shift_assignment?.station_display || a.position || "—"}
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase shadow-2xs ${cfg.color} ${cfg.bg}`}>
+                              <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot} ${a.status === 'pending' || a.absent_today ? 'animate-pulse' : ''}`}></span>
+                              {cfg.label}
+                            </span>
+                            {a.planned_absence && (
+                              <span className="ml-1.5 block text-[9px] text-indigo-700 font-paragraph mt-0.5 max-w-[180px] truncate" title={a.planned_absence.reason}>
+                                🗓️ {a.planned_absence.reason}
+                              </span>
                             )}
-                            <div>
-                              <p className="text-sm font-bold text-dark-brown uppercase truncate hover:underline">{a.name}</p>
-                              <p className="text-[10px] text-dark-brown/40 font-mono">{a.employee_id || a.email}</p>
-                            </div>
-                          </button>
-                        </td>
-                        <td className="px-5 py-3 text-xs text-dark-brown/60 capitalize">
-                          {a.shift_assignment?.station_display || a.position || "—"}
-                        </td>
-                        <td className="px-5 py-3">
-                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${cfg.color} ${cfg.bg}`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot} ${a.status === 'pending' || a.absent_today ? 'animate-pulse' : ''}`}></span>
-                            {cfg.label}
-                          </span>
-                          {a.planned_absence && (
-                            <span className="ml-1.5 block text-[9px] text-indigo-600/80 font-paragraph mt-0.5 max-w-[180px] truncate" title={a.planned_absence.reason}>
-                              {a.planned_absence.reason}
-                            </span>
-                          )}
-                          {a.shift_start && (a.absent_today || a.display_status === 'within_grace') && !a.planned_absence && (
-                            <span className="ml-1.5 block text-[9px] text-dark-brown/40 font-paragraph mt-0.5">
-                              Shift {new Date(`1970-01-01T${a.shift_start}`).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                            </span>
-                          )}
-                          {a.minutes_late != null && a.minutes_late > 0 && (
-                            <span className="ml-1.5 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-orange-100 text-orange-700 text-[9px] font-bold">
-                              +{a.minutes_late}m late
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-5 py-3 text-xs text-dark-brown/60 font-paragraph">{a.clock_in ? new Date(a.clock_in).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—"}</td>
-                        <td className="px-5 py-3 text-xs text-dark-brown/60 font-paragraph">
-                          {a.break_start ? new Date(a.break_start).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—"}
-                          {a.break_end ? ` → ${new Date(a.break_end).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : ""}
-                        </td>
-                        <td className="px-5 py-3 text-xs text-dark-brown/60 font-paragraph">{a.clock_out ? new Date(a.clock_out).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—"}</td>
-                        <td className="px-5 py-3 text-right text-xs font-bold font-mono text-dark-brown/50">{a.duration || "—"}</td>
-                        <td className="px-5 py-3 text-right">
-                          {a.status === 'pending' && a.shift_id ? (
-                            <div className="flex items-center justify-end gap-1.5">
-                              <button onClick={handleApprove} className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase bg-emerald-600 hover:bg-emerald-700 text-white transition-all active:scale-95">
-                                On Time
-                              </button>
-                              <button onClick={handleMarkLate} className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase bg-orange-500 hover:bg-orange-600 text-white transition-all active:scale-95">
-                                Late
-                              </button>
-                              <button onClick={handleMarkAbsent} className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase bg-red-500 hover:bg-red-600 text-white transition-all active:scale-95">
-                                Absent
-                              </button>
-                            </div>
+                            {a.shift_start && (a.absent_today || a.display_status === 'within_grace') && !a.planned_absence && (
+                              <span className="ml-1.5 block text-[9px] text-[#2A1810]/50 font-paragraph mt-0.5">
+                                Shift {new Date(`1970-01-01T${a.shift_start}`).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                              </span>
+                            )}
+                            {a.minutes_late != null && a.minutes_late > 0 && (
+                              <span className="ml-1.5 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-orange-100 text-orange-800 text-[9px] font-extrabold">
+                                +{a.minutes_late}m late
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 text-xs text-[#2A1810]/70 font-mono">{a.clock_in ? new Date(a.clock_in).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—"}</td>
+                          <td className="px-6 py-4 text-xs text-[#2A1810]/70 font-mono">
+                            {a.break_start ? new Date(a.break_start).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—"}
+                            {a.break_end ? ` → ${new Date(a.break_end).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : ""}
+                          </td>
+                          <td className="px-6 py-4 text-xs text-[#2A1810]/70 font-mono">{a.clock_out ? new Date(a.clock_out).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—"}</td>
+                          <td className="px-6 py-4 text-right text-xs font-black font-mono text-[#2A1810]">{a.duration || "—"}</td>
+                          <td className="px-6 py-4 text-right">
+                            {a.status === 'pending' && a.shift_id ? (
+                              <div className="flex items-center justify-end gap-1.5">
+                                <button onClick={handleApprove} className="px-3 py-1 rounded-lg text-[10px] font-extrabold uppercase bg-emerald-700 hover:bg-emerald-800 text-white transition-all shadow-2xs active:scale-95">
+                                  On Time
+                                </button>
+                                <button onClick={handleMarkLate} className="px-3 py-1 rounded-lg text-[10px] font-extrabold uppercase bg-orange-500 hover:bg-orange-600 text-white transition-all shadow-2xs active:scale-95">
+                                  Late
+                                </button>
+                                <button onClick={handleMarkAbsent} className="px-3 py-1 rounded-lg text-[10px] font-extrabold uppercase bg-red-600 hover:bg-red-700 text-white transition-all shadow-2xs active:scale-95">
+                                  Absent
+                                </button>
+                              </div>
+                            ) : (
+                              <span className="text-[10px] text-[#2A1810]/30">—</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              {/* Mobile Cards */}
+              <div className="md:hidden divide-y divide-[#EBE3D7]/60">
+                {attendanceData.attendance.map((a: any) => {
+                  const cfg = getAttendanceStatusConfig(a);
+                  const handleApprove = async () => {
+                    try {
+                      const res = await authFetch(`${API_BASE_URL}/api/auth/admin/shift/${a.shift_id}/approve/`, {
+                        method: "POST", headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ admin_email: user?.email })});
+                      if (res.ok) { showToast("Approved — On Time!", "success"); fetchAttendance(); }
+                      else { const d = await res.json(); showToast(d.error || "Failed to approve", "error"); }
+                    } catch { showToast("Failed to approve", "error"); }
+                  };
+                  const handleMarkLate = async () => {
+                    try {
+                      const res = await authFetch(`${API_BASE_URL}/api/auth/admin/shift/${a.shift_id}/mark-late/`, {
+                        method: "POST", headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ admin_email: user?.email })});
+                      if (res.ok) { showToast("Marked as Late", "success"); fetchAttendance(); }
+                      else { const d = await res.json(); showToast(d.error || "Failed to mark late", "error"); }
+                    } catch { showToast("Failed to mark late", "error"); }
+                  };
+                  const handleMarkAbsent = async () => {
+                    try {
+                      const res = await authFetch(`${API_BASE_URL}/api/auth/admin/shift/${a.shift_id}/mark-absent/`, {
+                        method: "POST", headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ admin_email: user?.email })});
+                      if (res.ok) { showToast("Marked as Absent", "success"); fetchAttendance(); }
+                      else { const d = await res.json(); showToast(d.error || "Failed to mark absent", "error"); }
+                    } catch { showToast("Failed to mark absent", "error"); }
+                  };
+                  return (
+                    <div key={a.id} className={`p-4 ${a.status === 'pending' ? 'bg-blue-50/30' : ''} ${a.absent_today ? 'bg-red-50/40' : ''}`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <button
+                          type="button"
+                          onClick={() => openAttendanceHistory(a)}
+                          className="flex items-center gap-2 text-left"
+                        >
+                          {a.avatar ? (
+                            <Image src={a.avatar} alt={a.name} width={28} height={28} className="w-7 h-7 rounded-lg object-cover flex-shrink-0 border border-[#EBE3D7]" />
                           ) : (
-                            <span className="text-[10px] text-dark-brown/20">—</span>
+                            <div className="w-7 h-7 rounded-lg bg-[#F5EFE6] flex items-center justify-center text-[10px] font-extrabold uppercase text-[#2A1810] flex-shrink-0 border border-[#EBE3D7]">{a.name.charAt(0)}</div>
                           )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-            {/* Mobile Cards */}
-            <div className="md:hidden divide-y divide-dark-brown/5">
-              {attendanceData.attendance.map((a: any) => {
-                const cfg = getAttendanceStatusConfig(a);
-                const handleApprove = async () => {
-                  try {
-                    const res = await authFetch(`${API_BASE_URL}/api/auth/admin/shift/${a.shift_id}/approve/`, {
-                      method: "POST", headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ admin_email: user?.email })});
-                    if (res.ok) { showToast("Approved — On Time!", "success"); fetchAttendance(); }
-                    else { const d = await res.json(); showToast(d.error || "Failed to approve", "error"); }
-                  } catch { showToast("Failed to approve", "error"); }
-                };
-                const handleMarkLate = async () => {
-                  try {
-                    const res = await authFetch(`${API_BASE_URL}/api/auth/admin/shift/${a.shift_id}/mark-late/`, {
-                      method: "POST", headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ admin_email: user?.email })});
-                    if (res.ok) { showToast("Marked as Late", "success"); fetchAttendance(); }
-                    else { const d = await res.json(); showToast(d.error || "Failed to mark late", "error"); }
-                  } catch { showToast("Failed to mark late", "error"); }
-                };
-                const handleMarkAbsent = async () => {
-                  try {
-                    const res = await authFetch(`${API_BASE_URL}/api/auth/admin/shift/${a.shift_id}/mark-absent/`, {
-                      method: "POST", headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ admin_email: user?.email })});
-                    if (res.ok) { showToast("Marked as Absent", "success"); fetchAttendance(); }
-                    else { const d = await res.json(); showToast(d.error || "Failed to mark absent", "error"); }
-                  } catch { showToast("Failed to mark absent", "error"); }
-                };
-                return (
-                  <div key={a.id} className={`p-4 ${a.status === 'pending' ? 'bg-blue-50/30' : ''} ${a.absent_today ? 'bg-red-50/40' : ''}`}>
-                    <div className="flex items-center justify-between mb-2">
-                      <button
-                        type="button"
-                        onClick={() => openAttendanceHistory(a)}
-                        className="flex items-center gap-2 text-left"
-                      >
-                        {a.avatar ? (
-                          <Image src={a.avatar} alt={a.name} width={28} height={28} className="w-7 h-7 rounded-lg object-cover flex-shrink-0" />
-                        ) : (
-                          <div className="w-7 h-7 rounded-lg bg-light-brown/20 flex items-center justify-center text-[10px] font-bold uppercase text-dark-brown flex-shrink-0">{a.name.charAt(0)}</div>
-                        )}
-                        <p className="text-sm font-bold text-dark-brown uppercase hover:underline">{a.name}</p>
-                      </button>
-                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${cfg.color} ${cfg.bg}`}>
-                        <span className={`w-1 h-1 rounded-full ${cfg.dot} ${a.status === 'pending' || a.absent_today ? 'animate-pulse' : ''}`}></span>
-                        {cfg.label}
-                      </span>
-                      {a.minutes_late != null && a.minutes_late > 0 && (
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-orange-100 text-orange-700 text-[9px] font-bold">
-                          +{a.minutes_late}m late
+                          <p className="text-sm font-extrabold text-[#2A1810] uppercase hover:underline">{a.name}</p>
+                        </button>
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase ${cfg.color} ${cfg.bg}`}>
+                          <span className={`w-1 h-1 rounded-full ${cfg.dot} ${a.status === 'pending' || a.absent_today ? 'animate-pulse' : ''}`}></span>
+                          {cfg.label}
                         </span>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2 text-[10px] text-[#2A1810]/60 font-mono mt-2">
+                        <div><span className="block text-[#2A1810]/40 uppercase font-extrabold">In</span>{a.clock_in ? new Date(a.clock_in).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—"}</div>
+                        <div><span className="block text-[#2A1810]/40 uppercase font-extrabold">Break</span>{a.break_start ? new Date(a.break_start).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—"}</div>
+                        <div><span className="block text-[#2A1810]/40 uppercase font-extrabold">Out</span>{a.clock_out ? new Date(a.clock_out).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—"}</div>
+                      </div>
+                      {a.status === 'pending' && a.shift_id && (
+                        <div className="flex items-center gap-2 mt-3">
+                          <button onClick={handleApprove} className="flex-1 px-3 py-1.5 rounded-lg text-[10px] font-extrabold uppercase bg-emerald-700 hover:bg-emerald-800 text-white transition-all shadow-2xs">On Time</button>
+                          <button onClick={handleMarkLate} className="flex-1 px-3 py-1.5 rounded-lg text-[10px] font-extrabold uppercase bg-orange-500 hover:bg-orange-600 text-white transition-all shadow-2xs">Late</button>
+                          <button onClick={handleMarkAbsent} className="flex-1 px-3 py-1.5 rounded-lg text-[10px] font-extrabold uppercase bg-red-600 hover:bg-red-700 text-white transition-all shadow-2xs">Absent</button>
+                        </div>
                       )}
                     </div>
-                    {a.shift_start && (a.absent_today || a.display_status === 'within_grace') && (
-                      <p className="text-[9px] text-dark-brown/40 font-paragraph mb-2">
-                        Scheduled {new Date(`1970-01-01T${a.shift_start}`).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                      </p>
-                    )}
-                    <div className="grid grid-cols-3 gap-2 text-[10px] text-dark-brown/50">
-                      <div><span className="block text-dark-brown/30 uppercase font-bold">In</span>{a.clock_in ? new Date(a.clock_in).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—"}</div>
-                      <div><span className="block text-dark-brown/30 uppercase font-bold">Break</span>{a.break_start ? new Date(a.break_start).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—"}</div>
-                      <div><span className="block text-dark-brown/30 uppercase font-bold">Out</span>{a.clock_out ? new Date(a.clock_out).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—"}</div>
-                    </div>
-                    {a.status === 'pending' && a.shift_id && (
-                      <div className="flex items-center gap-2 mt-3">
-                        <button onClick={handleApprove} className="flex-1 px-3 py-2 rounded-lg text-[10px] font-bold uppercase bg-emerald-600 hover:bg-emerald-700 text-white transition-all active:scale-95">On Time</button>
-                        <button onClick={handleMarkLate} className="flex-1 px-3 py-2 rounded-lg text-[10px] font-bold uppercase bg-orange-500 hover:bg-orange-600 text-white transition-all active:scale-95">Late</button>
-                        <button onClick={handleMarkAbsent} className="flex-1 px-3 py-2 rounded-lg text-[10px] font-bold uppercase bg-red-500 hover:bg-red-600 text-white transition-all active:scale-95">Absent</button>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        )}
+          )}
         </div>
 
         {/* Assign Shift Form */}
         <div className="admin-stagger-item mt-12">
           <div className="mb-6 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
             <div>
-              <h3 className="text-xl md:text-2xl font-bold text-dark-brown uppercase tracking-tight">Assign Shift</h3>
-              <p className="font-paragraph text-dark-brown/50 text-sm mt-1">
+              <h3 className="text-xl sm:text-2xl font-black text-[#2A1810] uppercase tracking-tight">Assign Shift</h3>
+              <p className="font-paragraph text-[#2A1810]/50 text-xs sm:text-sm mt-0.5">
                 Pick staff, date, start/end time, and station — saved per week
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <button
                 type="button"
                 onClick={() => setShiftWeekStart((w) => shiftWeekStartISO(w, -1))}
-                className="px-3 py-2 rounded-xl bg-white/70 border border-dark-brown/15 text-dark-brown text-xs font-bold uppercase hover:bg-white transition-all"
+                className="px-3.5 py-1.5 rounded-full bg-[#FFFDF9] border border-[#EBE3D7] text-[#2A1810] text-xs font-extrabold uppercase hover:bg-[#F5EFE6] transition-all shadow-xs"
               >
                 ← Prev
               </button>
-              <span className="text-xs font-bold text-dark-brown/70 min-w-[160px] text-center">
+              <span className="text-xs font-extrabold text-[#2A1810]/70 min-w-[160px] text-center font-mono">
                 {new Date(`${shiftWeekStart}T12:00:00`).toLocaleDateString([], { month: "short", day: "numeric" })}
                 {" – "}
                 {new Date(`${getWeekEndISO(shiftWeekStart)}T12:00:00`).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}
@@ -2665,14 +2737,14 @@ export default function AdminPage() {
               <button
                 type="button"
                 onClick={() => setShiftWeekStart((w) => shiftWeekStartISO(w, 1))}
-                className="px-3 py-2 rounded-xl bg-white/70 border border-dark-brown/15 text-dark-brown text-xs font-bold uppercase hover:bg-white transition-all"
+                className="px-3.5 py-1.5 rounded-full bg-[#FFFDF9] border border-[#EBE3D7] text-[#2A1810] text-xs font-extrabold uppercase hover:bg-[#F5EFE6] transition-all shadow-xs"
               >
                 Next →
               </button>
               <button
                 type="button"
                 onClick={() => setShiftWeekStart(getWeekMondayISO())}
-                className="px-3 py-2 rounded-xl bg-dark-brown/10 text-dark-brown text-xs font-bold uppercase hover:bg-dark-brown/15 transition-all"
+                className="px-3.5 py-1.5 rounded-full bg-[#2A1810]/5 text-[#2A1810] text-xs font-extrabold uppercase hover:bg-[#2A1810]/10 transition-all border border-[#EBE3D7]"
               >
                 This Week
               </button>
@@ -2680,21 +2752,21 @@ export default function AdminPage() {
                 type="button"
                 onClick={exportShiftScheduleCsv}
                 disabled={shiftExportLoading}
-                className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold uppercase transition-all disabled:opacity-50"
+                className="px-4 py-1.5 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-extrabold uppercase transition-all disabled:opacity-50 shadow-xs"
               >
                 {shiftExportLoading ? "Exporting…" : "Export CSV"}
               </button>
             </div>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="app-panel border rounded-3xl p-6 shadow-lg">
+            <div className="bg-[#FFFDF9] border border-[#EBE3D7] rounded-3xl p-6 shadow-[0_4px_24px_rgba(42,24,16,0.06)]">
               <div className="space-y-4">
                 <div>
-                  <label className="block text-[10px] font-bold uppercase text-dark-brown/50 mb-1.5">Staff Member</label>
+                  <label className="block text-[10px] font-extrabold uppercase text-[#2A1810]/50 mb-1.5 tracking-wider">Staff Member</label>
                   <select
                     value={shiftFormStaff}
                     onChange={(e) => setShiftFormStaff(e.target.value)}
-                    className="w-full bg-white/70 border border-dark-brown/15 rounded-xl px-3 py-2.5 text-sm font-bold text-dark-brown"
+                    className="w-full bg-[#FAF6F0] border border-[#EBE3D7] rounded-xl px-3 py-2.5 text-sm font-extrabold text-[#2A1810] shadow-2xs"
                   >
                     {staffUsers.map((s) => (
                       <option key={s.email} value={s.email}>{s.name || s.email}</option>
@@ -2702,42 +2774,42 @@ export default function AdminPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold uppercase text-dark-brown/50 mb-1.5">Shift Date</label>
+                  <label className="block text-[10px] font-extrabold uppercase text-[#2A1810]/50 mb-1.5 tracking-wider">Shift Date</label>
                   <input
                     type="date"
                     value={shiftFormDate}
                     min={shiftWeekStart}
                     max={getWeekEndISO(shiftWeekStart)}
                     onChange={(e) => setShiftFormDate(e.target.value)}
-                    className="w-full bg-white/70 border border-dark-brown/15 rounded-xl px-3 py-2.5 text-sm text-dark-brown"
+                    className="w-full bg-[#FAF6F0] border border-[#EBE3D7] rounded-xl px-3 py-2.5 text-sm text-[#2A1810] font-mono shadow-2xs"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[10px] font-bold uppercase text-dark-brown/50 mb-1.5">Start Time</label>
+                    <label className="block text-[10px] font-extrabold uppercase text-[#2A1810]/50 mb-1.5 tracking-wider">Start Time</label>
                     <input
                       type="time"
                       value={shiftFormStart}
                       onChange={(e) => setShiftFormStart(e.target.value)}
-                      className="w-full bg-white/70 border border-dark-brown/15 rounded-xl px-3 py-2.5 text-sm text-dark-brown"
+                      className="w-full bg-[#FAF6F0] border border-[#EBE3D7] rounded-xl px-3 py-2.5 text-sm text-[#2A1810] font-mono shadow-2xs"
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold uppercase text-dark-brown/50 mb-1.5">End Time</label>
+                    <label className="block text-[10px] font-extrabold uppercase text-[#2A1810]/50 mb-1.5 tracking-wider">End Time</label>
                     <input
                       type="time"
                       value={shiftFormEnd}
                       onChange={(e) => setShiftFormEnd(e.target.value)}
-                      className="w-full bg-white/70 border border-dark-brown/15 rounded-xl px-3 py-2.5 text-sm text-dark-brown"
+                      className="w-full bg-[#FAF6F0] border border-[#EBE3D7] rounded-xl px-3 py-2.5 text-sm text-[#2A1810] font-mono shadow-2xs"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold uppercase text-dark-brown/50 mb-1.5">Station</label>
+                  <label className="block text-[10px] font-extrabold uppercase text-[#2A1810]/50 mb-1.5 tracking-wider">Station</label>
                   <select
                     value={shiftFormStation}
                     onChange={(e) => setShiftFormStation(e.target.value)}
-                    className="w-full bg-white/70 border border-dark-brown/15 rounded-xl px-3 py-2.5 text-sm font-bold text-dark-brown"
+                    className="w-full bg-[#FAF6F0] border border-[#EBE3D7] rounded-xl px-3 py-2.5 text-sm font-extrabold text-[#2A1810] shadow-2xs"
                   >
                     {STAFF_POSITIONS.map((pos) => (
                       <option key={pos.key} value={pos.key}>{pos.icon} {pos.label}</option>
@@ -2748,49 +2820,49 @@ export default function AdminPage() {
                   type="button"
                   onClick={submitShiftAssignment}
                   disabled={shiftFormLoading}
-                  className="w-full py-3 rounded-xl bg-dark-brown hover:bg-dark-brown/90 text-white font-bold text-xs uppercase transition-all disabled:opacity-50"
+                  className="w-full py-3 rounded-2xl bg-[#2A1810] hover:bg-[#2A1810]/90 text-[#FAEADE] font-extrabold text-xs uppercase tracking-wider transition-all disabled:opacity-50 shadow-sm"
                 >
                   {shiftFormLoading ? "Saving…" : "Assign Shift"}
                 </button>
               </div>
             </div>
-            <div className="app-panel border rounded-3xl p-6 shadow-lg">
+            <div className="bg-[#FFFDF9] border border-[#EBE3D7] rounded-3xl p-6 shadow-[0_4px_24px_rgba(42,24,16,0.06)]">
               <div className="flex items-center justify-between gap-3 mb-3">
-                <p className="text-[10px] font-bold uppercase text-dark-brown/50">This Week&apos;s Schedule</p>
+                <p className="text-xs font-extrabold uppercase text-[#2A1810]/60 tracking-wider">This Week&apos;s Schedule</p>
                 <button
                   type="button"
                   onClick={exportShiftScheduleCsv}
                   disabled={shiftExportLoading}
-                  className="text-[10px] font-bold uppercase text-emerald-700 hover:text-emerald-800 disabled:opacity-50"
+                  className="text-xs font-extrabold uppercase text-emerald-800 hover:text-emerald-900 disabled:opacity-50"
                 >
                   {shiftExportLoading ? "Exporting…" : "Download CSV"}
                 </button>
               </div>
               {shiftAssignLoading ? (
-                <p className="font-paragraph text-dark-brown/45 text-sm">Loading schedule…</p>
+                <p className="font-paragraph text-[#2A1810]/45 text-sm">Loading schedule…</p>
               ) : shiftAssignments.length === 0 ? (
-                <p className="font-paragraph text-dark-brown/45 text-sm">No shifts assigned for this week</p>
+                <p className="font-paragraph text-[#2A1810]/45 text-sm">No shifts assigned for this week</p>
               ) : (
                 <div className="space-y-2 max-h-[360px] overflow-y-auto pr-1">
                   {shiftAssignments.map((a) => {
                     const pos = STAFF_POSITIONS.find((p) => p.key === a.station);
                     return (
-                      <div key={a.id} className="flex items-center justify-between gap-3 p-3 rounded-xl bg-white/50 border border-dark-brown/5">
+                      <div key={a.id} className="flex items-center justify-between gap-3 p-3.5 rounded-2xl bg-[#FAF6F0] border border-[#EBE3D7]">
                         <div className="min-w-0">
-                          <p className="text-sm font-bold text-dark-brown truncate">{a.user_name || a.user_email}</p>
-                          <p className="text-[10px] text-dark-brown/50 font-paragraph">
+                          <p className="text-sm font-extrabold text-[#2A1810] truncate">{a.user_name || a.user_email}</p>
+                          <p className="text-[11px] text-[#2A1810]/50 font-paragraph font-mono">
                             {new Date(`${a.shift_date}T12:00:00`).toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" })}
                             {" · "}
                             {formatShiftTime(a.start_time)} – {formatShiftTime(a.end_time)}
                           </p>
-                          <span className={`inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-md text-[9px] font-bold uppercase ${pos?.badge || "bg-gray-100"} ${pos?.badgeText || "text-gray-700"}`}>
+                          <span className={`inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-md text-[9px] font-extrabold uppercase ${pos?.badge || "bg-gray-100"} ${pos?.badgeText || "text-gray-700"}`}>
                             {pos?.icon} {a.station_display}
                           </span>
                         </div>
                         <button
                           type="button"
                           onClick={() => deleteShiftAssignment(a.id)}
-                          className="flex-shrink-0 px-2.5 py-1.5 rounded-lg text-[9px] font-bold uppercase bg-red-50 text-red-600 hover:bg-red-100 transition-all"
+                          className="flex-shrink-0 px-3 py-1 rounded-xl text-[10px] font-extrabold uppercase bg-red-50 text-red-700 hover:bg-red-100 border border-red-200 transition-all shadow-2xs"
                         >
                           Remove
                         </button>
@@ -2806,20 +2878,20 @@ export default function AdminPage() {
         {/* Absence Request Form */}
         <div className="admin-stagger-item mt-12">
           <div className="mb-6">
-            <h3 className="text-xl md:text-2xl font-bold text-dark-brown uppercase tracking-tight">Absence Request Form</h3>
-            <p className="font-paragraph text-dark-brown/50 text-sm mt-1">
+            <h3 className="text-xl sm:text-2xl font-black text-[#2A1810] uppercase tracking-tight">Absence Request Form</h3>
+            <p className="font-paragraph text-[#2A1810]/50 text-xs sm:text-sm mt-0.5">
               Log planned absences in advance — shown as indigo on the calendar, separate from unexpected absences (red)
             </p>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="app-panel border rounded-3xl p-6 shadow-lg">
+            <div className="bg-[#FFFDF9] border border-[#EBE3D7] rounded-3xl p-6 shadow-[0_4px_24px_rgba(42,24,16,0.06)]">
               <div className="space-y-4">
                 <div>
-                  <label className="block text-[10px] font-bold uppercase text-dark-brown/50 mb-1.5">Staff Member</label>
+                  <label className="block text-[10px] font-extrabold uppercase text-[#2A1810]/50 mb-1.5 tracking-wider">Staff Member</label>
                   <select
                     value={absenceFormStaff}
                     onChange={(e) => setAbsenceFormStaff(e.target.value)}
-                    className="w-full bg-white/70 border border-dark-brown/15 rounded-xl px-3 py-2.5 text-sm font-bold text-dark-brown"
+                    className="w-full bg-[#FAF6F0] border border-[#EBE3D7] rounded-xl px-3 py-2.5 text-sm font-extrabold text-[#2A1810] shadow-2xs"
                   >
                     {staffUsers.map((s) => (
                       <option key={s.email} value={s.email}>{s.name || s.email}</option>
@@ -2827,57 +2899,57 @@ export default function AdminPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold uppercase text-dark-brown/50 mb-1.5">Absence Date</label>
+                  <label className="block text-[10px] font-extrabold uppercase text-[#2A1810]/50 mb-1.5 tracking-wider">Absence Date</label>
                   <input
                     type="date"
                     value={absenceFormDate}
                     onChange={(e) => setAbsenceFormDate(e.target.value)}
-                    className="w-full bg-white/70 border border-dark-brown/15 rounded-xl px-3 py-2.5 text-sm text-dark-brown"
+                    className="w-full bg-[#FAF6F0] border border-[#EBE3D7] rounded-xl px-3 py-2.5 text-sm text-[#2A1810] font-mono shadow-2xs"
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold uppercase text-dark-brown/50 mb-1.5">Reason</label>
+                  <label className="block text-[10px] font-extrabold uppercase text-[#2A1810]/50 mb-1.5 tracking-wider">Reason</label>
                   <textarea
                     value={absenceFormReason}
                     onChange={(e) => setAbsenceFormReason(e.target.value)}
                     rows={3}
                     placeholder="e.g. Medical appointment, family leave, approved day off..."
-                    className="w-full bg-white/70 border border-dark-brown/15 rounded-xl px-3 py-2.5 text-sm text-dark-brown font-paragraph resize-none"
+                    className="w-full bg-[#FAF6F0] border border-[#EBE3D7] rounded-xl px-3 py-2.5 text-sm text-[#2A1810] font-paragraph resize-none shadow-2xs"
                   />
                 </div>
                 <button
                   type="button"
                   onClick={submitAbsenceRequest}
                   disabled={absenceFormLoading}
-                  className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs uppercase transition-all disabled:opacity-50"
+                  className="w-full py-3 rounded-2xl bg-indigo-700 hover:bg-indigo-800 text-white font-extrabold text-xs uppercase tracking-wider transition-all disabled:opacity-50 shadow-sm"
                 >
                   {absenceFormLoading ? "Saving…" : "Log Planned Absence"}
                 </button>
               </div>
             </div>
-            <div className="app-panel border rounded-3xl p-6 shadow-lg">
-              <p className="text-[10px] font-bold uppercase text-dark-brown/50 mb-3">Upcoming Planned Absences</p>
+            <div className="bg-[#FFFDF9] border border-[#EBE3D7] rounded-3xl p-6 shadow-[0_4px_24px_rgba(42,24,16,0.06)]">
+              <p className="text-xs font-extrabold uppercase text-[#2A1810]/60 mb-3 tracking-wider">Upcoming Planned Absences</p>
               {absenceRequests.filter((r) => r.status === "approved" && r.absence_date >= new Date().toISOString().slice(0, 10)).length === 0 ? (
-                <p className="font-paragraph text-dark-brown/45 text-sm">No upcoming planned absences</p>
+                <p className="font-paragraph text-[#2A1810]/45 text-sm">No upcoming planned absences</p>
               ) : (
                 <div className="space-y-2 max-h-64 overflow-y-auto">
                   {absenceRequests
                     .filter((r) => r.status === "approved" && r.absence_date >= new Date().toISOString().slice(0, 10))
                     .slice(0, 20)
                     .map((r) => (
-                      <div key={r.id} className="rounded-xl border border-indigo-200/60 bg-indigo-50/50 p-3">
+                      <div key={r.id} className="rounded-2xl border border-indigo-200/60 bg-indigo-50/50 p-3.5">
                         <div className="flex items-start justify-between gap-2">
                           <div className="min-w-0">
-                            <p className="text-xs font-bold text-indigo-900 uppercase">{r.user_name || r.user_email}</p>
-                            <p className="text-[11px] text-indigo-700/80 font-paragraph mt-0.5">
+                            <p className="text-xs font-extrabold text-indigo-950 uppercase">{r.user_name || r.user_email}</p>
+                            <p className="text-[11px] text-indigo-800 font-paragraph mt-0.5 font-mono">
                               {new Date(`${r.absence_date}T12:00:00`).toLocaleDateString([], { weekday: "short", month: "short", day: "numeric", year: "numeric" })}
                             </p>
-                            <p className="text-xs text-indigo-800/70 font-paragraph mt-1">{r.reason}</p>
+                            <p className="text-xs text-indigo-900/80 font-paragraph mt-1">🗓️ {r.reason}</p>
                           </div>
                           <button
                             type="button"
                             onClick={() => cancelAbsenceRequest(r.id)}
-                            className="text-[10px] font-bold uppercase text-red-600 hover:text-red-800 flex-shrink-0"
+                            className="text-[10px] font-extrabold uppercase text-red-600 hover:text-red-800 flex-shrink-0"
                           >
                             Cancel
                           </button>
@@ -2894,17 +2966,17 @@ export default function AdminPage() {
         <div className="admin-stagger-item mt-12">
           <div className="mb-6 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
             <div>
-              <h3 className="text-xl md:text-2xl font-bold text-dark-brown uppercase tracking-tight">Monthly Attendance Summary</h3>
-              <p className="font-paragraph text-dark-brown/50 text-sm mt-1">
+              <h3 className="text-xl sm:text-2xl font-black text-[#2A1810] uppercase tracking-tight">Monthly Attendance Summary</h3>
+              <p className="font-paragraph text-[#2A1810]/50 text-xs sm:text-sm mt-0.5">
                 Calendar view per staff — green = present, yellow = late, red = unexpected absent, indigo = planned absence
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <label className="text-[10px] font-bold uppercase text-dark-brown/50 tracking-wider">Staff</label>
+              <label className="text-[10px] font-extrabold uppercase text-[#2A1810]/50 tracking-wider">Staff Member</label>
               <select
                 value={calendarStaffEmail}
                 onChange={(e) => setCalendarStaffEmail(e.target.value)}
-                className="bg-white/70 border border-dark-brown/15 rounded-xl px-3 py-2 text-sm font-bold text-dark-brown min-w-[180px]"
+                className="bg-[#FFFDF9] border border-[#EBE3D7] rounded-xl px-3 py-2 text-sm font-extrabold text-[#2A1810] min-w-[180px] shadow-2xs"
               >
                 {staffUsers.length === 0 && <option value="">No staff</option>}
                 {staffUsers.map((s) => (
@@ -2913,7 +2985,7 @@ export default function AdminPage() {
               </select>
             </div>
           </div>
-          <div className="app-panel border rounded-3xl p-5 md:p-8 shadow-lg">
+          <div className="bg-[#FFFDF9] border border-[#EBE3D7] rounded-3xl p-5 md:p-8 shadow-[0_4px_24px_rgba(42,24,16,0.06)]">
             <MonthlyCalendarGrid
               data={calendarData}
               loading={calendarLoading}
@@ -2929,17 +3001,17 @@ export default function AdminPage() {
         <div className="admin-stagger-item mt-12">
           <div className="mb-6 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
             <div>
-              <h3 className="text-xl md:text-2xl font-bold text-dark-brown uppercase tracking-tight">Payroll Summary</h3>
-              <p className="font-paragraph text-dark-brown/50 text-sm mt-1">
+              <h3 className="text-xl sm:text-2xl font-black text-[#2A1810] uppercase tracking-tight">Payroll Summary</h3>
+              <p className="font-paragraph text-[#2A1810]/50 text-xs sm:text-sm mt-0.5">
                 Hours beyond {payrollData?.standard_daily_hours ?? 8}h per day are flagged as overtime (Mon–Sun)
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <label className="text-[10px] font-bold uppercase text-dark-brown/50 tracking-wider">OT Multiplier</label>
+              <label className="text-[10px] font-extrabold uppercase text-[#2A1810]/50 tracking-wider">OT Multiplier</label>
               <select
                 value={otMultiplier}
                 onChange={(e) => setOtMultiplier(e.target.value)}
-                className="bg-white/70 border border-dark-brown/15 rounded-xl px-3 py-2 text-sm font-bold text-dark-brown"
+                className="bg-[#FFFDF9] border border-[#EBE3D7] rounded-xl px-3 py-2 text-sm font-extrabold text-[#2A1810] shadow-2xs"
               >
                 <option value="1">1×</option>
                 <option value="1.25">1.25×</option>
@@ -2949,7 +3021,7 @@ export default function AdminPage() {
               <button
                 onClick={fetchPayrollSummary}
                 disabled={payrollLoading}
-                className="px-4 py-2 rounded-xl text-[10px] font-bold uppercase bg-dark-brown hover:bg-dark-brown-hover text-milk transition-all disabled:opacity-50"
+                className="px-4 py-2 rounded-xl text-[10px] font-extrabold uppercase bg-[#2A1810] hover:bg-[#2A1810]/90 text-[#FAEADE] transition-all disabled:opacity-50 shadow-xs"
               >
                 {payrollLoading ? "Loading…" : "Apply"}
               </button>
@@ -2959,77 +3031,77 @@ export default function AdminPage() {
           {payrollData?.summary && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
               <div className="bg-emerald-50/80 border border-emerald-200/60 rounded-2xl p-4 text-center">
-                <p className="text-xl font-bold text-emerald-700">{payrollData.summary.total_regular_display}</p>
-                <p className="text-[10px] font-bold uppercase text-emerald-600/70 mt-0.5">Regular (All Staff)</p>
+                <p className="text-xl font-black text-emerald-900 font-mono">{payrollData.summary.total_regular_display}</p>
+                <p className="text-[10px] font-extrabold uppercase text-emerald-800/70 mt-0.5">Regular (All Staff)</p>
               </div>
               <div className="bg-orange-50/80 border border-orange-200/60 rounded-2xl p-4 text-center">
-                <p className="text-xl font-bold text-orange-700">{payrollData.summary.total_overtime_display}</p>
-                <p className="text-[10px] font-bold uppercase text-orange-600/70 mt-0.5">Overtime</p>
+                <p className="text-xl font-black text-orange-900 font-mono">{payrollData.summary.total_overtime_display}</p>
+                <p className="text-[10px] font-extrabold uppercase text-orange-800/70 mt-0.5">Overtime</p>
               </div>
-              <div className="bg-dark-brown/5 border border-dark-brown/10 rounded-2xl p-4 text-center">
-                <p className="text-xl font-bold text-dark-brown">{payrollData.summary.total_weighted_overtime_hours}h</p>
-                <p className="text-[10px] font-bold uppercase text-dark-brown/40 mt-0.5">OT × {payrollData.overtime_multiplier}</p>
+              <div className="bg-[#FAF6F0] border border-[#EBE3D7] rounded-2xl p-4 text-center">
+                <p className="text-xl font-black text-[#2A1810] font-mono">{payrollData.summary.total_weighted_overtime_hours}h</p>
+                <p className="text-[10px] font-extrabold uppercase text-[#2A1810]/50 mt-0.5">OT × {payrollData.overtime_multiplier}</p>
               </div>
-              <div className="bg-white/60 border border-dark-brown/10 rounded-2xl p-4 text-center">
-                <p className="text-xl font-bold text-dark-brown">{payrollData.summary.staff_with_overtime}</p>
-                <p className="text-[10px] font-bold uppercase text-dark-brown/40 mt-0.5">Staff w/ OT</p>
+              <div className="bg-[#FFFDF9] border border-[#EBE3D7] rounded-2xl p-4 text-center">
+                <p className="text-xl font-black text-[#2A1810] font-mono">{payrollData.summary.staff_with_overtime}</p>
+                <p className="text-[10px] font-extrabold uppercase text-[#2A1810]/50 mt-0.5">Staff w/ OT</p>
               </div>
             </div>
           )}
 
           {payrollLoading && !payrollData ? (
-            <div className="app-panel border rounded-3xl p-10 text-center">
-              <div className="w-8 h-8 border-4 border-light-brown/30 border-t-light-brown rounded-full animate-spin mx-auto" />
+            <div className="bg-[#FFFDF9] border border-[#EBE3D7] rounded-3xl p-10 text-center">
+              <div className="w-8 h-8 border-3 border-[#E3A458]/30 border-t-[#A26833] rounded-full animate-spin mx-auto" />
             </div>
           ) : !payrollData?.staff?.length ? (
-            <div className="app-panel border rounded-3xl p-10 text-center shadow-lg">
-              <p className="font-paragraph text-dark-brown/50">No payroll data for this week</p>
+            <div className="bg-[#FFFDF9] border border-[#EBE3D7] rounded-3xl p-10 text-center shadow-[0_4px_24px_rgba(42,24,16,0.06)]">
+              <p className="font-paragraph text-[#2A1810]/50">No payroll data for this week</p>
             </div>
           ) : (
-            <div className="app-panel border rounded-2xl overflow-hidden shadow-lg">
+            <div className="bg-[#FFFDF9] border border-[#EBE3D7] rounded-3xl overflow-hidden shadow-[0_4px_24px_rgba(42,24,16,0.06)] mb-8">
               <div className="hidden md:block overflow-x-auto">
-                <table className="w-full">
+                <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-dark-brown/10">
-                      <th className="text-left px-5 py-3 text-[10px] font-bold uppercase text-dark-brown/40 tracking-wider">Staff</th>
-                      <th className="text-right px-5 py-3 text-[10px] font-bold uppercase text-dark-brown/40 tracking-wider">Regular</th>
-                      <th className="text-right px-5 py-3 text-[10px] font-bold uppercase text-orange-600/70 tracking-wider">Overtime</th>
-                      <th className="text-right px-5 py-3 text-[10px] font-bold uppercase text-dark-brown/40 tracking-wider">OT × {payrollData.overtime_multiplier}</th>
-                      <th className="text-right px-5 py-3 text-[10px] font-bold uppercase text-dark-brown/40 tracking-wider">Total</th>
-                      <th className="text-center px-5 py-3 text-[10px] font-bold uppercase text-dark-brown/40 tracking-wider"></th>
+                    <tr className="bg-[#FAF6F0] text-[11px] font-extrabold uppercase text-[#2A1810]/60 border-b border-[#EBE3D7]">
+                      <th className="px-6 py-4">Staff Member</th>
+                      <th className="px-6 py-4 text-right">Regular</th>
+                      <th className="px-6 py-4 text-right">Overtime</th>
+                      <th className="px-6 py-4 text-right">OT × {payrollData.overtime_multiplier}</th>
+                      <th className="px-6 py-4 text-right">Total</th>
+                      <th className="px-6 py-4 text-center"></th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="divide-y divide-[#EBE3D7]/60 text-sm">
                     {payrollData.staff.map((s: any) => (
                       <React.Fragment key={s.email}>
-                        <tr className={`border-b border-dark-brown/5 ${s.overtime_seconds > 0 ? "bg-orange-50/30" : ""}`}>
-                          <td className="px-5 py-3">
+                        <tr className={`hover:bg-[#FAF6F0] transition-colors ${s.overtime_seconds > 0 ? "bg-orange-50/30" : ""}`}>
+                          <td className="px-6 py-4">
                             <button
                               type="button"
                               onClick={() => openAttendanceHistory(s)}
                               className="text-left hover:opacity-80 transition-opacity"
                             >
-                              <p className="text-sm font-bold text-dark-brown uppercase hover:underline">{s.name}</p>
-                              <p className="text-[10px] text-dark-brown/40 font-mono">{s.employee_id || s.email}</p>
+                              <p className="text-sm font-extrabold text-[#2A1810] uppercase hover:underline">{s.name}</p>
+                              <p className="text-[10px] text-[#2A1810]/40 font-mono">{s.employee_id || s.email}</p>
                             </button>
                           </td>
-                          <td className="px-5 py-3 text-right text-sm font-mono text-dark-brown/70">{s.regular_display}</td>
-                          <td className="px-5 py-3 text-right">
+                          <td className="px-6 py-4 text-right text-sm font-mono text-[#2A1810]/70 font-bold">{s.regular_display}</td>
+                          <td className="px-6 py-4 text-right">
                             {s.overtime_seconds > 0 ? (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 text-xs font-bold font-mono">
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-800 text-xs font-extrabold font-mono border border-orange-200">
                                 {s.overtime_display}
                               </span>
                             ) : (
-                              <span className="text-sm font-mono text-dark-brown/30">0m</span>
+                              <span className="text-sm font-mono text-[#2A1810]/30">0m</span>
                             )}
                           </td>
-                          <td className="px-5 py-3 text-right text-sm font-mono font-bold text-dark-brown">{s.weighted_overtime_display}</td>
-                          <td className="px-5 py-3 text-right text-sm font-mono font-bold text-dark-brown">{s.total_display}</td>
-                          <td className="px-5 py-3 text-center">
+                          <td className="px-6 py-4 text-right text-sm font-mono font-black text-[#2A1810]">{s.weighted_overtime_display}</td>
+                          <td className="px-6 py-4 text-right text-sm font-mono font-black text-[#2A1810]">{s.total_display}</td>
+                          <td className="px-6 py-4 text-center">
                             {s.daily_breakdown?.length > 0 && (
                               <button
                                 onClick={() => setExpandedPayrollEmail(expandedPayrollEmail === s.email ? null : s.email)}
-                                className="text-[10px] font-bold uppercase text-dark-brown/50 hover:text-dark-brown"
+                                className="text-[10px] font-extrabold uppercase text-[#2A1810]/50 hover:text-[#2A1810]"
                               >
                                 {expandedPayrollEmail === s.email ? "Hide" : "Days"}
                               </button>
@@ -3037,19 +3109,19 @@ export default function AdminPage() {
                           </td>
                         </tr>
                         {expandedPayrollEmail === s.email && s.daily_breakdown?.map((d: any) => (
-                          <tr key={`${s.email}-${d.date}`} className="bg-dark-brown/[0.02] border-b border-dark-brown/5">
-                            <td className="px-5 py-2 pl-10 text-xs text-dark-brown/50 font-paragraph">
+                          <tr key={`${s.email}-${d.date}`} className="bg-[#FAF6F0]/60 border-b border-[#EBE3D7]/60">
+                            <td className="px-6 py-2 pl-12 text-xs text-[#2A1810]/60 font-paragraph font-mono">
                               {new Date(`${d.date}T12:00:00`).toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" })}
                             </td>
-                            <td className="px-5 py-2 text-right text-xs font-mono text-dark-brown/50">{d.regular_display}</td>
-                            <td className="px-5 py-2 text-right">
+                            <td className="px-6 py-2 text-right text-xs font-mono text-[#2A1810]/60">{d.regular_display}</td>
+                            <td className="px-6 py-2 text-right">
                               {d.has_overtime ? (
-                                <span className="text-xs font-bold text-orange-600 font-mono">{d.overtime_display}</span>
+                                <span className="text-xs font-extrabold text-orange-700 font-mono">{d.overtime_display}</span>
                               ) : (
-                                <span className="text-xs text-dark-brown/30">—</span>
+                                <span className="text-xs text-[#2A1810]/30">—</span>
                               )}
                             </td>
-                            <td colSpan={3} className="px-5 py-2 text-right text-xs font-mono text-dark-brown/40">{d.total_display} worked</td>
+                            <td colSpan={3} className="px-6 py-2 text-right text-xs font-mono text-[#2A1810]/50">{d.total_display} worked</td>
                           </tr>
                         ))}
                       </React.Fragment>
@@ -3058,16 +3130,16 @@ export default function AdminPage() {
                 </table>
               </div>
               {/* Mobile */}
-              <div className="md:hidden divide-y divide-dark-brown/5 p-2">
+              <div className="md:hidden divide-y divide-[#EBE3D7]/60 p-2">
                 {payrollData.staff.map((s: any) => (
-                  <div key={s.email} className={`p-4 rounded-xl ${s.overtime_seconds > 0 ? "bg-orange-50/40" : ""}`}>
-                    <button type="button" onClick={() => openAttendanceHistory(s)} className="text-sm font-bold text-dark-brown uppercase hover:underline text-left">
+                  <div key={s.email} className={`p-4 rounded-2xl ${s.overtime_seconds > 0 ? "bg-orange-50/40" : ""}`}>
+                    <button type="button" onClick={() => openAttendanceHistory(s)} className="text-sm font-extrabold text-[#2A1810] uppercase hover:underline text-left">
                       {s.name}
                     </button>
                     <div className="grid grid-cols-3 gap-2 mt-2 text-center text-[10px]">
-                      <div><span className="block text-dark-brown/40 uppercase font-bold">Reg</span><span className="font-mono font-bold">{s.regular_display}</span></div>
-                      <div><span className="block text-orange-600/70 uppercase font-bold">OT</span><span className="font-mono font-bold text-orange-700">{s.overtime_display}</span></div>
-                      <div><span className="block text-dark-brown/40 uppercase font-bold">×{payrollData.overtime_multiplier}</span><span className="font-mono font-bold">{s.weighted_overtime_display}</span></div>
+                      <div><span className="block text-[#2A1810]/40 uppercase font-extrabold">Reg</span><span className="font-mono font-bold">{s.regular_display}</span></div>
+                      <div><span className="block text-orange-700 uppercase font-extrabold">OT</span><span className="font-mono font-bold text-orange-800">{s.overtime_display}</span></div>
+                      <div><span className="block text-[#2A1810]/40 uppercase font-extrabold">×{payrollData.overtime_multiplier}</span><span className="font-mono font-bold">{s.weighted_overtime_display}</span></div>
                     </div>
                   </div>
                 ))}
@@ -3079,61 +3151,61 @@ export default function AdminPage() {
 
         {adminSection === "activity" && (<>
         {/* Staff Activity Feed */}
-        <div className="admin-stagger-item mt-10">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-dark-brown uppercase tracking-tight">Activity Feed</h2>
-          <p className="text-dark-brown/50 font-paragraph text-sm mt-1">Live audit log of staff actions (last 24 hours)</p>
-        </div>
+        <div className="admin-stagger-item mt-8">
+          <div className="mb-6">
+            <h2 className="text-xl sm:text-2xl font-black text-[#2A1810] uppercase tracking-tight">Activity Feed</h2>
+            <p className="text-[#2A1810]/50 font-paragraph text-xs sm:text-sm mt-0.5">Live audit log of staff actions (last 24 hours)</p>
+          </div>
 
-        {activityFeed.length === 0 ? (
-          <div className="app-panel border rounded-3xl p-12 text-center">
-            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgb(120,113,108)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mx-auto mb-3"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-            <p className="text-dark-brown/40 font-bold uppercase text-sm">No activity yet</p>
-            <p className="text-dark-brown/30 text-xs mt-1">Actions will appear here as staff clock in, take breaks, etc.</p>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {activityFeed.map((a: any) => {
-              const iconMap: Record<string, { color: string; bg: string; icon: string }> = {
-                clock_in: { color: "text-emerald-600", bg: "bg-emerald-100", icon: "⏱" },
-                clock_out: { color: "text-red-500", bg: "bg-red-100", icon: "⏹" },
-                break_start: { color: "text-amber-600", bg: "bg-amber-100", icon: "☕" },
-                break_end: { color: "text-emerald-600", bg: "bg-emerald-100", icon: "✅" },
-                approved: { color: "text-emerald-700", bg: "bg-emerald-100", icon: "✓" },
-                marked_late: { color: "text-orange-600", bg: "bg-orange-100", icon: "⏰" },
-                marked_absent: { color: "text-red-600", bg: "bg-red-100", icon: "✗" },
-                planned_absence: { color: "text-indigo-600", bg: "bg-indigo-100", icon: "📅" },
-                order_completed: { color: "text-emerald-600", bg: "bg-emerald-100", icon: "📦" },
-                order_cancelled: { color: "text-red-500", bg: "bg-red-100", icon: "🚫" },
-                order_voided: { color: "text-red-700", bg: "bg-red-100", icon: "🗑" }};
-              const cfg = iconMap[a.action] || { color: "text-dark-brown/60", bg: "bg-dark-brown/5", icon: "•" };
-              const timeAgo = (() => {
-                const diff = (Date.now() - new Date(a.created_at).getTime()) / 1000;
-                if (diff < 60) return "just now";
-                if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-                if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-                return `${Math.floor(diff / 86400)}d ago`;
-              })();
-              return (
-                <div key={a.id} className="flex items-start gap-3 app-panel border rounded-2xl px-4 py-3 hover:bg-white/70 transition-all">
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-sm flex-shrink-0 ${cfg.bg} ${cfg.color}`}>
-                    {cfg.icon}
+          {activityFeed.length === 0 ? (
+            <div className="bg-[#FFFDF9] border border-[#EBE3D7] rounded-3xl p-12 text-center shadow-[0_4px_24px_rgba(42,24,16,0.06)]">
+              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mx-auto mb-3 text-[#2A1810]/30"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              <p className="text-[#2A1810]/50 font-extrabold uppercase text-sm">No activity yet</p>
+              <p className="text-[#2A1810]/40 text-xs mt-1">Actions will appear here as staff clock in, take breaks, and fulfill orders.</p>
+            </div>
+          ) : (
+            <div className="space-y-2.5">
+              {activityFeed.map((a: any) => {
+                const iconMap: Record<string, { color: string; bg: string; icon: string }> = {
+                  clock_in: { color: "text-emerald-800", bg: "bg-emerald-50 border-emerald-200", icon: "⏱" },
+                  clock_out: { color: "text-red-700", bg: "bg-red-50 border-red-200", icon: "⏹" },
+                  break_start: { color: "text-amber-800", bg: "bg-amber-50 border-amber-200", icon: "☕" },
+                  break_end: { color: "text-emerald-800", bg: "bg-emerald-50 border-emerald-200", icon: "✅" },
+                  approved: { color: "text-emerald-800", bg: "bg-emerald-50 border-emerald-200", icon: "✓" },
+                  marked_late: { color: "text-orange-800", bg: "bg-orange-50 border-orange-200", icon: "⏰" },
+                  marked_absent: { color: "text-red-800", bg: "bg-red-50 border-red-200", icon: "✗" },
+                  planned_absence: { color: "text-indigo-800", bg: "bg-indigo-50 border-indigo-200", icon: "📅" },
+                  order_completed: { color: "text-emerald-800", bg: "bg-emerald-50 border-emerald-200", icon: "📦" },
+                  order_cancelled: { color: "text-red-700", bg: "bg-red-50 border-red-200", icon: "🚫" },
+                  order_voided: { color: "text-red-800", bg: "bg-red-50 border-red-200", icon: "🗑" }};
+                const cfg = iconMap[a.action] || { color: "text-[#2A1810]/70", bg: "bg-[#2A1810]/5 border-[#EBE3D7]", icon: "•" };
+                const timeAgo = (() => {
+                  const diff = (Date.now() - new Date(a.created_at).getTime()) / 1000;
+                  if (diff < 60) return "just now";
+                  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+                  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+                  return `${Math.floor(diff / 86400)}d ago`;
+                })();
+                return (
+                  <div key={a.id} className="flex items-start gap-3.5 bg-[#FFFDF9] border border-[#EBE3D7] rounded-2xl px-4 py-3.5 hover:shadow-xs transition-all">
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-sm flex-shrink-0 border ${cfg.bg} ${cfg.color}`}>
+                      {cfg.icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-[#2A1810] font-paragraph leading-snug">{a.description}</p>
+                      {a.performed_by_name && (
+                        <p className="text-[10px] text-[#2A1810]/40 mt-0.5 font-bold uppercase">by {a.performed_by_name}</p>
+                      )}
+                    </div>
+                    <div className="flex-shrink-0 text-right">
+                      <p className="text-[10px] text-[#2A1810]/50 font-mono font-bold">{new Date(a.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p>
+                      <p className="text-[9px] text-[#2A1810]/35 font-mono">{timeAgo}</p>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-dark-brown font-paragraph leading-snug">{a.description}</p>
-                    {a.performed_by_name && (
-                      <p className="text-[10px] text-dark-brown/40 mt-0.5">by {a.performed_by_name}</p>
-                    )}
-                  </div>
-                  <div className="flex-shrink-0 text-right">
-                    <p className="text-[10px] text-dark-brown/40 font-mono">{new Date(a.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p>
-                    <p className="text-[9px] text-dark-brown/30">{timeAgo}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+                );
+              })}
+            </div>
+          )}
         </div>
         </>)}
 
@@ -3143,28 +3215,28 @@ export default function AdminPage() {
       {historyStaff && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" onClick={closeAttendanceHistory}>
           <div
-            className="app-panel border rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
+            className="bg-[#FFFDF9] border border-[#EBE3D7] rounded-3xl shadow-[0_16px_48px_rgba(42,24,16,0.18)] w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="bg-dark-brown/5 border-b border-dark-brown/10 p-5 flex items-center justify-between flex-shrink-0">
+            <div className="bg-[#FAF6F0] border-b border-[#EBE3D7] p-5 flex items-center justify-between flex-shrink-0">
               <div className="flex items-center gap-3 min-w-0">
                 {historyStaff.avatar ? (
-                  <Image src={historyStaff.avatar} alt={historyStaff.name} width={44} height={44} className="w-11 h-11 rounded-xl object-cover flex-shrink-0" />
+                  <Image src={historyStaff.avatar} alt={historyStaff.name} width={44} height={44} className="w-11 h-11 rounded-2xl object-cover flex-shrink-0 border border-[#EBE3D7]" />
                 ) : (
-                  <div className="w-11 h-11 rounded-xl bg-light-brown/20 flex items-center justify-center text-sm font-bold uppercase text-dark-brown flex-shrink-0">
+                  <div className="w-11 h-11 rounded-2xl bg-[#F5EFE6] border border-[#EBE3D7] flex items-center justify-center text-sm font-extrabold uppercase text-[#2A1810] flex-shrink-0">
                     {(historyStaff.name || historyStaff.email).charAt(0).toUpperCase()}
                   </div>
                 )}
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-bold text-dark-brown text-base uppercase tracking-tight truncate">{historyStaff.name}</h3>
+                    <h3 className="font-extrabold text-[#2A1810] text-base uppercase tracking-tight truncate">{historyStaff.name}</h3>
                     {historyStaff.employee_id && (
-                      <span className="px-2 py-0.5 rounded-md bg-dark-brown/10 text-dark-brown/60 text-[10px] font-mono font-bold">{historyStaff.employee_id}</span>
+                      <span className="px-2 py-0.5 rounded-md bg-[#2A1810]/5 border border-[#EBE3D7] text-[#2A1810]/60 text-[10px] font-mono font-extrabold">{historyStaff.employee_id}</span>
                     )}
                   </div>
-                  <p className="text-dark-brown/50 text-xs font-paragraph truncate">{historyStaff.email}</p>
+                  <p className="text-[#2A1810]/50 text-xs font-paragraph truncate">{historyStaff.email}</p>
                   {historyStaff.shift_start && historyStaff.shift_end && (
-                    <p className="text-[10px] text-dark-brown/40 font-paragraph mt-0.5">
+                    <p className="text-[10px] text-[#2A1810]/40 font-mono mt-0.5">
                       Scheduled {new Date(`1970-01-01T${historyStaff.shift_start}`).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                       {" – "}
                       {new Date(`1970-01-01T${historyStaff.shift_end}`).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
@@ -3172,16 +3244,16 @@ export default function AdminPage() {
                   )}
                 </div>
               </div>
-              <button onClick={closeAttendanceHistory} className="text-dark-brown/40 hover:text-dark-brown transition-colors p-1 rounded-full hover:bg-dark-brown/10 flex-shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              <button onClick={closeAttendanceHistory} className="text-[#2A1810]/40 hover:text-[#2A1810] transition-colors p-1.5 rounded-full hover:bg-[#2A1810]/5 flex-shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
               </button>
             </div>
 
-            <div className="px-5 pt-4 flex gap-2 border-b border-dark-brown/10 flex-shrink-0">
+            <div className="px-5 pt-4 flex gap-2 border-b border-[#EBE3D7] flex-shrink-0 bg-[#FAF6F0]/50">
               <button
                 type="button"
                 onClick={() => setHistoryTab("list")}
-                className={`px-4 py-2 rounded-t-xl text-[10px] font-bold uppercase transition-all ${historyTab === "list" ? "bg-dark-brown text-milk" : "bg-dark-brown/5 text-dark-brown/60 hover:bg-dark-brown/10"}`}
+                className={`px-5 py-2 rounded-t-xl text-xs font-extrabold uppercase transition-all ${historyTab === "list" ? "bg-[#FFFDF9] text-[#2A1810] border-t border-x border-[#EBE3D7] shadow-xs" : "bg-transparent text-[#2A1810]/60 hover:text-[#2A1810]"}`}
               >
                 Log List
               </button>
@@ -3191,14 +3263,14 @@ export default function AdminPage() {
                   setHistoryTab("calendar");
                   if (historyStaff) fetchMonthlyCalendar(historyStaff.email, calendarYear, calendarMonth);
                 }}
-                className={`px-4 py-2 rounded-t-xl text-[10px] font-bold uppercase transition-all ${historyTab === "calendar" ? "bg-dark-brown text-milk" : "bg-dark-brown/5 text-dark-brown/60 hover:bg-dark-brown/10"}`}
+                className={`px-5 py-2 rounded-t-xl text-xs font-extrabold uppercase transition-all ${historyTab === "calendar" ? "bg-[#FFFDF9] text-[#2A1810] border-t border-x border-[#EBE3D7] shadow-xs" : "bg-transparent text-[#2A1810]/60 hover:text-[#2A1810]"}`}
               >
                 Calendar
               </button>
             </div>
 
             {historyTab === "list" && historyData?.summary && (
-              <div className="px-5 py-4 border-b border-dark-brown/10 grid grid-cols-3 sm:grid-cols-6 gap-2 flex-shrink-0">
+              <div className="px-5 py-4 border-b border-[#EBE3D7] grid grid-cols-3 sm:grid-cols-6 gap-2 flex-shrink-0 bg-[#FFFDF9]">
                 {[
                   { key: "all", label: "All", count: historyData.summary.total_logs },
                   { key: "on_time", label: "On Time", count: historyData.summary.on_time },
@@ -3213,24 +3285,24 @@ export default function AdminPage() {
                       setHistoryMarkFilter(mark);
                       if (historyStaff) fetchAttendanceHistory(historyStaff, 1, mark);
                     }}
-                    className={`rounded-xl px-2 py-2 text-center transition-all ${
+                    className={`rounded-2xl px-2 py-2 text-center transition-all ${
                       historyMarkFilter === f.key
-                        ? "bg-dark-brown text-milk shadow-md"
-                        : "bg-dark-brown/5 text-dark-brown/70 hover:bg-dark-brown/10"
+                        ? "bg-[#2A1810] text-[#FAEADE] shadow-sm"
+                        : "bg-[#FAF6F0] text-[#2A1810]/70 hover:bg-[#F5EFE6] border border-[#EBE3D7]"
                     }`}
                   >
-                    <p className="text-lg font-bold tabular-nums">{f.count}</p>
-                    <p className="text-[9px] font-bold uppercase tracking-wide opacity-80">{f.label}</p>
+                    <p className="text-base font-black font-mono">{f.count}</p>
+                    <p className="text-[9px] font-extrabold uppercase tracking-wide opacity-80">{f.label}</p>
                   </button>
                 ))}
-                <div className="rounded-xl px-2 py-2 text-center bg-amber-50/80 border border-amber-200/50">
-                  <p className="text-lg font-bold text-amber-700 tabular-nums">{historyData.summary.with_break}</p>
-                  <p className="text-[9px] font-bold uppercase tracking-wide text-amber-600/70">With Break</p>
+                <div className="rounded-2xl px-2 py-2 text-center bg-amber-50/80 border border-amber-200/60">
+                  <p className="text-base font-black text-amber-900 font-mono">{historyData.summary.with_break}</p>
+                  <p className="text-[9px] font-extrabold uppercase tracking-wide text-amber-800/70">With Break</p>
                 </div>
               </div>
             )}
 
-            <div className="flex-1 overflow-y-auto min-h-0 p-5">
+            <div className="flex-1 overflow-y-auto min-h-0 p-5 bg-[#FFFDF9]">
               {historyTab === "calendar" ? (
                 <MonthlyCalendarGrid
                   data={calendarData}
@@ -3242,76 +3314,76 @@ export default function AdminPage() {
                 />
               ) : historyLoading ? (
                 <div className="flex items-center justify-center py-16">
-                  <div className="w-8 h-8 border-4 border-light-brown/30 border-t-light-brown rounded-full animate-spin" />
+                  <div className="w-8 h-8 border-3 border-[#E3A458]/30 border-t-[#A26833] rounded-full animate-spin" />
                 </div>
               ) : !historyData?.logs?.length ? (
                 <div className="py-16 text-center">
                   <p className="text-4xl mb-2">📋</p>
-                  <p className="font-paragraph text-dark-brown/50">No attendance records found</p>
+                  <p className="font-extrabold uppercase text-xs text-[#2A1810]/40">No attendance records found</p>
                 </div>
               ) : (
                 <>
                   <div className="hidden md:block overflow-x-auto">
-                    <table className="w-full">
-                      <thead className="sticky top-0 bg-white/95 backdrop-blur-sm z-10">
-                        <tr className="border-b border-dark-brown/10">
-                          <th className="text-left px-5 py-3 text-[10px] font-bold uppercase text-dark-brown/40 tracking-wider">Date</th>
-                          <th className="text-left px-5 py-3 text-[10px] font-bold uppercase text-dark-brown/40 tracking-wider">Status</th>
-                          <th className="text-left px-5 py-3 text-[10px] font-bold uppercase text-dark-brown/40 tracking-wider">Clock In</th>
-                          <th className="text-left px-5 py-3 text-[10px] font-bold uppercase text-dark-brown/40 tracking-wider">Break</th>
-                          <th className="text-left px-5 py-3 text-[10px] font-bold uppercase text-dark-brown/40 tracking-wider">Clock Out</th>
-                          <th className="text-right px-5 py-3 text-[10px] font-bold uppercase text-dark-brown/40 tracking-wider">Duration</th>
+                    <table className="w-full text-left border-collapse">
+                      <thead className="sticky top-0 bg-[#FAF6F0] z-10 border-b border-[#EBE3D7]">
+                        <tr className="text-[11px] font-extrabold uppercase text-[#2A1810]/60">
+                          <th className="px-5 py-3">Date</th>
+                          <th className="px-5 py-3">Status</th>
+                          <th className="px-5 py-3">Clock In</th>
+                          <th className="px-5 py-3">Break</th>
+                          <th className="px-5 py-3">Clock Out</th>
+                          <th className="px-5 py-3 text-right">Duration</th>
                         </tr>
                       </thead>
-                      <tbody>
+                      <tbody className="divide-y divide-[#EBE3D7]/60 text-sm">
                         {historyData.logs.map((log) => {
                           const cfg = getHistoryMarkConfig(log);
                           return (
-                            <tr key={log.id} className={`border-b border-dark-brown/5 hover:bg-dark-brown/[0.02] ${log.attendance_mark === "absent" ? "bg-red-50/30" : log.attendance_mark === "late" ? "bg-orange-50/20" : ""}`}>
-                              <td className="px-5 py-3 text-xs font-paragraph text-dark-brown/70">{formatHistoryDate(log.date)}</td>
+                            <tr key={log.id} className={`hover:bg-[#FAF6F0] transition-colors ${log.attendance_mark === "absent" ? "bg-red-50/30" : log.attendance_mark === "late" ? "bg-orange-50/20" : ""}`}>
+                              <td className="px-5 py-3 text-xs font-mono text-[#2A1810]/70 font-bold">{formatHistoryDate(log.date)}</td>
                               <td className="px-5 py-3">
-                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${cfg.color} ${cfg.bg}`}>
+                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase shadow-2xs ${cfg.color} ${cfg.bg}`}>
                                   <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`}></span>
                                   {cfg.label}
                                 </span>
                                 {log.minutes_late != null && log.minutes_late > 0 && (
-                                  <span className="ml-1.5 inline-flex px-1.5 py-0.5 rounded-md bg-orange-100 text-orange-700 text-[9px] font-bold">+{log.minutes_late}m</span>
+                                  <span className="ml-1.5 inline-flex px-1.5 py-0.5 rounded-md bg-orange-100 text-orange-800 text-[9px] font-extrabold">+{log.minutes_late}m</span>
                                 )}
                               </td>
-                              <td className="px-5 py-3 text-xs font-mono text-dark-brown/60">{formatHistoryTime(log.clock_in)}</td>
-                              <td className="px-5 py-3 text-xs font-paragraph text-dark-brown/60">
+                              <td className="px-5 py-3 text-xs font-mono text-[#2A1810]/70">{formatHistoryTime(log.clock_in)}</td>
+                              <td className="px-5 py-3 text-xs font-mono text-[#2A1810]/70">
                                 {log.break_start ? (
                                   <>
                                     {formatHistoryTime(log.break_start)}
                                     {log.break_end ? ` → ${formatHistoryTime(log.break_end)}` : " (ongoing)"}
-                                    {log.break_duration && <span className="block text-[10px] text-dark-brown/40 mt-0.5">{log.break_duration} break</span>}
+                                    {log.break_duration && <span className="block text-[10px] text-[#2A1810]/40 font-paragraph mt-0.5">{log.break_duration} break</span>}
                                   </>
                                 ) : "—"}
                               </td>
-                              <td className="px-5 py-3 text-xs font-mono text-dark-brown/60">{log.clock_out ? formatHistoryTime(log.clock_out) : "—"}</td>
-                              <td className="px-5 py-3 text-right text-xs font-mono font-bold text-dark-brown/50">{log.duration || (log.status === "pending" ? "Pending" : "Active")}</td>
+                              <td className="px-5 py-3 text-xs font-mono text-[#2A1810]/70">{log.clock_out ? formatHistoryTime(log.clock_out) : "—"}</td>
+                              <td className="px-5 py-3 text-right text-xs font-mono font-black text-[#2A1810]">{log.duration || (log.status === "pending" ? "Pending" : "Active")}</td>
                             </tr>
                           );
                         })}
                       </tbody>
                     </table>
                   </div>
-                  <div className="md:hidden divide-y divide-dark-brown/5">
+                  <div className="md:hidden divide-y divide-[#EBE3D7]/60">
                     {historyData.logs.map((log) => {
                       const cfg = getHistoryMarkConfig(log);
                       return (
                         <div key={log.id} className={`p-4 ${log.attendance_mark === "absent" ? "bg-red-50/30" : ""}`}>
                           <div className="flex items-center justify-between gap-2 mb-2">
-                            <p className="text-xs font-paragraph text-dark-brown/60">{formatHistoryDate(log.date)}</p>
-                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${cfg.color} ${cfg.bg}`}>{cfg.label}</span>
+                            <p className="text-xs font-mono font-bold text-[#2A1810]/70">{formatHistoryDate(log.date)}</p>
+                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase ${cfg.color} ${cfg.bg}`}>{cfg.label}</span>
                           </div>
-                          <div className="grid grid-cols-2 gap-2 text-[10px] text-dark-brown/50">
-                            <div><span className="block text-dark-brown/30 uppercase font-bold">In</span>{formatHistoryTime(log.clock_in)}</div>
-                            <div><span className="block text-dark-brown/30 uppercase font-bold">Out</span>{log.clock_out ? formatHistoryTime(log.clock_out) : "—"}</div>
-                            <div className="col-span-2"><span className="block text-dark-brown/30 uppercase font-bold">Break</span>{log.break_start ? `${formatHistoryTime(log.break_start)}${log.break_end ? ` → ${formatHistoryTime(log.break_end)}` : ""}${log.break_duration ? ` (${log.break_duration})` : ""}` : "—"}</div>
+                          <div className="grid grid-cols-2 gap-2 text-[10px] text-[#2A1810]/60 font-mono">
+                            <div><span className="block text-[#2A1810]/40 uppercase font-extrabold">In</span>{formatHistoryTime(log.clock_in)}</div>
+                            <div><span className="block text-[#2A1810]/40 uppercase font-extrabold">Out</span>{log.clock_out ? formatHistoryTime(log.clock_out) : "—"}</div>
+                            <div className="col-span-2"><span className="block text-[#2A1810]/40 uppercase font-extrabold">Break</span>{log.break_start ? `${formatHistoryTime(log.break_start)}${log.break_end ? ` → ${formatHistoryTime(log.break_end)}` : ""}${log.break_duration ? ` (${log.break_duration})` : ""}` : "—"}</div>
                           </div>
                           {log.minutes_late != null && log.minutes_late > 0 && (
-                            <p className="text-[10px] text-orange-600 font-bold mt-2">+{log.minutes_late} minutes late</p>
+                            <p className="text-[10px] text-orange-700 font-extrabold mt-2">+{log.minutes_late} minutes late</p>
                           )}
                         </div>
                       );
@@ -3322,22 +3394,22 @@ export default function AdminPage() {
             </div>
 
             {historyTab === "list" && historyData?.pagination && historyData.pagination.total_pages > 1 && (
-              <div className="border-t border-dark-brown/10 px-5 py-4 flex items-center justify-between flex-shrink-0">
-                <p className="text-xs text-dark-brown/50 font-paragraph">
+              <div className="border-t border-[#EBE3D7] px-5 py-4 flex items-center justify-between flex-shrink-0 bg-[#FAF6F0]">
+                <p className="text-xs text-[#2A1810]/50 font-paragraph">
                   Page {historyData.pagination.page} of {historyData.pagination.total_pages} · {historyData.pagination.total} records
                 </p>
                 <div className="flex items-center gap-2">
                   <button
                     disabled={!historyData.pagination.has_prev || historyLoading}
                     onClick={() => historyStaff && fetchAttendanceHistory(historyStaff, historyPage - 1, historyMarkFilter)}
-                    className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase bg-dark-brown/5 hover:bg-dark-brown/10 text-dark-brown disabled:opacity-40"
+                    className="px-3 py-1.5 rounded-xl text-[10px] font-extrabold uppercase bg-white border border-[#EBE3D7] text-[#2A1810] disabled:opacity-40 shadow-2xs"
                   >
                     Prev
                   </button>
                   <button
                     disabled={!historyData.pagination.has_next || historyLoading}
                     onClick={() => historyStaff && fetchAttendanceHistory(historyStaff, historyPage + 1, historyMarkFilter)}
-                    className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase bg-dark-brown hover:bg-dark-brown-hover text-milk disabled:opacity-40"
+                    className="px-3 py-1.5 rounded-xl text-[10px] font-extrabold uppercase bg-[#2A1810] text-[#FAEADE] disabled:opacity-40 shadow-xs"
                   >
                     Next
                   </button>
@@ -3351,50 +3423,50 @@ export default function AdminPage() {
       {/* Edit Staff Modal */}
       {editingStaff && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-          <div className="app-panel border rounded-3xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col">
+          <div className="bg-[#FFFDF9] border border-[#EBE3D7] rounded-3xl shadow-[0_16px_48px_rgba(42,24,16,0.18)] w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col">
             {/* Header */}
-            <div className="bg-dark-brown/5 border-b border-dark-brown/10 p-5 flex items-center justify-between">
+            <div className="bg-[#FAF6F0] border-b border-[#EBE3D7] p-5 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 {editingStaff.avatar ? (
-                  <Image src={editingStaff.avatar} alt={editingStaff.name || editingStaff.email} width={40} height={40} className="w-10 h-10 rounded-xl object-cover" />
+                  <Image src={editingStaff.avatar} alt={editingStaff.name || editingStaff.email} width={40} height={40} className="w-10 h-10 rounded-xl object-cover border border-[#EBE3D7]" />
                 ) : (
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold uppercase ${
-                    editingStaff.role === "admin" ? "bg-dark-brown text-milk" : "bg-light-brown/20 text-dark-brown"
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-extrabold uppercase border border-[#EBE3D7] ${
+                    editingStaff.role === "admin" ? "bg-[#2A1810] text-[#FAEADE]" : "bg-[#F5EFE6] text-[#2A1810]"
                   }`}>
                     {(editingStaff.name || editingStaff.email).charAt(0).toUpperCase()}
                   </div>
                 )}
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="font-bold text-dark-brown text-sm uppercase tracking-wider">Edit Staff Profile</h3>
+                    <h3 className="font-extrabold text-[#2A1810] text-sm uppercase tracking-wider">Edit Staff Profile</h3>
                     {editingStaff.employee_id && (
-                      <span className="px-2 py-0.5 rounded-md bg-dark-brown/10 text-dark-brown/60 text-[10px] font-mono font-bold tracking-wider">{editingStaff.employee_id}</span>
+                      <span className="px-2 py-0.5 rounded-md bg-[#2A1810]/5 border border-[#EBE3D7] text-[#2A1810]/60 text-[10px] font-mono font-extrabold tracking-wider">{editingStaff.employee_id}</span>
                     )}
                   </div>
-                  <p className="text-dark-brown/50 text-xs font-paragraph">{editingStaff.email}</p>
+                  <p className="text-[#2A1810]/50 text-xs font-paragraph">{editingStaff.email}</p>
                 </div>
               </div>
-              <button onClick={() => setEditingStaff(null)} className="text-dark-brown/40 hover:text-dark-brown transition-colors p-1 rounded-full hover:bg-dark-brown/10">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              <button onClick={() => setEditingStaff(null)} className="text-[#2A1810]/40 hover:text-[#2A1810] transition-colors p-1.5 rounded-full hover:bg-[#2A1810]/5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
               </button>
             </div>
 
             {/* Form */}
-            <div className="p-6 space-y-5 overflow-y-auto flex-1">
+            <div className="p-6 space-y-4 overflow-y-auto flex-1 bg-[#FFFDF9]">
               {/* Avatar Upload */}
               <div>
-                <label className="block text-xs font-bold text-dark-brown/70 uppercase mb-1.5">Profile Photo</label>
+                <label className="block text-[10px] font-extrabold text-[#2A1810]/60 uppercase tracking-wider mb-1.5">Profile Photo</label>
                 <div className="flex items-center gap-4">
                   <div className="relative group">
                     {avatarPreview ? (
-                      <Image src={avatarPreview} alt="Avatar preview" width={56} height={56} className="w-14 h-14 rounded-2xl object-cover border-2 border-dark-brown/10" />
+                      <Image src={avatarPreview} alt="Avatar preview" width={56} height={56} className="w-14 h-14 rounded-2xl object-cover border border-[#EBE3D7]" />
                     ) : (
-                      <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-bold uppercase bg-light-brown/20 text-dark-brown border-2 border-dark-brown/10">
+                      <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-extrabold uppercase bg-[#F5EFE6] text-[#2A1810] border border-[#EBE3D7]">
                         {(staffForm.name || editingStaff.email).charAt(0).toUpperCase()}
                       </div>
                     )}
-                    <label className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-2xl opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <label className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-2xl opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                       <input type="file" accept="image/*" className="hidden" onChange={(e) => {
                         const file = e.target.files?.[0];
                         if (file) {
@@ -3409,11 +3481,11 @@ export default function AdminPage() {
                     </label>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-dark-brown/50 text-xs font-paragraph">Click the avatar to upload a photo</p>
+                    <p className="text-[#2A1810]/50 text-xs font-paragraph">Click the avatar to upload a photo</p>
                     {avatarFile && (
                       <button
                         onClick={() => { setAvatarFile(null); setAvatarPreview(editingStaff.avatar || null); }}
-                        className="mt-1 text-[10px] font-bold uppercase text-red-500 hover:text-red-700 transition-colors"
+                        className="mt-1 text-[10px] font-extrabold uppercase text-red-600 hover:text-red-800 transition-colors"
                       >
                         Remove new photo
                       </button>
@@ -3421,7 +3493,7 @@ export default function AdminPage() {
                     {editingStaff.avatar && !avatarFile && (
                       <button
                         onClick={() => { setAvatarFile(null); setAvatarPreview(null); }}
-                        className="mt-1 text-[10px] font-bold uppercase text-red-500 hover:text-red-700 transition-colors"
+                        className="mt-1 text-[10px] font-extrabold uppercase text-red-600 hover:text-red-800 transition-colors"
                       >
                         Remove current photo
                       </button>
@@ -3432,40 +3504,40 @@ export default function AdminPage() {
 
               {/* Name */}
               <div>
-                <label className="block text-xs font-bold text-dark-brown/70 uppercase mb-1.5">Display Name</label>
+                <label className="block text-[10px] font-extrabold text-[#2A1810]/60 uppercase tracking-wider mb-1.5">Display Name</label>
                 <input
                   type="text"
                   value={staffForm.name}
                   onChange={(e) => setStaffForm({ ...staffForm, name: e.target.value })}
-                  className="w-full bg-white border border-dark-brown/20 rounded-xl px-4 py-3 text-dark-brown font-paragraph text-sm focus:outline-none focus:border-light-brown focus:ring-2 focus:ring-light-brown/30"
+                  className="w-full bg-[#FAF6F0] border border-[#EBE3D7] rounded-xl px-4 py-2.5 text-[#2A1810] font-paragraph text-sm focus:outline-none focus:border-[#A26833] shadow-2xs"
                   placeholder="e.g. Juan Dela Cruz"
                 />
               </div>
 
               {/* Phone */}
               <div>
-                <label className="block text-xs font-bold text-dark-brown/70 uppercase mb-1.5">Phone Number</label>
+                <label className="block text-[10px] font-extrabold text-[#2A1810]/60 uppercase tracking-wider mb-1.5">Phone Number</label>
                 <input
                   type="text"
                   value={staffForm.phone}
                   onChange={(e) => setStaffForm({ ...staffForm, phone: e.target.value })}
-                  className="w-full bg-white border border-dark-brown/20 rounded-xl px-4 py-3 text-dark-brown font-paragraph text-sm focus:outline-none focus:border-light-brown focus:ring-2 focus:ring-light-brown/30"
+                  className="w-full bg-[#FAF6F0] border border-[#EBE3D7] rounded-xl px-4 py-2.5 text-[#2A1810] font-paragraph text-sm focus:outline-none focus:border-[#A26833] font-mono shadow-2xs"
                   placeholder="e.g. 0917-123-4567"
                 />
               </div>
 
               {/* Position */}
               <div>
-                <label className="block text-xs font-bold text-dark-brown/70 uppercase mb-1.5">Staff Role</label>
+                <label className="block text-[10px] font-extrabold text-[#2A1810]/60 uppercase tracking-wider mb-1.5">Staff Station Role</label>
                 <div className="grid grid-cols-3 gap-2">
                   {STAFF_POSITIONS.map((pos) => (
                     <button
                       key={pos.key}
                       onClick={() => setStaffForm({ ...staffForm, position: pos.key })}
-                      className={`py-2.5 rounded-xl text-xs font-bold uppercase transition-all border-2 flex flex-col items-center gap-1 ${
+                      className={`py-2 rounded-xl text-xs font-extrabold uppercase transition-all border flex flex-col items-center gap-1 shadow-2xs ${
                         staffForm.position === pos.key
-                          ? `${pos.badge} ${pos.badgeText} border-current shadow-sm`
-                          : "bg-white border-dark-brown/10 text-dark-brown/50 hover:border-dark-brown/20"
+                          ? `${pos.badge} ${pos.badgeText} border-current shadow-xs`
+                          : "bg-white border-[#EBE3D7] text-[#2A1810]/60 hover:border-[#A26833]/40"
                       }`}
                     >
                       <span className="text-base">{pos.icon}</span>
@@ -3474,10 +3546,10 @@ export default function AdminPage() {
                   ))}
                   <button
                     onClick={() => setStaffForm({ ...staffForm, position: "" })}
-                    className={`py-2.5 rounded-xl text-xs font-bold uppercase transition-all border-2 flex flex-col items-center gap-1 ${
+                    className={`py-2 rounded-xl text-xs font-extrabold uppercase transition-all border flex flex-col items-center gap-1 shadow-2xs ${
                       staffForm.position === ""
-                        ? "bg-gray-100 text-gray-600 border-gray-400 shadow-sm"
-                        : "bg-white border-dark-brown/10 text-dark-brown/50 hover:border-dark-brown/20"
+                        ? "bg-gray-100 text-gray-700 border-gray-300"
+                        : "bg-white border-[#EBE3D7] text-[#2A1810]/50 hover:border-[#A26833]/40"
                     }`}
                   >
                     <span className="text-base">—</span>
@@ -3488,67 +3560,65 @@ export default function AdminPage() {
 
               {/* Shift Start Time */}
               <div>
-                <label className="block text-xs font-bold text-dark-brown/70 uppercase mb-1.5">Shift Schedule</label>
+                <label className="block text-[10px] font-extrabold text-[#2A1810]/60 uppercase tracking-wider mb-1.5">Shift Schedule</label>
                 <div className="flex items-center gap-2">
                   <div className="flex-1">
-                    <p className="text-[10px] text-dark-brown/40 mb-1">Start</p>
+                    <p className="text-[10px] text-[#2A1810]/40 mb-1 font-extrabold uppercase">Start</p>
                     <input
                       type="time"
                       value={staffForm.shift_start || ""}
                       onChange={(e) => setStaffForm({ ...staffForm, shift_start: e.target.value })}
-                      className="w-full bg-white border border-dark-brown/20 rounded-xl px-4 py-3 text-dark-brown font-paragraph text-sm focus:outline-none focus:border-light-brown focus:ring-2 focus:ring-light-brown/30"
+                      className="w-full bg-[#FAF6F0] border border-[#EBE3D7] rounded-xl px-3 py-2 text-[#2A1810] font-mono text-sm shadow-2xs"
                     />
                   </div>
-                  <span className="text-dark-brown/30 mt-4">→</span>
+                  <span className="text-[#2A1810]/30 mt-4">→</span>
                   <div className="flex-1">
-                    <p className="text-[10px] text-dark-brown/40 mb-1">End</p>
+                    <p className="text-[10px] text-[#2A1810]/40 mb-1 font-extrabold uppercase">End</p>
                     <input
                       type="time"
                       value={staffForm.shift_end || ""}
                       onChange={(e) => setStaffForm({ ...staffForm, shift_end: e.target.value })}
-                      className="w-full bg-white border border-dark-brown/20 rounded-xl px-4 py-3 text-dark-brown font-paragraph text-sm focus:outline-none focus:border-light-brown focus:ring-2 focus:ring-light-brown/30"
+                      className="w-full bg-[#FAF6F0] border border-[#EBE3D7] rounded-xl px-3 py-2 text-[#2A1810] font-mono text-sm shadow-2xs"
                     />
                   </div>
                 </div>
-                <p className="text-[10px] text-dark-brown/40 mt-1">Default: 7:30 AM – 8:30 PM · Used for late arrival & overtime tracking</p>
+                <p className="text-[10px] text-[#2A1810]/40 mt-1">Default: 7:30 AM – 8:30 PM · Used for late arrival & overtime tracking</p>
               </div>
 
               {/* Bio */}
               <div>
-                <label className="block text-xs font-bold text-dark-brown/70 uppercase mb-1.5">Bio / Notes</label>
+                <label className="block text-[10px] font-extrabold text-[#2A1810]/60 uppercase tracking-wider mb-1.5">Bio / Notes</label>
                 <textarea
                   value={staffForm.bio}
                   onChange={(e) => setStaffForm({ ...staffForm, bio: e.target.value })}
-                  rows={3}
-                  className="w-full bg-white border border-dark-brown/20 rounded-xl px-4 py-3 text-dark-brown font-paragraph text-sm focus:outline-none focus:border-light-brown focus:ring-2 focus:ring-light-brown/30 resize-none"
+                  rows={2}
+                  className="w-full bg-[#FAF6F0] border border-[#EBE3D7] rounded-xl px-3 py-2 text-[#2A1810] font-paragraph text-sm resize-none shadow-2xs"
                   placeholder="Short bio or notes about this staff member..."
                 />
               </div>
 
               {/* Role */}
               <div>
-                <label className="block text-xs font-bold text-dark-brown/70 uppercase mb-1.5">Role</label>
+                <label className="block text-[10px] font-extrabold text-[#2A1810]/60 uppercase tracking-wider mb-1.5">Access Role</label>
                 <div className="flex gap-2">
                   <button
                     onClick={() => setStaffForm({ ...staffForm, role: "staff" })}
-                    className={`flex-1 py-3 rounded-xl text-xs font-bold uppercase transition-all border-2 ${
+                    className={`flex-1 py-2.5 rounded-xl text-xs font-extrabold uppercase transition-all border ${
                       staffForm.role === "staff"
-                        ? "bg-light-brown/20 border-light-brown text-dark-brown shadow-sm"
-                        : "bg-white border-dark-brown/10 text-dark-brown/50 hover:border-dark-brown/20"
+                        ? "bg-[#E3A458]/15 border-[#E3A458] text-[#A26833] shadow-xs"
+                        : "bg-white border-[#EBE3D7] text-[#2A1810]/50 hover:border-[#A26833]/30"
                     }`}
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline mr-1"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                     Staff
                   </button>
                   <button
                     onClick={() => setStaffForm({ ...staffForm, role: "admin" })}
-                    className={`flex-1 py-3 rounded-xl text-xs font-bold uppercase transition-all border-2 ${
+                    className={`flex-1 py-2.5 rounded-xl text-xs font-extrabold uppercase transition-all border ${
                       staffForm.role === "admin"
-                        ? "bg-dark-brown border-dark-brown text-milk shadow-sm"
-                        : "bg-white border-dark-brown/10 text-dark-brown/50 hover:border-dark-brown/20"
+                        ? "bg-[#2A1810] border-[#2A1810] text-[#FAEADE] shadow-xs"
+                        : "bg-white border-[#EBE3D7] text-[#2A1810]/50 hover:border-[#A26833]/30"
                     }`}
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline mr-1"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                     Admin
                   </button>
                 </div>
@@ -3556,50 +3626,45 @@ export default function AdminPage() {
 
               {/* Active Toggle */}
               <div>
-                <label className="block text-xs font-bold text-dark-brown/70 uppercase mb-1.5">Account Status</label>
+                <label className="block text-[10px] font-extrabold text-[#2A1810]/60 uppercase tracking-wider mb-1.5">Account Status</label>
                 <button
                   onClick={() => editingStaff.email !== user?.email && setStaffForm({ ...staffForm, is_active: !staffForm.is_active })}
                   disabled={editingStaff.email === user?.email}
-                  className={`w-full flex items-center justify-between py-3 px-4 rounded-xl border-2 transition-all ${
+                  className={`w-full flex items-center justify-between py-2.5 px-4 rounded-xl border transition-all ${
                     editingStaff.email === user?.email
                       ? "bg-gray-50 border-gray-200 cursor-not-allowed opacity-60"
                       : staffForm.is_active
-                        ? "bg-green-50 border-green-200"
+                        ? "bg-emerald-50 border-emerald-200"
                         : "bg-red-50 border-red-200"
                   }`}
                 >
-                  <span className={`flex items-center gap-2 text-xs font-bold uppercase ${editingStaff.email === user?.email ? "text-gray-400" : staffForm.is_active ? "text-green-700" : "text-red-700"}`}>
-                    <span className={`w-2.5 h-2.5 rounded-full ${editingStaff.email === user?.email ? "bg-gray-300" : staffForm.is_active ? "bg-green-500" : "bg-red-400"}`}></span>
+                  <span className={`flex items-center gap-2 text-xs font-extrabold uppercase ${editingStaff.email === user?.email ? "text-gray-400" : staffForm.is_active ? "text-emerald-800" : "text-red-700"}`}>
+                    <span className={`w-2 h-2 rounded-full ${editingStaff.email === user?.email ? "bg-gray-300" : staffForm.is_active ? "bg-emerald-500" : "bg-red-400"}`}></span>
                     {staffForm.is_active ? "Can Log In" : "Cannot Log In"}
                   </span>
-                  {/* Toggle switch */}
-                  <div className={`w-10 h-5 rounded-full transition-colors ${editingStaff.email === user?.email ? "bg-gray-300" : staffForm.is_active ? "bg-green-400" : "bg-red-300"} relative`}>
-                    <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-all ${staffForm.is_active ? "left-5" : "left-0.5"}`}></div>
+                  <div className={`w-9 h-5 rounded-full transition-colors ${editingStaff.email === user?.email ? "bg-gray-300" : staffForm.is_active ? "bg-emerald-500" : "bg-red-300"} relative`}>
+                    <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-all ${staffForm.is_active ? "left-4.5" : "left-0.5"}`}></div>
                   </div>
                 </button>
-                <p className="text-dark-brown/40 text-[10px] mt-1 font-paragraph">
-                  {editingStaff.email === user?.email ? "You cannot deactivate your own account." : "Inactive accounts cannot log in at all."}
-                </p>
               </div>
 
               {/* Joined date (read-only) */}
-              <div className="bg-dark-brown/5 rounded-xl p-3 flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-dark-brown/50" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                <span className="text-dark-brown/50 text-xs font-paragraph">Joined {new Date(editingStaff.date_joined).toLocaleDateString()}</span>
+              <div className="bg-[#FAF6F0] rounded-xl p-3 flex items-center gap-2 border border-[#EBE3D7]">
+                <span className="text-[#2A1810]/50 text-xs font-paragraph">Joined {new Date(editingStaff.date_joined).toLocaleDateString()}</span>
               </div>
             </div>
 
             {/* Actions */}
-            <div className="p-5 border-t border-dark-brown/10 flex gap-3">
+            <div className="p-5 border-t border-[#EBE3D7] flex gap-3 bg-[#FAF6F0]">
               <button
                 onClick={() => setEditingStaff(null)}
-                className="flex-1 bg-dark-brown/10 hover:bg-dark-brown/20 text-dark-brown font-bold uppercase py-3 rounded-xl transition-colors text-sm"
+                className="flex-1 bg-white border border-[#EBE3D7] hover:bg-[#F5EFE6] text-[#2A1810] font-extrabold uppercase py-2.5 rounded-xl transition-colors text-xs"
               >
                 Cancel
               </button>
               <button
                 onClick={saveStaff}
-                className="flex-1 bg-dark-brown hover:bg-dark-brown-hover text-milk font-bold uppercase py-3 rounded-xl transition-colors shadow-lg text-sm"
+                className="flex-1 bg-[#2A1810] hover:bg-[#2A1810]/90 text-[#FAEADE] font-extrabold uppercase py-2.5 rounded-xl transition-colors shadow-sm text-xs"
               >
                 Save Changes
               </button>
@@ -3610,28 +3675,28 @@ export default function AdminPage() {
 
       {/* Void Reason Modal */}
       {voidModalOrderId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="app-panel border rounded-3xl shadow-2xl p-6 md:p-8 w-[90%] max-w-md">
-            <h3 className="text-xl font-bold text-dark-brown uppercase tracking-tight mb-2">Void Order</h3>
-            <p className="font-paragraph text-dark-brown/60 text-sm mb-4">Provide a reason for voiding order <strong>{voidModalOrderId}</strong>. Inventory will be restored.</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="bg-[#FFFDF9] border border-[#EBE3D7] rounded-3xl shadow-[0_16px_48px_rgba(42,24,16,0.18)] p-6 md:p-8 w-full max-w-md">
+            <h3 className="text-xl font-black text-[#2A1810] uppercase tracking-tight mb-2">Void Order</h3>
+            <p className="font-paragraph text-[#2A1810]/60 text-sm mb-4">Provide a reason for voiding order <strong className="font-mono text-[#2A1810]">{voidModalOrderId}</strong>. Inventory will be automatically restored.</p>
             <textarea
               value={voidReason}
               onChange={(e) => setVoidReason(e.target.value)}
               placeholder="Enter void reason (required)"
               rows={3}
-              className="w-full bg-white/60 border border-dark-brown/20 text-dark-brown font-paragraph rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-400 resize-none placeholder:text-dark-brown/40"
+              className="w-full bg-[#FAF6F0] border border-[#EBE3D7] text-[#2A1810] font-paragraph rounded-xl px-4 py-3 focus:outline-none focus:border-red-400 resize-none placeholder:text-[#2A1810]/30 shadow-2xs text-sm"
             />
             <div className="flex gap-3 mt-5">
               <button
                 onClick={() => { setVoidModalOrderId(null); setVoidReason(""); }}
-                className="flex-1 bg-dark-brown/10 hover:bg-dark-brown/20 text-dark-brown font-bold uppercase py-3 rounded-xl transition-colors"
+                className="flex-1 bg-white border border-[#EBE3D7] hover:bg-[#F5EFE6] text-[#2A1810] font-extrabold uppercase py-2.5 rounded-xl transition-colors text-xs"
               >
                 Cancel
               </button>
               <button
                 onClick={() => voidOrder(voidModalOrderId, voidReason)}
                 disabled={!voidReason.trim()}
-                className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-red-300 disabled:cursor-not-allowed text-white font-bold uppercase py-3 rounded-xl transition-colors shadow-lg"
+                className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-red-300 disabled:cursor-not-allowed text-white font-extrabold uppercase py-2.5 rounded-xl transition-colors shadow-xs text-xs"
               >
                 Void Order
               </button>
@@ -3643,28 +3708,28 @@ export default function AdminPage() {
       {/* View Reason Modal */}
       {viewReasonData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-          <div className="app-panel border rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
+          <div className="bg-[#FFFDF9] border border-[#EBE3D7] rounded-3xl shadow-[0_16px_48px_rgba(42,24,16,0.18)] w-full max-w-md overflow-hidden">
             <div className="bg-red-50 border-b border-red-100 p-5 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-red-100 rounded-full flex items-center justify-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                <div className="w-9 h-9 bg-red-100 rounded-xl flex items-center justify-center text-red-600">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
                 </div>
                 <div>
-                  <h3 className="font-bold text-dark-brown text-sm uppercase tracking-wider">Cancellation Reason</h3>
-                  <p className="text-dark-brown/50 text-xs font-paragraph">{viewReasonData.orderId}</p>
+                  <h3 className="font-extrabold text-red-950 text-sm uppercase tracking-wider">Cancellation Reason</h3>
+                  <p className="text-red-800/60 text-xs font-mono">{viewReasonData.orderId}</p>
                 </div>
               </div>
-              <button onClick={() => setViewReasonData(null)} className="text-dark-brown/40 hover:text-dark-brown transition-colors p-1 rounded-full hover:bg-dark-brown/10">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              <button onClick={() => setViewReasonData(null)} className="text-red-900/40 hover:text-red-950 transition-colors p-1.5 rounded-full hover:bg-red-100/50">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
               </button>
             </div>
             <div className="p-6">
-              <p className="font-paragraph text-dark-brown text-sm leading-relaxed break-words whitespace-pre-wrap">{viewReasonData.reason.replace(/^\[User Cancelled\]\s*/i, '')}</p>
+              <p className="font-paragraph text-[#2A1810] text-sm leading-relaxed break-words whitespace-pre-wrap">{viewReasonData.reason.replace(/^\[User Cancelled\]\s*/i, '')}</p>
             </div>
-            <div className="p-4 border-t border-dark-brown/10 flex justify-end">
+            <div className="p-4 border-t border-[#EBE3D7] flex justify-end bg-[#FAF6F0]">
               <button
                 onClick={() => setViewReasonData(null)}
-                className="px-5 py-2.5 rounded-full font-bold text-xs uppercase tracking-wider text-dark-brown bg-dark-brown/10 hover:bg-dark-brown/20 transition-colors focus:outline-none"
+                className="px-5 py-2 rounded-full font-extrabold text-xs uppercase tracking-wider text-[#2A1810] bg-white border border-[#EBE3D7] hover:bg-[#F5EFE6] transition-colors shadow-2xs"
               >
                 Close
               </button>
@@ -3680,8 +3745,8 @@ export default function AdminPage() {
         }`}
       >
         {toast && (
-          <div className="bg-dark-brown text-milk px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 border border-white/10 backdrop-blur-md">
-            <div className={`${toast.type === 'success' ? 'bg-green-500' : 'bg-red-500'} rounded-full p-1`}>
+          <div className="bg-[#2A1810] text-[#FAEADE] px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 border border-[#E3A458]/30 backdrop-blur-md">
+            <div className={`${toast.type === 'success' ? 'bg-emerald-500' : 'bg-red-500'} rounded-full p-1`}>
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                 {toast.type === 'success' ? (
                   <polyline points="20 6 9 17 4 12"></polyline>
@@ -3693,7 +3758,7 @@ export default function AdminPage() {
                 )}
               </svg>
             </div>
-            <p className="font-bold uppercase text-xs tracking-widest">{toast.message}</p>
+            <p className="font-extrabold uppercase text-xs tracking-widest">{toast.message}</p>
           </div>
         )}
       </div>

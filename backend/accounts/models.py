@@ -1,9 +1,13 @@
+from typing import TYPE_CHECKING, Any
 import random
 import datetime
 from decimal import Decimal
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from PIL import Image
+
+if TYPE_CHECKING:
+    from django.db.models.manager import RelatedManager
 
 
 class CustomUser(AbstractUser):
@@ -59,11 +63,19 @@ class CustomUser(AbstractUser):
         self.save()
         return code
 
+    @property
+    def name(self) -> str:
+        return self.first_name or self.username or self.email
+
     def __str__(self):
         return f"{self.email} ({self.role})"
 
 
 class Order(models.Model):
+    if TYPE_CHECKING:
+        items: Any
+        items_count: int
+
     STATUS_CHOICES = (
         ('pending', 'Pending'),
         ('preparing', 'Preparing'),
@@ -153,6 +165,9 @@ class OrderItem(models.Model):
 
 
 class Cart(models.Model):
+    if TYPE_CHECKING:
+        items: Any
+
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='cart')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

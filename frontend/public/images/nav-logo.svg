@@ -1,43 +1,55 @@
-<svg width="220" height="55" viewBox="0 0 220 55" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="240" height="56" viewBox="0 0 240 56" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="logoFill" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#6E4330"/>
-      <stop offset="100%" stop-color="#3F2519"/>
+    <!-- Signature Teal Gradient -->
+    <linearGradient id="tealGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0E9AA0" />
+      <stop offset="50%" stop-color="#098086" />
+      <stop offset="100%" stop-color="#066065" />
     </linearGradient>
-    <filter id="logoShadow" x="-20%" y="-20%" width="140%" height="160%">
-      <feDropShadow dx="0.5" dy="1" stdDeviation="1.1" flood-color="#000000" flood-opacity="0.35"/>
+
+    <!-- Teal Badge Background -->
+    <linearGradient id="badgeTealBg" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#F0F9F9" />
+      <stop offset="100%" stop-color="#E2F2F2" />
+    </linearGradient>
+
+    <!-- Dark Espresso for Contrast -->
+    <linearGradient id="darkBrandGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2A1810" />
+      <stop offset="100%" stop-color="#1A0F0A" />
+    </linearGradient>
+
+    <!-- Badge Drop Shadow -->
+    <filter id="badgeShadowTeal" x="-20%" y="-20%" width="140%" height="150%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#098086" flood-opacity="0.16" />
     </filter>
   </defs>
-  <text
-    x="110"
-    y="23"
-    text-anchor="middle"
-    fill="url(#logoFill)"
-    stroke="#F8EADD"
-    stroke-width="0.8"
-    paint-order="stroke fill"
-    filter="url(#logoShadow)"
-    font-family="Antonio, Arial Black, sans-serif"
-    font-size="20"
-    font-weight="700"
-    letter-spacing="0.8"
-  >
-    Generation
+
+  <!-- Signature Teal Croissant Emblem Badge -->
+  <g filter="url(#badgeShadowTeal)">
+    <rect x="4" y="4" width="48" height="48" rx="14" fill="url(#badgeTealBg)" stroke="#098086" stroke-width="1.5" stroke-opacity="0.5" />
+    
+    <!-- Signature Teal Croissant Icon -->
+    <g transform="translate(10, 10) scale(0.0703)" stroke="#098086" stroke-width="26" stroke-linecap="round" stroke-linejoin="round" fill="none">
+      <path d="M 142 278 C 142 196 190 172 256 172 C 322 172 370 196 370 278 C 370 298 356 312 344 300 C 324 280 300 274 276 274 L 236 274 C 212 274 188 280 168 300 C 156 312 142 298 142 278 Z" />
+      <path d="M 160 238 C 178 254 196 266 214 274" />
+      <path d="M 218 178 L 236 274" />
+      <path d="M 294 178 L 276 274" />
+      <path d="M 352 238 C 334 254 316 266 298 274" />
+    </g>
+  </g>
+
+  <!-- Typography: GENERATION BREAD in Signature Teal & Espresso -->
+  <text x="62" y="27" fill="url(#darkBrandGrad)" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif" font-size="16" font-weight="900" letter-spacing="1.2">
+    GENERATION
   </text>
-  <text
-    x="110"
-    y="45"
-    text-anchor="middle"
-    fill="url(#logoFill)"
-    stroke="#F8EADD"
-    stroke-width="0.8"
-    paint-order="stroke fill"
-    filter="url(#logoShadow)"
-    font-family="Antonio, Arial Black, sans-serif"
-    font-size="20"
-    font-weight="700"
-    letter-spacing="0.8"
-  >
-    Bread
+  
+  <text x="180" y="27" fill="url(#tealGrad)" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif" font-size="16" font-weight="900" letter-spacing="1.2">
+    BREAD
+  </text>
+
+  <!-- Subtitle Caption in Signature Teal -->
+  <text x="63" y="43" fill="#098086" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif" font-size="8.5" font-weight="800" letter-spacing="2.4" text-transform="uppercase">
+    BOUTIQUE BAKERY &amp; CAFE
   </text>
 </svg>

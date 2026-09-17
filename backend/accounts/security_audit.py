@@ -6,7 +6,7 @@ import logging
 logger = logging.getLogger("accounts.security")
 
 
-def log_security_event(event_type: str, *, request=None, user=None, detail: str = "") -> None:
+def log_security_event(event_type: str, *, request=None, user=None, detail: str | None = None) -> None:
     ip = ""
     if request is not None:
         try:
