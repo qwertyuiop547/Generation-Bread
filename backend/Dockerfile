@@ -15,7 +15,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
+# The entrypoint runs under Linux: a CRLF shebang/script must be normalized first.
+RUN sed -i 's/\r$//' docker-entrypoint.sh && chmod +x docker-entrypoint.sh
+
 EXPOSE 8000
 
-# Migrate + seed demo accounts/menu, then serve ASGI (0.0.0.0:$PORT required on Render)
-CMD ["sh", "-c", "python manage.py migrate --noinput && python seed_users.py && python seed_menu.py && daphne -b 0.0.0.0 -p ${PORT} spylt_backend.asgi:application"]
+# Wait for Postgres (with retries), migrate, seed demo data non-fatally, then serve
+# ASGI (0.0.0.0:$PORT required on Render).
+CMD ["./docker-entrypoint.sh"]
