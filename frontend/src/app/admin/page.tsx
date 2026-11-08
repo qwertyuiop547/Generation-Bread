@@ -11,7 +11,6 @@ import { useLanguage } from "@/context/LanguageContext";
 import { signOut } from "next-auth/react";
 import { performLogout } from "@/lib/logoutTransition";
 import NotificationBell from "@/components/NotificationBell";
-import CroissantLogoIcon from "@/components/CroissantLogoIcon";
 import { STAFF_POSITIONS } from "@/constants";
 import { useStaffOrdersRealtime } from "@/hooks/useStaffOrdersRealtime";
 import gsap from "gsap";
@@ -1398,26 +1397,13 @@ export default function AdminPage() {
       <div className="admin-header sticky top-0 z-40 bg-[#FFFDF9]/85 backdrop-blur-xl border-b border-[#EBE3D7] shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20 gap-3">
-            {/* Brand Title */}
-            <div className="flex items-center gap-3 min-w-0">
-              <Link href="/admin" className="flex items-center gap-3 group">
-                <div className="w-11 h-11 rounded-2xl bg-[#2A1810] border border-[#E3A458]/40 flex items-center justify-center shadow-md group-hover:scale-105 transition-all">
-                  <CroissantLogoIcon className="w-6 h-6 text-[#FAEADE] transition-transform duration-300 group-hover:rotate-6" />
-                </div>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-1">
-                    <span className="font-extrabold tracking-tight text-[#2A1810] text-sm uppercase">GENERATION</span>
-                    <span className="font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#E3A458] to-[#A26833] text-sm uppercase">
-                      BREAD
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1.5 mt-0.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#A26833] truncate">
-                      Operations & Kitchen Portal
-                    </span>
-                  </div>
-                </div>
+            {/* Portal Title */}
+            <div className="flex items-center gap-2 min-w-0">
+              <Link href="/admin" className="flex items-center gap-2 group hover:opacity-80 transition-opacity">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+                <span className="text-xs font-extrabold uppercase tracking-wider text-[#2A1810] truncate">
+                  Operations & Kitchen Portal
+                </span>
               </Link>
             </div>
 

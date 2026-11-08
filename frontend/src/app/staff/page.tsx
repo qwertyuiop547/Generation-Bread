@@ -14,8 +14,6 @@ import NotificationBell from "@/components/NotificationBell";
 import { useStaffOrdersRealtime } from "@/hooks/useStaffOrdersRealtime";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
-import CroissantLogoIcon from "@/components/CroissantLogoIcon";
-import BrandLogo from "@/components/BrandLogo";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
 
@@ -786,18 +784,10 @@ export default function StaffDashboardPage() {
       {/* Header */}
       <header className="staff-header sticky top-0 z-40 bg-[#FFFDF9]/85 backdrop-blur-xl border-b border-[#EBE3D7] shadow-[0_2px_16px_rgba(42,24,16,0.04)]">
         <div className="max-w-7xl mx-auto flex items-center justify-between px-5 md:px-10 py-3.5">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="group flex items-center gap-2.5 transition-transform active:scale-95">
-              <div className="w-10 h-10 rounded-2xl bg-[#2A1810] flex items-center justify-center shadow-md group-hover:bg-[#3D2519] transition-colors">
-                <CroissantLogoIcon className="w-6 h-6 text-[#FAEADE]" />
-              </div>
-              <div className="hidden sm:block">
-                <p className="text-xs font-extrabold uppercase tracking-widest text-[#2A1810] leading-none">Generation Bread</p>
-                <div className="flex items-center gap-1.5 mt-1">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#A26833]">Staff Kitchen Portal</p>
-                </div>
-              </div>
+          <div className="flex items-center gap-2">
+            <Link href="/staff" className="flex items-center gap-2 group hover:opacity-80 transition-opacity">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <p className="text-xs font-extrabold uppercase tracking-wider text-[#A26833]">Staff Kitchen Portal</p>
             </Link>
           </div>
 

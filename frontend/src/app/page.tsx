@@ -40,17 +40,11 @@ export default function Home() {
     window.scrollTo(0, 0);
   }, []);
 
-  useEffect(() => {
-    if (!isAuthLoading && isLoggedIn) {
-      router.replace("/dashboard");
-    }
-  }, [isAuthLoading, isLoggedIn, router]);
-
-  const scrollSetupKey = `${isAuthLoading}:${isLoggedIn}:${isPreloaderDone}`;
+  const scrollSetupKey = `${isAuthLoading}:${isPreloaderDone}`;
 
   useGSAP(
     () => {
-      if (isAuthLoading || isLoggedIn || !isPreloaderDone) return;
+      if (isAuthLoading || !isPreloaderDone) return;
 
       if (!smootherRef.current) {
         smootherRef.current = ScrollSmoother.create({
@@ -74,7 +68,7 @@ export default function Home() {
   );
 
   useEffect(() => {
-    if (isAuthLoading || isLoggedIn || !isPreloaderDone) return;
+    if (isAuthLoading || !isPreloaderDone) return;
 
     const refresh = () => ScrollTrigger.refresh();
     const timer = window.setTimeout(refresh, 200);
@@ -88,7 +82,7 @@ export default function Home() {
       window.removeEventListener("focus", refresh);
       window.removeEventListener("pageshow", refresh);
     };
-  }, [isPreloaderDone, isAuthLoading, isLoggedIn]);
+  }, [isPreloaderDone, isAuthLoading]);
 
   useEffect(() => {
     return () => {
@@ -100,22 +94,6 @@ export default function Home() {
   // Same shell on server + first client paint to avoid hydration mismatch.
   if (!clientReady) {
     return <main className="min-h-screen bg-black" aria-busy="true" />;
-  }
-
-  // Guests: mount home immediately so mobile hero video can preload.
-  // Possible session: keep a blank shell until auth resolves, then redirect.
-  if (isAuthLoading) {
-    const maybeSession = !!(
-      localStorage.getItem("spylt_user") ||
-      localStorage.getItem("spylt_access_token")
-    );
-    if (maybeSession) {
-      return <main className="min-h-screen bg-dark-brown" />;
-    }
-  }
-
-  if (!isAuthLoading && isLoggedIn) {
-    return null;
   }
 
   return (

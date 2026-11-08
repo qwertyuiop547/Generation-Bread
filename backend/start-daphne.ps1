@@ -22,4 +22,8 @@ if ($env:REDIS_URL) {
 }
 Write-Host "WebSockets: ws://${hostBind}:${port}/ws/..." -ForegroundColor DarkGray
 Write-Host "Health: http://${hostBind}:${port}/api/health/" -ForegroundColor DarkGray
+$ErrorActionPreference = "Continue"
+if (Test-Path variable:PSNativeCommandUseErrorActionPreference) {
+  $PSNativeCommandUseErrorActionPreference = $false
+}
 daphne -b $hostBind -p $port spylt_backend.asgi:application

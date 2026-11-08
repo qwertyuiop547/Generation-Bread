@@ -92,17 +92,12 @@ export function getMenuItemImage(
   if (lower.includes("matcha")) return "/images/flavor-matcha-latte.png";
   if (lower.includes("sausage")) return "/images/flavor-sausage-croissant.png";
   if (lower.includes("ham") || lower.includes("cheese croissant")) return "/images/flavor-ham-cheese-croissant.png";
-  if (lower.includes("pistachio") || lower.includes("pain au chocolat")) return "/images/flavor-pistachio-pain-au-chocolat.png";
+  if (lower.includes("pistachio") || lower.includes("pain au chocolat") || lower.includes("chocolate") || lower.includes("choco") || lower.includes("cocoa") || lower.includes("mocha")) return "/images/flavor-pistachio-pain-au-chocolat.png";
   if (lower.includes("cheese roll") || lower.includes("roll")) return "/images/generation-bread-cheese-roll.png";
-  if (lower.includes("chocolate") || lower.includes("choco") || lower.includes("cocoa") || lower.includes("mocha")) return "/images/brown-drink.webp";
-  if (lower.includes("latte") || lower.includes("coffee") || lower.includes("espresso") || lower.includes("americano")) return "/images/black-drink.webp";
-  if (lower.includes("milk") || lower.includes("vanilla")) return "/images/white-drink.webp";
-  if (lower.includes("berry") || lower.includes("strawberry") || lower.includes("red")) return "/images/red-drink.webp";
-  if (lower.includes("orange") || lower.includes("mango") || lower.includes("citrus")) return "/images/orange-drink.webp";
-  if (lower.includes("blue") || lower.includes("taro")) return "/images/blue-drink.webp";
+  if (lower.includes("latte") || lower.includes("coffee") || lower.includes("espresso") || lower.includes("americano") || lower.includes("milk") || lower.includes("vanilla") || lower.includes("drink") || lower.includes("shake")) return "/images/flavor-matcha-latte.png";
+  if (lower.includes("croissant")) return "/images/flavor-sausage-croissant.png";
 
-  if (color) return `/images/${color}-drink.webp`;
-  return "/images/generation-bread-ube-cheese-pandesal.png";
+  return "/images/generation-bread-bestseller.png";
 }
 
 export const nutrientList: INutrientList[] = [

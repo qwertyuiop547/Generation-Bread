@@ -8,7 +8,6 @@ import { useAuth } from "@/context/AuthContext";
 import { signIn } from "next-auth/react";
 import IntroHomeLink from "@/components/IntroHomeLink";
 import PageIntro from "@/components/PageIntro";
-import BrandLogo from "@/components/BrandLogo";
 import PasswordInput from "@/components/PasswordInput";
 import LegalModal from "@/components/LegalModal";
 
@@ -81,17 +80,7 @@ function RegisterPageContent() {
             <div className="absolute inset-0 bg-gradient-to-t from-[#1a2a28]/90 via-[#1a2a28]/40 to-[#1a2a28]/20" />
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,rgba(227,164,88,0.18),transparent_50%)]" />
 
-            <div className="absolute inset-0 flex flex-col justify-between p-10 xl:p-14">
-              <IntroHomeLink href="/" className="w-fit">
-                <BrandLogo
-                  priority
-                  width={160}
-                  height={40}
-                  onDark
-                  className="h-10 w-auto opacity-95 hover:opacity-100 transition-opacity"
-                />
-              </IntroHomeLink>
-
+            <div className="absolute inset-0 flex flex-col justify-end p-10 xl:p-14">
               <div className="max-w-md">
                 <p className="mb-4 font-paragraph text-xs uppercase tracking-[0.35em] text-milk/70">
                   Join the table

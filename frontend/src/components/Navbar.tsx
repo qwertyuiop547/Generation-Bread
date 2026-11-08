@@ -6,7 +6,6 @@ import { useAuth } from "@/context/AuthContext";
 import { signOut } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { performLogout } from "@/lib/logoutTransition";
-import BrandLogo from "@/components/BrandLogo";
 
 const Navbar = () => {
   const { isLoggedIn, isAdmin, user } = useAuth();
@@ -24,15 +23,12 @@ const Navbar = () => {
 
   return (
     <nav
-      className={`fixed top-0 left-0 w-full z-50 px-3 py-2.5 md:p-9 flex justify-between items-center gap-3 transition-colors duration-300 ${
+      className={`fixed top-0 left-0 w-full z-50 px-3 py-2.5 md:p-9 flex justify-end items-center gap-3 transition-colors duration-300 ${
         solidNav
           ? "bg-milk/90 backdrop-blur-md border-b border-dark-brown/5"
           : "bg-transparent border-b border-transparent"
       }`}
     >
-      <Link href="/" className="shrink-0">
-        <BrandLogo priority />
-      </Link>
       <div className="flex items-center gap-2 sm:gap-4 md:gap-8 md:pr-4 shrink-0">
         {isLoggedIn ? (
           <>

@@ -16,7 +16,6 @@ import { GB_EASE } from "@/lib/motion";
 import OrderProgress from "@/components/OrderProgress";
 import QueuePositionCard from "@/components/QueuePositionCard";
 import { authFetch, getAccessToken, withWsToken } from "@/lib/authHeaders";
-import BrandLogo from "@/components/BrandLogo";
 import { notifyOrderReady } from "@/lib/orderReadyAlerts";
 import { getMenuItemImage } from "@/constants";
 import ProductLightbox from "@/components/ProductLightbox";
@@ -493,19 +492,26 @@ function TrackPageContent() {
 
       {/* Header */}
       <div className="sticky top-0 z-40 app-header-bar backdrop-blur-xl border-b border-dark-brown/10">
-        <div className="flex items-center justify-between px-5 md:px-10 py-4">
-          <div className="flex items-center gap-4">
-            <Link href="/" className="shrink-0">
-              <BrandLogo
-                className="h-7 w-auto sm:h-8 md:h-10 cursor-pointer hover:scale-105 transition-transform drop-shadow-lg"
-              />
+        <div className="flex items-center justify-between px-5 md:px-10 py-3.5">
+          <div className="flex items-center gap-3">
+            <Link
+              href="/"
+              className="group flex items-center gap-2 text-dark-brown hover:opacity-80 transition-opacity"
+            >
+              <CroissantLogoIcon className="w-6 h-6 text-dark-brown" strokeWidth={18} />
+              <span className="font-sans font-bold uppercase tracking-tight text-dark-brown text-lg hidden sm:inline-block">
+                Generation Bread
+              </span>
             </Link>
+            <span className="text-dark-brown/30 font-bold hidden sm:inline-block">/</span>
+            <span className="font-paragraph text-xs uppercase tracking-[0.2em] font-bold text-dark-brown/70 hidden sm:inline-block">
+              Track Order
+            </span>
           </div>
           <div className="flex items-center gap-3">
-            <h1 className="text-dark-brown font-bold uppercase text-lg md:text-xl tracking-tight hidden sm:block">Track Order</h1>
             <Link
               href="/dashboard"
-              className="group flex items-center gap-2 bg-dark-brown/10 hover:bg-dark-brown text-dark-brown hover:text-milk font-bold text-xs md:text-sm uppercase rounded-full py-2 px-4 transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5"
+              className="group flex items-center gap-2 bg-dark-brown hover:bg-dark-brown-hover text-milk font-bold text-xs uppercase tracking-wider rounded-full py-2 px-4 transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />

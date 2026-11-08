@@ -16,12 +16,12 @@ import {
 import PageIntro from "@/components/PageIntro";
 import { performLogout } from "@/lib/logoutTransition";
 import { unwrapListResponse } from "@/lib/apiList";
-import BrandLogo from "@/components/BrandLogo";
 import { useThemeColors, withAlpha } from "@/lib/themeColors";
 import QueuePositionCard from "@/components/QueuePositionCard";
 import ProductLightbox from "@/components/ProductLightbox";
 import { fetchOrderEta, type SmartEta } from "@/lib/smartEta";
 import { getMenuItemImage } from "@/constants";
+import CroissantLogoIcon from "@/components/CroissantLogoIcon";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
 
@@ -1064,13 +1064,12 @@ export default function DashboardPage() {
           {/* Light header — same family as rest of app */}
           <header className="dashboard-header sticky top-0 z-40 border-b border-dark-brown/10 app-header-bar backdrop-blur-xl pt-[env(safe-area-inset-top)]">
             <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-5 sm:py-3.5 md:px-10 md:py-4">
-              <Link href="/" className="dashboard-nav-item min-w-0 shrink-0">
-                <BrandLogo
-                  priority
-                  className="h-7 w-auto max-w-[140px] cursor-pointer transition-opacity hover:opacity-80 sm:h-8 sm:max-w-none md:h-9"
-                />
+              <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                <CroissantLogoIcon className="w-6 h-6 text-dark-brown" strokeWidth={18} />
+                <span className="font-sans font-bold uppercase tracking-tight text-dark-brown text-lg hidden sm:inline-block">
+                  Generation Bread
+                </span>
               </Link>
-
               <div className="relative flex shrink-0 items-center justify-end gap-1.5 sm:gap-2.5">
                 <button
                   onClick={toggleLanguage}
@@ -1172,9 +1171,6 @@ export default function DashboardPage() {
             <section className="dashboard-stagger-item mb-8 md:mb-12">
               <div className="grid items-center gap-6 md:grid-cols-[1fr_minmax(200px,280px)] md:gap-10">
                 <div className="min-w-0">
-                  <p className="mb-2 font-paragraph text-xs font-bold uppercase tracking-[0.28em] text-dark-brown/40">
-                    Generation Bread
-                  </p>
                   <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold uppercase tracking-tight text-dark-brown leading-tight">
                     {t("Hello") || "Hello"},{" "}
                     <span className="text-brand-gold">

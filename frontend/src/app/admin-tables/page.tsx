@@ -9,7 +9,6 @@ import { useAuth } from "@/context/AuthContext";
 import { signOut } from "next-auth/react";
 import { performLogout } from "@/lib/logoutTransition";
 import NotificationBell from "@/components/NotificationBell";
-import CroissantLogoIcon from "@/components/CroissantLogoIcon";
 import QRCode from "qrcode";
 
 const API = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
@@ -321,22 +320,12 @@ export default function AdminTablesPage() {
       {/* Sticky Luxury Navbar */}
       <nav className="sticky top-0 z-40 bg-[#FAF6F0]/90 backdrop-blur-md border-b border-[#EBE3D7] transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between gap-4">
-          {/* Brand Logo */}
-          <Link href="/admin" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#2A1810] to-[#4A2B1D] p-2 flex items-center justify-center shadow-[0_4px_12px_rgba(42,24,16,0.15)] group-hover:scale-105 transition-transform">
-              <CroissantLogoIcon className="w-6 h-6 text-[#FAEADE] transition-transform duration-300 group-hover:rotate-6" />
-            </div>
-            <div>
-              <span className="text-sm font-black tracking-tight text-[#2A1810] uppercase flex items-center gap-1.5">
-                GENERATION BREAD
-                <span className="px-2 py-0.5 rounded-full bg-[#E3A458]/20 text-[#A26833] text-[9px] font-extrabold tracking-wider border border-[#E3A458]/30">
-                  FLOOR MAP
-                </span>
-              </span>
-              <span className="text-[10px] text-[#2A1810]/50 font-medium block">
-                Dining Floor & Table Command Center
-              </span>
-            </div>
+          {/* Portal Title */}
+          <Link href="/admin" className="flex items-center gap-2 group hover:opacity-80 transition-opacity">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+            <span className="text-xs font-extrabold uppercase tracking-wider text-[#2A1810]">
+              Dining Floor & Tables Command Center
+            </span>
           </Link>
 
           {/* Nav Actions */}
