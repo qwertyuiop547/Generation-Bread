@@ -837,6 +837,12 @@ export default function StaffDashboardPage() {
                 </svg>
                 <span>{t("Sales")}</span>
               </Link>
+              <Link
+                href="/admin-inventory"
+                className="staff-nav-item group flex items-center gap-2 bg-[#F5EFE6] hover:bg-[#2A1810] text-[#2A1810] hover:text-[#FAEADE] font-bold text-xs uppercase rounded-full py-2 px-4 transition-all shadow-xs border border-[#EBE3D7] hover:border-transparent hover:-translate-y-0.5"
+              >
+                <span>Inventory</span>
+              </Link>
               <button
                 onClick={() => { void performLogout(signOut); }}
                 className="staff-nav-item group flex items-center gap-1.5 bg-red-50 hover:bg-red-600 text-red-700 hover:text-white font-bold text-xs uppercase rounded-full py-2 px-4 transition-all duration-200 border border-red-200 hover:border-transparent shadow-xs hover:-translate-y-0.5"

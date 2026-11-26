@@ -28,6 +28,7 @@ import {
   AreaChart,
 } from "recharts";
 import { useThemeColors, withAlpha } from "@/lib/themeColors";
+import DemandForecastPanel from "@/components/DemandForecastPanel";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
 
@@ -599,6 +600,12 @@ export default function AdminDashboardPage() {
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                   <span>Sales Ledger</span>
                 </Link>
+                <Link
+                  href="/admin-inventory"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-extrabold uppercase tracking-wider text-[#2A1810]/75 hover:text-[#2A1810] bg-[#FFFDF9] hover:bg-[#F5EFE6] border border-[#EBE3D7] transition-all shadow-xs"
+                >
+                  <span>Inventory</span>
+                </Link>
 
                 <Link
                   href="/admin-tables"
@@ -661,6 +668,13 @@ export default function AdminDashboardPage() {
               <span>Sales Ledger</span>
             </Link>
             <Link
+              href="/admin-inventory"
+              onClick={closeMobileMenu}
+              className="mobile-nav-item flex items-center gap-3 w-[90%] bg-[#FAF6F0] hover:bg-[#F5EFE6] text-[#2A1810] font-extrabold text-xs uppercase rounded-2xl py-3.5 px-5 transition-all border border-[#EBE3D7]"
+            >
+              <span>Inventory</span>
+            </Link>
+            <Link
               href="/admin-tables"
               onClick={closeMobileMenu}
               className="mobile-nav-item flex items-center gap-3 w-[90%] bg-[#FAF6F0] hover:bg-[#F5EFE6] text-[#2A1810] font-extrabold text-xs uppercase rounded-2xl py-3.5 px-5 transition-all border border-[#EBE3D7]"
@@ -700,7 +714,7 @@ export default function AdminDashboardPage() {
               Operations & Analytics
             </h1>
             <p className="font-paragraph text-[#2A1810]/60 text-sm sm:text-base mt-1">
-              Sales performance, peak customer traffic, barista prep time benchmarks, and active kitchen shift lineup.
+              Sales performance, daily and weekly demand forecast, staffing recommendation, and the kitchen shift lineup.
             </p>
           </div>
 
@@ -720,6 +734,8 @@ export default function AdminDashboardPage() {
             ))}
           </div>
         </div>
+
+        <DemandForecastPanel email={user?.email} />
 
         {/* 5 KPI Summary Metric Tiles */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">

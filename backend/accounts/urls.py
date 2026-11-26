@@ -61,6 +61,7 @@ urlpatterns = [
     path('shift/assignments/', views.staff_shift_assignments_view, name='staff-shift-assignments'),
     path('admin/today-attendance/', views.today_attendance_view, name='admin-today-attendance'),
     path('admin/today-shift-lineup/', views.today_shift_lineup_view, name='admin-today-shift-lineup'),
+    path('admin/forecast/', views.admin_forecast_view, name='admin-forecast'),
     path('admin/drink-prep-times/', views.admin_drink_prep_times_view, name='admin-drink-prep-times'),
     path('admin/drink-prep-times/export/', views.admin_drink_prep_times_export_view, name='admin-drink-prep-times-export'),
     path('admin/shift/<int:shift_id>/approve/', views.approve_clock_in_view, name='admin-approve-clock-in'),

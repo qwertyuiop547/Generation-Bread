@@ -1691,6 +1691,17 @@ def admin_tables_view(request):
 
 @api_view(['GET'])
 @permission_classes([IsStaffOrAdmin])
+def admin_forecast_view(request):
+    """Daily and weekly demand forecast plus a staffing recommendation."""
+    _admin_user, err = _require_staff_actor(request)
+    if err:
+        return err
+    from .demand_forecast import build_demand_forecast
+    return Response(build_demand_forecast())
+
+
+@api_view(['GET'])
+@permission_classes([IsStaffOrAdmin])
 def admin_notifications_view(request):
     """Get notifications for admin: new orders, low stock, AI warnings."""
     admin_user, err = _require_staff_actor(request)
