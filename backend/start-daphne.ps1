@@ -26,4 +26,4 @@ $ErrorActionPreference = "Continue"
 if (Test-Path variable:PSNativeCommandUseErrorActionPreference) {
   $PSNativeCommandUseErrorActionPreference = $false
 }
-daphne -b $hostBind -p $port spylt_backend.asgi:application
+python -m daphne -b $hostBind -p $port spylt_backend.asgi:application

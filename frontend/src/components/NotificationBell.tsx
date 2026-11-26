@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { useAuth } from "@/context/AuthContext";
+import { AlertIcon, CartIcon, ChartIcon, CloseIcon, SparkIcon } from "@/components/MiniIcons";
 
 gsap.registerPlugin(useGSAP);
 
@@ -20,12 +21,12 @@ interface Notification {
   extra_data?: { order_id?: string; cancel_reason?: string };
 }
 
-const typeConfig: Record<Notification["type"], { icon: string; color: string; bg: string }> = {
-  new_order: { icon: "🛒", color: "text-blue-700", bg: "bg-blue-100" },
-  cancel_order: { icon: "🚫", color: "text-red-700", bg: "bg-red-100" },
-  low_stock: { icon: "⚠️", color: "text-yellow-700", bg: "bg-yellow-100" },
-  ai_warning: { icon: "🤖", color: "text-red-700", bg: "bg-red-100" },
-  forecast_ready: { icon: "📈", color: "text-green-700", bg: "bg-green-100" },
+const typeConfig: Record<Notification["type"], { Icon: typeof CartIcon; color: string; bg: string }> = {
+  new_order: { Icon: CartIcon, color: "text-blue-700", bg: "bg-blue-100" },
+  cancel_order: { Icon: CloseIcon, color: "text-red-700", bg: "bg-red-100" },
+  low_stock: { Icon: AlertIcon, color: "text-yellow-700", bg: "bg-yellow-100" },
+  ai_warning: { Icon: SparkIcon, color: "text-red-700", bg: "bg-red-100" },
+  forecast_ready: { Icon: ChartIcon, color: "text-green-700", bg: "bg-green-100" },
 };
 
 export default function NotificationBell({ userEmail }: { userEmail?: string }) {
@@ -299,7 +300,7 @@ export default function NotificationBell({ userEmail }: { userEmail?: string }) 
                       className="notif-item flex items-start gap-3 px-5 py-3.5 border-b border-dark-brown/5 hover:bg-dark-brown/5 transition-colors cursor-pointer"
                     >
                       <span className={`shrink-0 w-8 h-8 rounded-full ${cfg.bg} ${cfg.color} flex items-center justify-center text-sm`}>
-                        {cfg.icon}
+                        <cfg.Icon size={14} />
                       </span>
                       <div className="flex-1 min-w-0">
                         <p className="font-bold text-dark-brown text-xs leading-tight">{notif.title}</p>

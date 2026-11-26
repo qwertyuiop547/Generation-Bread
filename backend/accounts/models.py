@@ -87,6 +87,7 @@ class Order(models.Model):
         ('dine_in', 'Dine-In'),
         ('takeout', 'Takeout'),
         ('scheduled', 'Scheduled Pickup'),
+        ('delivery', 'Delivery'),
     )
     PAYMENT_METHOD_CHOICES = (
         ('cash', 'Cash'),
@@ -104,7 +105,8 @@ class Order(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     order_type = models.CharField(max_length=20, choices=ORDER_TYPE_CHOICES, default='takeout')
     table_number = models.CharField(max_length=50, blank=True, null=True)
-    pickup_time = models.CharField(max_length=50, blank=True, null=True, help_text="Scheduled pickup time (display)")
+    pickup_time = models.CharField(max_length=50, blank=True, null=True, help_text="Scheduled pickup or delivery time (display)")
+    delivery_address = models.CharField(max_length=240, blank=True, default='', help_text="Street address for delivery orders")
     scheduled_at = models.DateTimeField(blank=True, null=True, help_text="Scheduled pickup datetime for auto-cancel logic")
     customer_name = models.CharField(max_length=255, blank=True, default='')
     payment_method = models.CharField(

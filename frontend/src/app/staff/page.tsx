@@ -10,6 +10,8 @@ import { unwrapListResponse } from "@/lib/apiList";
 import { useLanguage } from "@/context/LanguageContext";
 import { signOut } from "next-auth/react";
 import { performLogout } from "@/lib/logoutTransition";
+import { CalendarIcon, ClipboardIcon, CupIcon, PhoneIcon, UserIcon } from "@/components/MiniIcons";
+import { paymentBadgeClass, paymentLabel } from "@/lib/paymentLabel";
 import NotificationBell from "@/components/NotificationBell";
 import { useStaffOrdersRealtime } from "@/hooks/useStaffOrdersRealtime";
 import gsap from "gsap";
@@ -33,9 +35,10 @@ interface Order {
   userEmail: string;
   userName: string;
   status: "pending" | "preparing" | "ready" | "completed" | "cancelled";
-  orderType?: "Dine-In" | "Takeout" | "Scheduled";
+  orderType?: "Dine-In" | "Takeout" | "Scheduled" | "Delivery";
   tableNumber?: string | null;
   pickupTime?: string | null;
+  deliveryAddress?: string | null;
   voidReason?: string;
   paymentMethod?: string;
   paymentStatus?: "unpaid" | "paid" | "";
@@ -166,9 +169,10 @@ export default function StaffDashboardPage() {
             userEmail: d.user_email,
             userName: d.customer_name || d.user_name || d.user_email,
             status: d.status,
-            orderType: d.order_type === "dine_in" ? "Dine-In" : d.order_type === "scheduled" ? "Scheduled" : "Takeout",
+            orderType: d.order_type === "dine_in" ? "Dine-In" : d.order_type === "scheduled" ? "Scheduled" : d.order_type === "delivery" ? "Delivery" : "Takeout",
             tableNumber: d.table_number || null,
             pickupTime: d.pickup_time || null,
+            deliveryAddress: d.delivery_address || null,
             voidReason: d.void_reason || undefined,
             paymentMethod: d.payment_method || "",
             paymentStatus: d.payment_status || "unpaid"}));
@@ -911,7 +915,7 @@ export default function StaffDashboardPage() {
         <div className="staff-stagger-item mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2.5">
-              <span className="text-2xl">👨‍🍳</span>
+              <CupIcon size={22} className="text-[#A26833]" />
               <h2 className="text-3xl md:text-4xl font-extrabold text-[#2A1810] uppercase tracking-tight">
                 {t("Staff Dashboard")}
               </h2>
@@ -1211,7 +1215,7 @@ export default function StaffDashboardPage() {
             <div className="staff-stagger-item space-y-4">
               {filteredOrders.length === 0 ? (
                 <div className="bg-[#FFFDF9] border border-[#EBE3D7] rounded-3xl p-12 text-center shadow-[0_4px_24px_rgba(42,24,16,0.05)]">
-                  <p className="text-4xl mb-3">📋</p>
+                  <ClipboardIcon size={28} className="mx-auto mb-3 text-[#2A1810]/35" />
                   <p className="font-bold uppercase text-[#2A1810] text-lg">No orders in this view</p>
                   <p className="font-paragraph text-[#2A1810]/50 text-sm mt-1">New incoming customer orders will appear here in real-time.</p>
                 </div>
@@ -1241,28 +1245,27 @@ export default function StaffDashboardPage() {
                               : "bg-[#2A1810]/10 text-[#2A1810] border border-[#2A1810]/15"
                           }`}>
                             {order.orderType === "Scheduled" && order.pickupTime
-                              ? `⏰ Pre-Order @ ${(() => { try { const d = new Date(order.pickupTime); return isNaN(d.getTime()) ? order.pickupTime : d.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch { return order.pickupTime; } })()}`
+                              ? `Pre-Order @ ${(() => { try { const d = new Date(order.pickupTime); return isNaN(d.getTime()) ? order.pickupTime : d.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch { return order.pickupTime; } })()}`
                               : order.orderType === "Dine-In" && order.tableNumber
-                              ? `🍽️ Dine-In (Table ${order.tableNumber})`
-                              : `🛍️ ${order.orderType}`}
+                              ? `Dine-In (Table ${order.tableNumber})`
+                              : order.orderType === "Delivery"
+                              ? "Delivery"
+                              : order.orderType}
                           </span>
                         )}
 
-                        {order.paymentMethod && (
-                          <span className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase border shadow-xs ${
-                            order.paymentStatus === "paid"
-                              ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                              : "bg-amber-50 text-amber-800 border-amber-200"
-                          }`}>
-                            {order.paymentMethod} · {order.paymentStatus === "paid" ? "Paid" : "Unpaid"}
-                          </span>
-                        )}
+                        <span className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase border shadow-xs ${paymentBadgeClass(order.paymentMethod, order.paymentStatus === "paid")}`}>
+                          {paymentLabel(order.paymentMethod)} · {order.paymentStatus === "paid" ? "Paid" : "Unpaid"}
+                        </span>
                       </div>
 
                       <div className="flex items-center gap-1.5 text-xs text-[#2A1810]/50 font-paragraph">
                         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                         <span>{new Date(order.date).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
                       </div>
+                      {order.orderType === "Delivery" && order.deliveryAddress && (
+                        <p className="text-xs text-[#2A1810]/70 font-paragraph">Deliver to {order.deliveryAddress}</p>
+                      )}
                     </div>
 
                     {/* Customer & Items Section */}
@@ -1378,7 +1381,7 @@ export default function StaffDashboardPage() {
                   </div>
                   <p className="text-[11px] font-extrabold uppercase tracking-wider text-[#2A1810]/70">{cfg.label}</p>
                   {table.customer_name && (
-                    <p className="text-xs font-paragraph font-bold text-[#2A1810] mt-2 truncate">👤 {table.customer_name}</p>
+                    <p className="mt-2 flex items-center gap-1.5 truncate text-xs font-paragraph font-bold text-[#2A1810]"><UserIcon size={12} /> {table.customer_name}</p>
                   )}
                   {table.total_price && (
                     <p className="text-sm font-extrabold text-[#2A1810] font-mono mt-1">₱{table.total_price}</p>
@@ -1399,7 +1402,7 @@ export default function StaffDashboardPage() {
 
             {staffUsers.length === 0 ? (
               <div className="bg-[#FFFDF9] border border-[#EBE3D7] rounded-3xl p-12 text-center shadow-[0_4px_20px_rgba(42,24,16,0.05)]">
-                <p className="text-4xl mb-3">📞</p>
+                <PhoneIcon size={28} className="mx-auto mb-3 text-[#2A1810]/35" />
                 <p className="font-bold text-[#2A1810] uppercase text-lg">No staff contacts found</p>
               </div>
             ) : (
@@ -1503,12 +1506,38 @@ export default function StaffDashboardPage() {
                 <p className="font-paragraph text-[#2A1810]/60 text-xs">{voidModalOrderId}</p>
               </div>
             </div>
-            <p className="font-paragraph text-[#2A1810]/70 text-sm mb-4">Please provide a reason for cancelling this order. This action will be logged and inventory will be returned.</p>
+            <p className="font-paragraph text-[#2A1810]/70 text-sm mb-3">Please provide a reason for cancelling this order. This action will be logged and inventory will be returned.</p>
+            <div className="mb-3 flex flex-wrap gap-1.5">
+              {[
+                "Customer changed mind",
+                "Incorrect item",
+                "Duplicate order",
+                "Customer did not pay",
+                "Item out of stock",
+                "Wrong details",
+              ].map((reason) => {
+                const selected = voidReason === reason;
+                return (
+                  <button
+                    key={reason}
+                    type="button"
+                    onClick={() => setVoidReason(reason)}
+                    className={`rounded-full border px-3 py-1.5 text-[11px] font-bold transition ${
+                      selected
+                        ? "border-red-300 bg-red-100 text-red-800"
+                        : "border-[#EBE3D7] bg-white text-[#2A1810]/70 hover:border-[#A26833]/40 hover:text-[#2A1810]"
+                    }`}
+                  >
+                    {reason}
+                  </button>
+                );
+              })}
+            </div>
             <textarea
               value={voidReason}
               onChange={e => setVoidReason(e.target.value)}
-              placeholder="e.g. Customer changed mind, incorrect item..."
-              className="w-full bg-[#F5EFE6] border border-[#EBE3D7] text-[#2A1810] font-paragraph rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#A26833] placeholder:text-[#2A1810]/40 mb-5 resize-none h-24 text-sm"
+              placeholder="Or type another reason..."
+              className="w-full bg-[#F5EFE6] border border-[#EBE3D7] text-[#2A1810] font-paragraph rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#A26833] placeholder:text-[#2A1810]/40 mb-5 resize-none h-20 text-sm"
             />
             <div className="flex gap-3">
               <button
@@ -1685,7 +1714,7 @@ export default function StaffDashboardPage() {
 
               {myAbsenceRequests.filter((r) => r.status === "approved").length === 0 ? (
                 <div className="bg-[#F5EFE6]/60 border border-[#EBE3D7] rounded-2xl p-6 text-center">
-                  <p className="text-2xl mb-1.5">📅</p>
+                  <CalendarIcon size={22} className="mx-auto mb-1.5 text-[#2A1810]/35" />
                   <p className="text-xs font-bold uppercase text-[#2A1810]/60">No upcoming planned absences</p>
                   <p className="text-[11px] text-[#2A1810]/40 font-paragraph mt-0.5">
                     Your attendance is scheduled for all upcoming shifts.

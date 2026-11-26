@@ -86,6 +86,7 @@ class OrderSerializer(serializers.ModelSerializer):
             'order_type',
             'table_number',
             'pickup_time',
+            'delivery_address',
             'scheduled_at',
             'payment_method',
             'payment_status',

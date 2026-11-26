@@ -31,11 +31,7 @@ function LoginPageContent() {
 
   // Wake the Render free-tier API while the user types credentials.
   useEffect(() => {
-    const controller = new AbortController();
-    fetch(`${API_BASE_URL}/api/health`, { signal: controller.signal, cache: "no-store" }).catch(
-      () => {}
-    );
-    return () => controller.abort();
+    fetch(`${API_BASE_URL}/api/health/`, { cache: "no-store" }).catch(() => {});
   }, []);
 
   useEffect(() => {

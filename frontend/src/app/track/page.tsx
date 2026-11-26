@@ -20,7 +20,11 @@ import { notifyOrderReady } from "@/lib/orderReadyAlerts";
 import { getMenuItemImage } from "@/constants";
 import ProductLightbox from "@/components/ProductLightbox";
 import CroissantLogoIcon from "@/components/CroissantLogoIcon";
+import { CameraIcon, PastryIcon, SparkIcon } from "@/components/MiniIcons";
 import { unwrapListResponse } from "@/lib/apiList";
+import CustomerAiStudio, {
+  type CustomerAiFeatureId,
+} from "@/components/CustomerAiStudio";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
 
@@ -57,6 +61,13 @@ function TrackPageContent() {
   const [orderEta, setOrderEta] = useState<SmartEta | null>(null);
   const [recentOrdersList, setRecentOrdersList] = useState<TrackedOrder[]>([]);
   const [previewProduct, setPreviewProduct] = useState<{ src: string; alt: string } | null>(null);
+  const [aiStudioOpen, setAiStudioOpen] = useState(false);
+  const [aiStudioFeature, setAiStudioFeature] = useState<CustomerAiFeatureId>("caption");
+
+  const openTrackAi = (feat: CustomerAiFeatureId) => {
+    setAiStudioFeature(feat);
+    setAiStudioOpen(true);
+  };
 
   const containerRef = useRef<HTMLDivElement>(null);
   const toastRef = useRef<HTMLDivElement>(null);
@@ -508,16 +519,23 @@ function TrackPageContent() {
               Track Order
             </span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <button
+              type="button"
+              onClick={() => openTrackAi("caption")}
+              className="inline-flex items-center gap-1.5 rounded-full border border-dark-brown/15 bg-white/80 px-3.5 py-2 text-xs font-bold uppercase tracking-wider text-dark-brown transition-colors hover:border-dark-brown hover:bg-dark-brown hover:text-milk"
+            >
+              <SparkIcon size={13} />
+              <span>AI Suite</span>
+            </button>
             <Link
               href="/dashboard"
-              className="group flex items-center gap-2 bg-dark-brown hover:bg-dark-brown-hover text-milk font-bold text-xs uppercase tracking-wider rounded-full py-2 px-4 transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5"
+              className="inline-flex items-center gap-1.5 rounded-full border border-dark-brown bg-dark-brown px-3.5 py-2 text-xs font-bold uppercase tracking-wider text-milk transition-colors hover:bg-dark-brown-hover"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                <polyline points="9 22 9 12 15 12 15 22" />
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden className="shrink-0">
+                <path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5z" />
               </svg>
-              Dashboard
+              <span>Dashboard</span>
             </Link>
           </div>
         </div>
@@ -527,7 +545,7 @@ function TrackPageContent() {
         {/* Hero */}
         <div className="track-hero text-center mb-6 sm:mb-8">
           <div className="mb-3 inline-flex max-w-full items-center gap-1.5 sm:gap-2 rounded-full border border-dark-brown/15 bg-milk/90 px-3 py-1 sm:px-3.5 sm:py-1.5 shadow-2xs">
-            <span className="text-xs shrink-0">🥐</span>
+            <PastryIcon size={12} className="shrink-0" />
             <span className="truncate font-paragraph text-[0.62rem] sm:text-[0.7rem] font-bold uppercase tracking-[0.12em] sm:tracking-[0.2em] text-dark-brown/70">
               Generation Bread · Live Kitchen Tracker
             </span>
@@ -775,6 +793,45 @@ function TrackPageContent() {
                 </span>
               </div>
             </div>
+
+            {/* 4 — AI Smart Tools for This Order */}
+            <div className="rounded-3xl border border-dark-brown/12 bg-gradient-to-r from-[#FAF3E8] via-white/90 to-[#F5E6D3] p-4 sm:p-5 shadow-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3 pb-3 border-b border-dark-brown/10">
+                <div className="flex items-center gap-2.5">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-dark-brown text-milk shadow-xs">
+                    <SparkIcon size={14} />
+                  </span>
+                  <div>
+                    <h4 className="text-sm font-bold uppercase tracking-tight text-dark-brown">
+                      Captions for Order {trackedOrder.id}
+                    </h4>
+                    <p className="font-paragraph text-xs text-dark-brown/60">
+                      IG and TikTok captions based on the items in this order.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <button
+                  type="button"
+                  onClick={() => openTrackAi("caption")}
+                  className="w-full rounded-2xl bg-white/90 hover:bg-dark-brown text-dark-brown hover:text-milk p-3 text-left border border-dark-brown/10 transition-all hover:shadow-md flex items-center gap-3 group"
+                >
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#FAF3E8] text-dark-brown group-hover:bg-white/15 group-hover:text-milk">
+                    <CameraIcon size={16} />
+                  </span>
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wide">
+                      Foodie Captions
+                    </p>
+                    <p className="font-paragraph text-[11px] opacity-75 leading-tight mt-0.5">
+                      IG & TikTok captions + camera tips
+                    </p>
+                  </div>
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
@@ -861,6 +918,13 @@ function TrackPageContent() {
           </div>
         )}
       </div>
+
+      <CustomerAiStudio
+        isOpen={aiStudioOpen}
+        onClose={() => setAiStudioOpen(false)}
+        initialFeature={aiStudioFeature}
+        activeOrderItems={trackedOrder?.items.map((i) => i.name) || []}
+      />
 
       {/* Lightbox modal for zooming item images */}
       <ProductLightbox

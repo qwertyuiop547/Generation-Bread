@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { authFetch } from "@/lib/authHeaders";
 import { signOut } from "next-auth/react";
+import { StarIcon } from "@/components/MiniIcons";
 import ThemeToggle from "@/components/ThemeToggle";
 import CroissantLogoIcon from "@/components/CroissantLogoIcon";
 import BrandLogo from "@/components/BrandLogo";
@@ -390,7 +391,7 @@ export default function ProfilePage() {
                         : "bg-red-brown/15 text-red-brown border border-red-brown/30"
                     }`}
                   >
-                    {user.role === "admin" ? "👑 Admin" : "⭐ Staff"}
+                    <span className="inline-flex items-center gap-1">{user.role === "admin" ? <><StarIcon size={11} /> Admin</> : <><StarIcon size={11} /> Staff</>}</span>
                   </span>
                 )}
 
@@ -573,7 +574,7 @@ export default function ProfilePage() {
                       : "bg-red-brown/15 text-red-brown border border-red-brown/30"
                   }`}
                 >
-                  {user.role === "admin" ? "⭐ Admin" : "Staff"}
+                  <span className="inline-flex items-center gap-1">{user.role === "admin" ? <><StarIcon size={11} /> Admin</> : "Staff"}</span>
                 </span>
               </div>
             )}

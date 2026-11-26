@@ -10,6 +10,8 @@ import { unwrapListResponse } from "@/lib/apiList";
 import { useLanguage } from "@/context/LanguageContext";
 import { signOut } from "next-auth/react";
 import { performLogout } from "@/lib/logoutTransition";
+import { BoltIcon, BoxIcon, CalendarIcon, ChartIcon, ClipboardIcon, ClockIcon, CloseIcon, CupIcon, PhoneIcon, StarIcon, UsersIcon } from "@/components/MiniIcons";
+import { paymentBadgeClass, paymentLabel } from "@/lib/paymentLabel";
 import NotificationBell from "@/components/NotificationBell";
 import { STAFF_POSITIONS } from "@/constants";
 import { useStaffOrdersRealtime } from "@/hooks/useStaffOrdersRealtime";
@@ -51,7 +53,7 @@ interface Order {
   userEmail: string;
   userName: string;
   status: "pending" | "preparing" | "ready" | "completed" | "cancelled";
-  orderType?: "Dine-In" | "Takeout" | "Scheduled";
+  orderType?: "Dine-In" | "Takeout" | "Scheduled" | "Delivery";
   tableNumber?: string | null;
   pickupTime?: string | null;
   voidReason?: string;
@@ -605,7 +607,7 @@ export default function AdminPage() {
             userEmail: d.user_email,
             userName: d.customer_name || d.user_name || d.user_email,
             status: d.status,
-            orderType: d.order_type === "dine_in" ? "Dine-In" : d.order_type === "scheduled" ? "Scheduled" : "Takeout",
+            orderType: d.order_type === "dine_in" ? "Dine-In" : d.order_type === "scheduled" ? "Scheduled" : d.order_type === "delivery" ? "Delivery" : "Takeout",
             tableNumber: d.table_number,
             pickupTime: d.pickup_time,
             voidReason: d.void_reason || undefined,
@@ -1553,7 +1555,7 @@ export default function AdminPage() {
               onClick={closeMobileMenu}
               className="mobile-nav-item flex items-center gap-3 w-[90%] bg-white hover:bg-dark-brown/5 text-dark-brown font-bold text-sm uppercase rounded-xl py-3 px-5 transition-all shadow-sm active:scale-[0.98]"
             >
-              <span>🍳 Kitchen View</span>
+              <span className="inline-flex items-center gap-1.5"><CupIcon size={13} /> Kitchen View</span>
             </Link>
             <button
               onClick={() => { void performLogout(signOut); }}
@@ -1575,7 +1577,7 @@ export default function AdminPage() {
         <div className="admin-stagger-item flex flex-col sm:flex-row sm:items-end justify-between gap-5 mb-8">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EBE3D7]/70 text-[#A26833] text-[11px] font-extrabold uppercase tracking-widest mb-2 border border-[#EBE3D7]">
-              <span>👑 Operations Command Hub</span>
+              <span className="inline-flex items-center gap-1.5"><ChartIcon size={13} /> Operations Command Hub</span>
             </div>
             <h1 className="text-3xl sm:text-4xl font-black text-[#2A1810] tracking-tight uppercase">
               {t("Hello,")} {user?.name || "Administrator"}
@@ -1589,7 +1591,7 @@ export default function AdminPage() {
               href="/admin-dashboard"
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#2A1810] text-[#FAEADE] font-extrabold text-xs uppercase tracking-wider transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5"
             >
-              <span>📊 Executive Analytics</span>
+              <span className="inline-flex items-center gap-1.5"><ChartIcon size={13} /> Executive Analytics</span>
               <span>→</span>
             </Link>
           </div>
@@ -1603,8 +1605,8 @@ export default function AdminPage() {
               <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#2A1810]/50">
                 {t("Total Orders")}
               </span>
-              <div className="w-9 h-9 rounded-xl bg-[#2A1810]/5 text-[#2A1810] flex items-center justify-center text-base font-bold border border-[#EBE3D7]">
-                📦
+              <div className="w-9 h-9 rounded-xl bg-[#2A1810]/5 text-[#2A1810] flex items-center justify-center border border-[#EBE3D7]">
+                <BoxIcon size={16} />
               </div>
             </div>
             <p className="text-2xl sm:text-3xl font-black text-[#2A1810] font-mono tracking-tight">
@@ -1658,8 +1660,8 @@ export default function AdminPage() {
               <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#2A1810]/50">
                 {t("Customer")}
               </span>
-              <div className="w-9 h-9 rounded-xl bg-[#2A1810]/5 text-[#A26833] flex items-center justify-center font-bold text-sm border border-[#EBE3D7]">
-                👥
+              <div className="w-9 h-9 rounded-xl bg-[#2A1810]/5 text-[#A26833] flex items-center justify-center border border-[#EBE3D7]">
+                <UsersIcon size={16} />
               </div>
             </div>
             <p className="text-2xl sm:text-3xl font-black text-[#2A1810] font-mono tracking-tight">
@@ -1672,12 +1674,12 @@ export default function AdminPage() {
         {/* Section Navigation Tabs */}
         <div className="admin-stagger-item flex flex-wrap items-center gap-1.5 p-1.5 rounded-full bg-[#EBE3D7]/60 border border-[#EBE3D7] w-fit mb-8 shadow-inner">
           {[
-            { key: "orders", label: "Orders & Kitchen", icon: "📦" },
-            { key: "staff", label: "Staff Accounts", icon: "👥" },
-            { key: "roles", label: "Staff Roles", icon: "⭐" },
-            { key: "contacts", label: "Staff Directory", icon: "📞" },
-            { key: "attendance", label: "Attendance", icon: "⏱️" },
-            { key: "activity", label: "Activity Feed", icon: "⚡" },
+            { key: "orders", label: "Orders & Kitchen", icon: <BoxIcon size={13} /> },
+            { key: "staff", label: "Staff Accounts", icon: <UsersIcon size={13} /> },
+            { key: "roles", label: "Staff Roles", icon: <StarIcon size={13} /> },
+            { key: "contacts", label: "Staff Directory", icon: <PhoneIcon size={13} /> },
+            { key: "attendance", label: "Attendance", icon: <ClockIcon size={13} /> },
+            { key: "activity", label: "Activity Feed", icon: <BoltIcon size={13} /> },
           ].map((s) => (
             <button
               key={s.key}
@@ -1772,7 +1774,7 @@ export default function AdminPage() {
 
           {filteredOrders.length === 0 ? (
             <div className="p-12 text-center">
-              <p className="text-4xl mb-2">📋</p>
+              <ClipboardIcon size={28} className="mx-auto mb-2 text-[#2A1810]/30" />
               <p className="font-extrabold uppercase text-sm text-[#2A1810]">No orders found</p>
               <p className="font-paragraph text-xs text-[#2A1810]/50 mt-1">There are no orders matching your current filter selection.</p>
             </div>
@@ -1804,10 +1806,12 @@ export default function AdminPage() {
                               : "bg-[#E3A458]/15 text-[#A26833] border-[#E3A458]/40"
                           }`}>
                             {order.orderType === "Dine-In" 
-                              ? `🍽️ Dine-In${order.tableNumber ? ` (T-${order.tableNumber})` : ""}` 
+                              ? `Dine-In${order.tableNumber ? ` (T-${order.tableNumber})` : ""}` 
                               : order.orderType === "Scheduled" 
                                 ? `⏰ Pre-Order${order.pickupTime ? ` @ ${(() => { try { const d = new Date(order.pickupTime); return isNaN(d.getTime()) ? order.pickupTime : d.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch { return order.pickupTime; } })()}` : ""}` 
-                                : "🛍️ Takeout"}
+                                : order.orderType === "Delivery"
+                                ? "Delivery"
+                                : "Takeout"}
                           </span>
                         )}
                       </td>
@@ -1836,20 +1840,10 @@ export default function AdminPage() {
                       </td>
                       <td className="px-6 py-4">
                         <p className="font-black text-[#2A1810] font-mono text-base">₱{order.total.toFixed(2)}</p>
-                        {order.paymentMethod ? (
-                          <span className={`inline-block mt-1 text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md border ${
-                            order.paymentStatus === "paid"
-                              ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                              : "bg-amber-50 text-amber-800 border-amber-200"
-                          }`}>
-                            {order.paymentMethod}
-                            {order.paymentStatus === "paid" ? " · paid" : " · unpaid"}
-                          </span>
-                        ) : (
-                          <span className="inline-block mt-1 text-[10px] font-extrabold uppercase text-[#2A1810]/40">
-                            Unspecified
-                          </span>
-                        )}
+                        <span className={`inline-block mt-1 text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md border ${paymentBadgeClass(order.paymentMethod, order.paymentStatus === "paid")}`}>
+                          {paymentLabel(order.paymentMethod)}
+                          {order.paymentStatus === "paid" ? " · paid" : " · unpaid"}
+                        </span>
                         {!order.isArchived && order.status !== "cancelled" && order.paymentStatus !== "paid" && (
                           <div>
                             <button
@@ -1924,7 +1918,7 @@ export default function AdminPage() {
                             }`}
                             title={order.isArchived ? "Unarchive order" : "Archive order"}
                           >
-                            {order.isArchived ? "↩ Unarchive" : "📦 Archive"}
+                            {order.isArchived ? "Unarchive" : "Archive"}
                           </button>
                         </div>
                         {order.voidReason && (
@@ -1982,7 +1976,7 @@ export default function AdminPage() {
 
           {staffUsers.length === 0 ? (
             <div className="bg-[#FFFDF9] border border-[#EBE3D7] rounded-3xl p-12 text-center shadow-[0_4px_24px_rgba(42,24,16,0.06)]">
-              <p className="text-4xl mb-2">👥</p>
+              <UsersIcon size={28} className="mx-auto mb-2 text-[#2A1810]/30" />
               <p className="font-extrabold uppercase text-sm text-[#2A1810]">No staff accounts found</p>
             </div>
           ) : (
@@ -2222,7 +2216,7 @@ export default function AdminPage() {
 
           {staffUsers.length === 0 ? (
             <div className="bg-[#FFFDF9] border border-[#EBE3D7] rounded-3xl p-12 text-center shadow-[0_4px_24px_rgba(42,24,16,0.06)]">
-              <p className="text-4xl mb-2">📋</p>
+              <ClipboardIcon size={28} className="mx-auto mb-2 text-[#2A1810]/30" />
               <p className="font-extrabold uppercase text-sm text-[#2A1810]">No staff accounts to assign roles</p>
             </div>
           ) : (
@@ -2333,7 +2327,7 @@ export default function AdminPage() {
 
           {staffUsers.length === 0 ? (
             <div className="bg-[#FFFDF9] border border-[#EBE3D7] rounded-3xl p-12 text-center shadow-[0_4px_24px_rgba(42,24,16,0.06)]">
-              <p className="text-4xl mb-2">📞</p>
+              <PhoneIcon size={28} className="mx-auto mb-2 text-[#2A1810]/30" />
               <p className="font-extrabold uppercase text-sm text-[#2A1810]">No staff contacts to display</p>
             </div>
           ) : (
@@ -2504,7 +2498,7 @@ export default function AdminPage() {
           {/* Attendance Table */}
           {!attendanceData?.attendance?.length ? (
             <div className="bg-[#FFFDF9] border border-[#EBE3D7] rounded-3xl p-12 text-center shadow-[0_4px_24px_rgba(42,24,16,0.06)]">
-              <p className="text-4xl mb-2">📋</p>
+              <ClipboardIcon size={28} className="mx-auto mb-2 text-[#2A1810]/30" />
               <p className="font-extrabold uppercase text-sm text-[#2A1810]">No staff attendance data yet</p>
             </div>
           ) : (
@@ -3152,18 +3146,18 @@ export default function AdminPage() {
           ) : (
             <div className="space-y-2.5">
               {activityFeed.map((a: any) => {
-                const iconMap: Record<string, { color: string; bg: string; icon: string }> = {
-                  clock_in: { color: "text-emerald-800", bg: "bg-emerald-50 border-emerald-200", icon: "⏱" },
-                  clock_out: { color: "text-red-700", bg: "bg-red-50 border-red-200", icon: "⏹" },
-                  break_start: { color: "text-amber-800", bg: "bg-amber-50 border-amber-200", icon: "☕" },
-                  break_end: { color: "text-emerald-800", bg: "bg-emerald-50 border-emerald-200", icon: "✅" },
-                  approved: { color: "text-emerald-800", bg: "bg-emerald-50 border-emerald-200", icon: "✓" },
-                  marked_late: { color: "text-orange-800", bg: "bg-orange-50 border-orange-200", icon: "⏰" },
-                  marked_absent: { color: "text-red-800", bg: "bg-red-50 border-red-200", icon: "✗" },
-                  planned_absence: { color: "text-indigo-800", bg: "bg-indigo-50 border-indigo-200", icon: "📅" },
-                  order_completed: { color: "text-emerald-800", bg: "bg-emerald-50 border-emerald-200", icon: "📦" },
-                  order_cancelled: { color: "text-red-700", bg: "bg-red-50 border-red-200", icon: "🚫" },
-                  order_voided: { color: "text-red-800", bg: "bg-red-50 border-red-200", icon: "🗑" }};
+                const iconMap: Record<string, { color: string; bg: string; icon: React.ReactNode }> = {
+                  clock_in: { color: "text-emerald-800", bg: "bg-emerald-50 border-emerald-200", icon: <ClockIcon size={15} /> },
+                  clock_out: { color: "text-red-700", bg: "bg-red-50 border-red-200", icon: <ClockIcon size={15} /> },
+                  break_start: { color: "text-amber-800", bg: "bg-amber-50 border-amber-200", icon: <CupIcon size={15} /> },
+                  break_end: { color: "text-emerald-800", bg: "bg-emerald-50 border-emerald-200", icon: <CupIcon size={15} /> },
+                  approved: { color: "text-emerald-800", bg: "bg-emerald-50 border-emerald-200", icon: <StarIcon size={15} /> },
+                  marked_late: { color: "text-orange-800", bg: "bg-orange-50 border-orange-200", icon: <ClockIcon size={15} /> },
+                  marked_absent: { color: "text-red-800", bg: "bg-red-50 border-red-200", icon: <CloseIcon size={15} /> },
+                  planned_absence: { color: "text-indigo-800", bg: "bg-indigo-50 border-indigo-200", icon: <CalendarIcon size={15} /> },
+                  order_completed: { color: "text-emerald-800", bg: "bg-emerald-50 border-emerald-200", icon: <BoxIcon size={15} /> },
+                  order_cancelled: { color: "text-red-700", bg: "bg-red-50 border-red-200", icon: <CloseIcon size={15} /> },
+                  order_voided: { color: "text-red-800", bg: "bg-red-50 border-red-200", icon: <CloseIcon size={15} /> }};
                 const cfg = iconMap[a.action] || { color: "text-[#2A1810]/70", bg: "bg-[#2A1810]/5 border-[#EBE3D7]", icon: "•" };
                 const timeAgo = (() => {
                   const diff = (Date.now() - new Date(a.created_at).getTime()) / 1000;
@@ -3304,7 +3298,7 @@ export default function AdminPage() {
                 </div>
               ) : !historyData?.logs?.length ? (
                 <div className="py-16 text-center">
-                  <p className="text-4xl mb-2">📋</p>
+                  <ClipboardIcon size={28} className="mx-auto mb-2 text-[#2A1810]/30" />
                   <p className="font-extrabold uppercase text-xs text-[#2A1810]/40">No attendance records found</p>
                 </div>
               ) : (

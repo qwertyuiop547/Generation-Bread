@@ -68,4 +68,5 @@ urlpatterns = [
     path('admin/shift/<int:shift_id>/mark-absent/', views.mark_absent_view, name='admin-mark-absent'),
     path('admin/cancel-overdue-scheduled/', views.cancel_overdue_scheduled_orders_view, name='admin-cancel-overdue-scheduled'),
     path('admin/activity-feed/', views.staff_activity_feed_view, name='admin-activity-feed'),
+    path('ai/customer/', views.customer_ai_view, name='customer-ai'),
 ]

@@ -33,6 +33,12 @@ const Navbar = () => {
         {isLoggedIn ? (
           <>
             <Link
+              href="/order"
+              className="text-dark-brown font-bold uppercase text-xs sm:text-sm md:text-lg hover:text-light-brown transition-colors"
+            >
+              Menu
+            </Link>
+            <Link
               href={isAdmin ? "/admin" : "/dashboard"}
               className="text-dark-brown font-bold uppercase text-xs sm:text-sm md:text-lg hover:text-light-brown transition-colors"
             >
@@ -63,6 +69,12 @@ const Navbar = () => {
           </>
         ) : (
           <>
+            <Link
+              href="/order"
+              className="text-dark-brown font-bold uppercase text-xs sm:text-sm md:text-lg hover:text-light-brown transition-colors whitespace-nowrap"
+            >
+              Menu
+            </Link>
             <Link href="/login" className="text-dark-brown font-bold uppercase text-xs sm:text-sm md:text-lg hover:text-light-brown transition-colors whitespace-nowrap">
               Login
             </Link>

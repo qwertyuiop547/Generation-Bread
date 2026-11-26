@@ -60,8 +60,9 @@ class CartApiTests(APITestCase):
         order_response = self.client.post(
             self.orders_url,
             {
-                'email': self.user_email,
-                'total_price': '298.00',
+            'email': self.user_email,
+            'total_price': '298.00',
+            'payment_method': 'cash',
                 'items': [
                     {'name': 'Chocolate Milk', 'quantity': 1, 'price': '149.00'},
                     {'name': 'Strawberry Milk', 'quantity': 1, 'price': '149.00'},
@@ -77,9 +78,10 @@ class CartApiTests(APITestCase):
         order_response = self.client.post(
             self.orders_url,
             {
-                'email': self.user_email,
-                'total_price': '149.00',
-                'order_type': 'Dine-In',
+            'email': self.user_email,
+            'total_price': '149.00',
+            'payment_method': 'cash',
+            'order_type': 'Dine-In',
                 'table_number': '5',
                 'customer_name': 'Walk In Guest',
                 'items': [
@@ -99,9 +101,10 @@ class CartApiTests(APITestCase):
         order_response = self.client.post(
             self.orders_url,
             {
-                'email': self.user_email,
-                'total_price': '149.00',
-                'items': [{'name': 'Chocolate Milk', 'quantity': 1, 'price': '149.00'}],
+            'email': self.user_email,
+            'total_price': '149.00',
+            'payment_method': 'gcash',
+            'items': [{'name': 'Chocolate Milk', 'quantity': 1, 'price': '149.00'}],
             },
             format='json',
         )
@@ -124,9 +127,10 @@ class CartApiTests(APITestCase):
         order_response = self.client.post(
             self.orders_url,
             {
-                'email': self.user_email,
-                'total_price': '149.00',
-                'items': [{'name': 'Chocolate Milk', 'quantity': 1, 'price': '149.00'}],
+            'email': self.user_email,
+            'total_price': '149.00',
+            'payment_method': 'gcash',
+            'items': [{'name': 'Chocolate Milk', 'quantity': 1, 'price': '149.00'}],
             },
             format='json',
         )
@@ -156,6 +160,7 @@ class SmartEtaApiTests(APITestCase):
         payload = {
             'email': email or self.user_email,
             'total_price': '149.00',
+            'payment_method': 'cash',
             'items': [
                 {'name': 'Chocolate Milk', 'quantity': 1, 'price': '149.00'},
             ],

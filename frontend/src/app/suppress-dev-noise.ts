@@ -12,12 +12,14 @@ if (process.env.NODE_ENV === "development" && typeof window !== "undefined") {
     "bis_frame_id",
     "data-grammarly",
     "cz-shortcut-listen",
+    "data-cursor-ref",
     "M_ID",
     "200.js",
     "executors/200.js",
     "chrome-extension://",
     "chrome-extension",
     "GSAP target",
+    "signal is aborted without reason",
   ];
 
   const originalError = console.error;

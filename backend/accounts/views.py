@@ -69,6 +69,8 @@ logger = logging.getLogger(__name__)
 
 VALID_ORDER_STATUSES = {'pending', 'preparing', 'ready', 'completed', 'cancelled'}
 MENU_CACHE_KEY = 'menu:public:v1'
+# New id every API process start, so a fresh run does not reuse the last browser login.
+SERVER_BOOT_ID = secrets.token_hex(16)
 
 
 @api_view(['GET'])
@@ -98,6 +100,7 @@ def health_view(request):
         'database': 'up' if db_ok else 'down',
         'cache': 'up' if cache_ok else 'down',
         'redis_configured': redis_configured,
+        'boot_id': SERVER_BOOT_ID,
     }
     code = status.HTTP_200_OK if healthy else status.HTTP_503_SERVICE_UNAVAILABLE
     return Response(payload, status=code)
@@ -725,10 +728,22 @@ def order_view(request):
     if customer_name is None:
         return Response({'error': 'Invalid customer name.'}, status=status.HTTP_400_BAD_REQUEST)
 
+    delivery_address = ''
     if raw_order_type in {'dine-in', 'dine_in', 'dinein'}:
         normalized_order_type = 'dine_in'
     elif raw_order_type in {'scheduled', 'pre-order', 'pre_order'}:
         normalized_order_type = 'scheduled'
+    elif raw_order_type == 'delivery':
+        normalized_order_type = 'delivery'
+        delivery_address = normalize_text(
+            request.data.get('delivery_address') or '',
+            max_length=240,
+            allow_empty=False,
+        )
+        if not delivery_address:
+            return Response({'error': 'A delivery address is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        if not pickup_time:
+            return Response({'error': 'A delivery time is required.'}, status=status.HTTP_400_BAD_REQUEST)
     else:
         normalized_order_type = 'takeout'
 
@@ -742,6 +757,28 @@ def order_view(request):
 
     if normalized_order_type == 'scheduled' and not pickup_time:
         return Response({'error': 'Pickup time is required for scheduled orders.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    for item_data in items:
+        qty = int(item_data.get('quantity') or 0)
+        if qty < 1:
+            return Response({'error': 'Each item needs a quantity of at least 1.'}, status=status.HTTP_400_BAD_REQUEST)
+        menu_item = MenuItem.objects.filter(name=item_data.get('name')).first()
+        if menu_item and menu_item.track_stock and menu_item.stock < qty:
+            left = menu_item.stock
+            if left <= 0:
+                return Response({'error': f'{menu_item.name} is out of stock.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'error': f'Only {left} {menu_item.name} left.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+    payment_method = str(request.data.get('payment_method') or '').strip().lower()
+    valid_methods = {choice[0] for choice in Order.PAYMENT_METHOD_CHOICES}
+    if payment_method and payment_method not in valid_methods:
+        return Response(
+            {'error': 'payment_method must be cash, gcash, gotyme, or card.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     # Parse scheduled_at from pickup_time for auto-cancel logic
     scheduled_at = None
@@ -767,8 +804,11 @@ def order_view(request):
             order_type=normalized_order_type,
             table_number=table_number,
             pickup_time=pickup_time,
+            delivery_address=delivery_address,
             scheduled_at=scheduled_at,
             customer_name=customer_name or user.first_name or user.email,
+            payment_method=payment_method,
+            payment_status='unpaid',
             access_token=access_token,
         )
         for item_data in items:
@@ -803,6 +843,8 @@ def order_view(request):
                 'total_price': str(total_price),
                 'user_email': user.email,
                 'customer_name': order.customer_name,
+                'payment_method': order.payment_method,
+                'payment_status': order.payment_status,
                 'created_at': order.created_at.isoformat(),
             }
         }
@@ -3127,3 +3169,31 @@ def staff_activity_feed_view(request):
     )
     serializer = StaffActivitySerializer(activities, many=True)
     return Response(serializer.data)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def customer_ai_view(request):
+    """Customer caption helper. Older AI suite features are retired."""
+    from .customer_ai import handle_customer_ai_request
+
+    feature = request.data.get('feature', '')
+    payload = request.data.get('payload') or {}
+    items_qs = MenuItem.objects.filter(is_hidden=False).values(
+        'id', 'name', 'price', 'description', 'category', 'color', 'bg_color'
+    )
+    menu_items = [
+        {
+            'id': m['id'],
+            'name': m['name'],
+            'price': float(m['price']),
+            'description': m['description'],
+            'category': m['category'] or 'drink',
+            'color': m['color'],
+            'bgColor': m['bg_color'],
+        }
+        for m in items_qs
+    ]
+    result = handle_customer_ai_request(feature, payload, menu_items)
+    return Response(result)
+

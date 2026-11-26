@@ -124,23 +124,70 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     setMounted(true);
+    let cancelled = false;
 
-    const storedAccess = localStorage.getItem("spylt_access_token");
-    const storedRefresh = localStorage.getItem("spylt_refresh_token");
-    const storedUser = localStorage.getItem("spylt_user");
+    const clearStoredSession = () => {
+      localStorage.removeItem("spylt_access_token");
+      localStorage.removeItem("spylt_refresh_token");
+      localStorage.removeItem("spylt_user");
+    };
 
-    if (storedAccess && storedRefresh && storedUser) {
+    const restoreStoredSession = () => {
+      const storedAccess = localStorage.getItem("spylt_access_token");
+      const storedRefresh = localStorage.getItem("spylt_refresh_token");
+      const storedUser = localStorage.getItem("spylt_user");
+      if (!storedAccess || !storedRefresh || !storedUser) return;
       try {
         setAccessToken(storedAccess);
         setRefreshToken(storedRefresh);
         setUser(JSON.parse(storedUser));
       } catch {
-        localStorage.removeItem("spylt_access_token");
-        localStorage.removeItem("spylt_refresh_token");
-        localStorage.removeItem("spylt_user");
+        clearStoredSession();
       }
-    }
-    setLocalResolved(true);
+    };
+
+    const boot = async () => {
+      const hadSession = Boolean(
+        localStorage.getItem("spylt_access_token") && localStorage.getItem("spylt_user")
+      );
+      const previousBoot = localStorage.getItem("spylt_server_boot");
+      let bootId = "";
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/health/`, { cache: "no-store" });
+        if (res.ok) {
+          const data = await res.json();
+          bootId = typeof data?.boot_id === "string" ? data.boot_id : "";
+        }
+      } catch {
+        bootId = "";
+      }
+      if (cancelled) return;
+
+      const serverRestarted = Boolean(bootId && previousBoot && previousBoot !== bootId);
+      const firstBootWithOldSession = Boolean(bootId && !previousBoot && hadSession);
+      if (serverRestarted || firstBootWithOldSession) {
+        clearStoredSession();
+        if (bootId) localStorage.setItem("spylt_server_boot", bootId);
+        setAccessToken(null);
+        setRefreshToken(null);
+        setUser(null);
+        setLocalResolved(true);
+        const path = window.location.pathname;
+        if (path !== "/login" && path !== "/register") {
+          window.location.replace("/login");
+        }
+        return;
+      }
+
+      if (bootId) localStorage.setItem("spylt_server_boot", bootId);
+      restoreStoredSession();
+      setLocalResolved(true);
+    };
+
+    void boot();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Keep React token state aligned when authFetch silently refreshes JWTs.

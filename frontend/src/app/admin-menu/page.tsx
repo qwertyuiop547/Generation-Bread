@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { useAuth } from "@/context/AuthContext";
+import { CupIcon, PastryIcon } from "@/components/MiniIcons";
 import NotificationBell from "@/components/NotificationBell";
 import ProductLightbox from "@/components/ProductLightbox";
 import { getMenuItemImage } from "@/constants";
@@ -800,7 +801,7 @@ export default function AdminMenuPage() {
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${(item.category || "drink") === "food" ? "bg-amber-100 text-amber-800" : "bg-sky-100 text-sky-800"}`}>
-                        {(item.category || "drink") === "food" ? "🥐 Food" : "☕ Drink"}
+                        {(item.category || "drink") === "food" ? "Food" : "Drink"}
                       </span>
                     </div>
                     <h3 className="text-xl font-bold text-dark-brown uppercase leading-tight">{item.name}</h3>
@@ -911,7 +912,7 @@ export default function AdminMenuPage() {
                       />
                     ) : (
                       <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 px-4 text-center text-milk/85">
-                        <span className="text-2xl opacity-80">{formData.category === "food" ? "🥐" : "☕"}</span>
+                        {formData.category === "food" ? <PastryIcon size={22} /> : <CupIcon size={22} />}
                         <span className="text-[11px] font-bold uppercase tracking-wider">Photo preview</span>
                       </div>
                     )}
@@ -931,8 +932,8 @@ export default function AdminMenuPage() {
                 {/* Category segmented control */}
                 <div className="menu-form-block grid grid-cols-2 gap-1 rounded-2xl bg-dark-brown/[0.06] p-1">
                   {([
-                    { key: "drink" as const, label: "Drink", icon: "☕" },
-                    { key: "food" as const, label: "Food", icon: "🥐" },
+                    { key: "drink" as const, label: "Drink", icon: <CupIcon size={13} /> },
+                    { key: "food" as const, label: "Food", icon: <PastryIcon size={13} /> },
                   ]).map((opt) => (
                     <button
                       key={opt.key}
@@ -944,7 +945,7 @@ export default function AdminMenuPage() {
                           : "text-dark-brown/45 hover:text-dark-brown/70"
                       }`}
                     >
-                      {opt.icon} {opt.label}
+                      <span className="inline-flex items-center gap-1.5">{opt.icon} {opt.label}</span>
                     </button>
                   ))}
                 </div>

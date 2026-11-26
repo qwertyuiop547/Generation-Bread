@@ -31,6 +31,13 @@ export const translations: Translations = {
   "Pre-Order": { EN: "Pre-Order", FIL: "I-advance" },
   "Dine-In": { EN: "Dine-In", FIL: "Dine-In" },
   "Takeout": { EN: "Takeout", FIL: "I-uwi" },
+  "Delivery": { EN: "Delivery", FIL: "I-deliver" },
+  "Delivery address": { EN: "Delivery address", FIL: "Address ng delivery" },
+  "Delivery time": { EN: "Delivery time", FIL: "Oras ng delivery" },
+  "Sold out": { EN: "Sold out", FIL: "Ubos na" },
+  "Only left": { EN: "Only", FIL: "Naiwan" },
+  "This week": { EN: "This week", FIL: "Ngayong linggo" },
+  "This year": { EN: "This year", FIL: "Ngayong taon" },
 
   "Customer Name": { EN: "Customer Name", FIL: "Pangalan ng Customer" },
   "Table Number": { EN: "Table Number", FIL: "Numero ng Mesa" },

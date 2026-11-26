@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import { PastryIcon } from "@/components/MiniIcons";
 
 interface LoyaltyStampCardProps {
   totalOrders: number;
@@ -28,8 +29,8 @@ export default function LoyaltyStampCard({ totalOrders }: LoyaltyStampCardProps)
       {/* Header */}
       <div className="relative z-10 flex flex-wrap items-center justify-between gap-3 border-b border-milk/10 pb-4">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-light-brown/20 border border-light-brown/30 text-lg">
-            🥐
+          <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-light-brown/20 border border-light-brown/30 text-milk">
+            <PastryIcon size={16} />
           </div>
           <div>
             <div className="flex items-center gap-2">
@@ -75,7 +76,7 @@ export default function LoyaltyStampCard({ totalOrders }: LoyaltyStampCardProps)
             >
               {isStamped ? (
                 <div className="flex flex-col items-center justify-center animate-fade-in">
-                  <span className="text-base sm:text-lg drop-shadow-sm">🥐</span>
+                  <PastryIcon size={16} className="text-brand-gold" />
                   <span className="mt-0.5 text-[9px] font-bold text-brand-gold font-paragraph">
                     #{idx + 1}
                   </span>

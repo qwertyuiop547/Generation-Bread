@@ -17,6 +17,22 @@ import { authFetch, withWsToken } from "@/lib/authHeaders";
 import QueuePositionCard from "@/components/QueuePositionCard";
 import ProductLightbox from "@/components/ProductLightbox";
 import CroissantLogoIcon from "@/components/CroissantLogoIcon";
+import CustomerAiStudio, {
+  CUSTOMER_AI_FEATURES,
+  type CustomerAiFeatureId,
+} from "@/components/CustomerAiStudio";
+import CravingNowCard from "@/components/CravingNowCard";
+import {
+  CameraIcon,
+  CartIcon,
+  CloseIcon,
+  CupIcon,
+  GridIcon,
+  PastryIcon,
+  SearchIcon,
+  SparkIcon,
+  StarIcon,
+} from "@/components/MiniIcons";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
 const CART_API_URL = `${API_BASE_URL}/api/auth/cart/`;
@@ -32,6 +48,9 @@ interface MenuItem {
   bgColor?: string;
   image_url?: string | null;
   category?: "drink" | "food";
+  stock?: number;
+  track_stock?: boolean;
+  is_hidden?: boolean;
 }
 
 interface MenuApiItem extends MenuItem {
@@ -117,7 +136,8 @@ export default function OrderPage() {
   const [isBackendCartSyncEnabled, setIsBackendCartSyncEnabled] = useState(true);
   const [restoredCartFromLoginRedirect, setRestoredCartFromLoginRedirect] = useState(false);
   
-  const [orderType, setOrderType] = useState<"Dine-In" | "Takeout" | "Scheduled">("Takeout");
+  const [orderType, setOrderType] = useState<"Dine-In" | "Takeout" | "Scheduled" | "Delivery">("Takeout");
+  const [deliveryAddress, setDeliveryAddress] = useState("");
   const [tableNumber, setTableNumber] = useState("");
   const [customerName, setCustomerName] = useState("");
   const [pickupTime, setPickupTime] = useState("");
@@ -142,6 +162,13 @@ export default function OrderPage() {
   const [customSugar, setCustomSugar] = useState<SugarLevel>("100%");
   const [customAddOns, setCustomAddOns] = useState<string[]>([]);
   const [customNotes, setCustomNotes] = useState("");
+  const [aiStudioOpen, setAiStudioOpen] = useState(false);
+  const [aiStudioFeature, setAiStudioFeature] = useState<CustomerAiFeatureId>("caption");
+
+  const openAiFeature = (feat: CustomerAiFeatureId) => {
+    setAiStudioFeature(feat);
+    setAiStudioOpen(true);
+  };
 
   // Fetch dynamic menu
   React.useEffect(() => {
@@ -215,7 +242,36 @@ export default function OrderPage() {
     setReviewText("");
   };
 
+  const unitsInCart = (name: string) =>
+    cart.filter((line) => line.name === name).reduce((sum, line) => sum + line.qty, 0);
+
+  const trackedLeft = (item: { track_stock?: boolean; stock?: number }) =>
+    item.track_stock ? Math.max(0, Number(item.stock ?? 0)) : null;
+
+  const canAddItem = (item: { name: string; track_stock?: boolean; stock?: number }, extra = 1) => {
+    const left = trackedLeft(item);
+    if (left === null) return true;
+    return unitsInCart(item.name) + extra <= left;
+  };
+
+  const blockIfUnavailable = (item: { name: string; track_stock?: boolean; stock?: number }) => {
+    const left = trackedLeft(item);
+    if (left === null) return false;
+    if (left <= 0) {
+      setToast({ message: `${item.name} is sold out.`, type: "error" });
+      setTimeout(() => setToast(null), 3000);
+      return true;
+    }
+    if (!canAddItem(item, 1)) {
+      setToast({ message: `Only ${left} ${item.name} left.`, type: "error" });
+      setTimeout(() => setToast(null), 3000);
+      return true;
+    }
+    return false;
+  };
+
   const openCustomizer = (item: typeof menuItems[0]) => {
+    if (blockIfUnavailable(item)) return;
     setCustomizingItem(item);
     setCustomSize("Small");
     setCustomSugar("100%");
@@ -225,6 +281,7 @@ export default function OrderPage() {
 
   const confirmAddToCart = () => {
     if (!customizingItem) return;
+    if (blockIfUnavailable(customizingItem)) return;
 
     const isFood = customizingItem.category === "food";
     let finalPrice = customizingItem.price;
@@ -281,6 +338,9 @@ export default function OrderPage() {
   };
 
   const bumpCartLine = (lineId: string) => {
+    const line = cart.find((item) => item.lineId === lineId);
+    const menuItem = menuItems.find((item) => item.name === line?.name);
+    if (line && menuItem && blockIfUnavailable(menuItem)) return;
     setCart((prev) =>
       prev.map((item) =>
         item.lineId === lineId ? { ...item, qty: item.qty + 1 } : item
@@ -329,7 +389,7 @@ export default function OrderPage() {
       return;
     }
 
-    if ((orderType === "Takeout" || orderType === "Scheduled") && !customerName.trim()) {
+    if ((orderType === "Takeout" || orderType === "Scheduled" || orderType === "Delivery") && !customerName.trim()) {
       setToast({ message: "Please enter your name.", type: "error" });
       setTimeout(() => setToast(null), 3000);
       if (!showCart) setShowCart(true);
@@ -338,6 +398,20 @@ export default function OrderPage() {
 
     if (orderType === "Scheduled" && !pickupTime) {
       setToast({ message: "Please select a pickup time.", type: "error" });
+      setTimeout(() => setToast(null), 3000);
+      if (!showCart) setShowCart(true);
+      return;
+    }
+
+    if (orderType === "Delivery" && !deliveryAddress.trim()) {
+      setToast({ message: "Please enter a delivery address.", type: "error" });
+      setTimeout(() => setToast(null), 3000);
+      if (!showCart) setShowCart(true);
+      return;
+    }
+
+    if (orderType === "Delivery" && !pickupTime) {
+      setToast({ message: "Please choose a delivery time.", type: "error" });
       setTimeout(() => setToast(null), 3000);
       if (!showCart) setShowCart(true);
       return;
@@ -360,8 +434,10 @@ export default function OrderPage() {
         items: toBackendItems(cart),
         order_type: orderType,
         table_number: orderType === "Dine-In" ? tableNumber : null,
-        pickup_time: orderType === "Scheduled" ? pickupTime : null,
-        customer_name: orderType !== "Dine-In" ? customerName : (user?.name || "Guest")};
+        pickup_time: orderType === "Scheduled" || orderType === "Delivery" ? pickupTime : null,
+        delivery_address: orderType === "Delivery" ? deliveryAddress.trim() : "",
+        customer_name: orderType !== "Dine-In" ? customerName : (user?.name || "Guest"),
+      };
 
       // Prefer JWT (with refresh). Expired Bearer tokens used to 401 even on AllowAny.
       let res = await apiFetch(ORDERS_API_URL, {
@@ -787,12 +863,21 @@ export default function OrderPage() {
               {language}
             </button>
             <button
-              onClick={() => setShowCart(!showCart)}
-              className="relative bg-dark-brown hover:bg-dark-brown-hover text-milk font-bold text-sm uppercase rounded-full py-2 px-5 md:py-3 md:px-8 transition-all hover:-translate-y-0.5 shadow-md"
+              onClick={() => openAiFeature("caption")}
+              className="inline-flex items-center gap-1.5 rounded-full border border-dark-brown/15 bg-white/80 px-3.5 py-2 text-xs font-bold uppercase tracking-wider text-dark-brown transition-colors hover:border-dark-brown hover:bg-dark-brown hover:text-milk"
+              title="Open Customer AI Suite"
             >
-              🛒 Cart
+              <SparkIcon size={13} />
+              <span>AI Suite</span>
+            </button>
+            <button
+              onClick={() => setShowCart(!showCart)}
+              className="inline-flex items-center gap-1.5 rounded-full border border-dark-brown bg-dark-brown px-3.5 py-2 text-xs font-bold uppercase tracking-wider text-milk transition-colors hover:bg-dark-brown-hover"
+            >
+              <CartIcon size={13} />
+              <span>Cart</span>
               {totalItems > 0 && (
-                <span className="absolute -top-2 -right-2 bg-light-brown text-dark-brown text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full shadow-md">
+                <span className="min-w-4 rounded-full bg-white/20 px-1.5 text-center text-[10px] font-bold tabular-nums leading-4">
                   {totalItems}
                 </span>
               )}
@@ -810,6 +895,66 @@ export default function OrderPage() {
         <h1 className="text-4xl md:text-6xl font-bold text-dark-brown uppercase tracking-tight drop-shadow-xs">{t("Our Menu")}</h1>
         <p className="font-paragraph text-dark-brown/70 mt-2 text-base md:text-lg max-w-lg mx-auto leading-relaxed">{t("Pick your favorites and place your order")}</p>
 
+        <CravingNowCard
+          menuItems={menuItems}
+          onAdd={(items) => {
+            items.forEach((item) => addToCart(item.name, item.price, item.notes));
+            setShowCart(true);
+          }}
+        />
+
+        {/* Customer AI Suite Showcase Bar */}
+        <div className="mt-6 max-w-5xl mx-auto px-2">
+          <div className="rounded-3xl bg-gradient-to-r from-[#FAF3E8] via-white/80 to-[#F5E6D3] p-4 sm:p-5 border border-dark-brown/15 shadow-sm text-left">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3.5 pb-3 border-b border-dark-brown/10">
+              <div className="flex items-center gap-2.5">
+                <span className="flex h-8 w-8 items-center justify-center rounded-2xl bg-dark-brown text-milk text-sm shadow-xs shrink-0">
+                  <SparkIcon size={14} className="text-milk" />
+                </span>
+                <div>
+                  <h3 className="text-sm sm:text-base font-bold uppercase tracking-tight text-dark-brown flex items-center gap-2">
+                    <span>Customer AI Concierge</span>
+                    <span className="text-[10px] bg-light-brown text-dark-brown px-2 py-0.5 rounded-full font-mono">
+                      Captions
+                    </span>
+                  </h3>
+                  <p className="font-paragraph text-xs text-dark-brown/65">
+                    Generate IG and TikTok captions for the bakes and drinks you order.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => openAiFeature("caption")}
+                className="self-start sm:self-auto rounded-full bg-dark-brown hover:bg-dark-brown-hover text-milk px-4 py-2 text-xs font-bold uppercase tracking-wider shadow-sm transition-all flex items-center gap-1.5 shrink-0"
+              >
+                <span>Launch AI Suite</span>
+                <span>→</span>
+              </button>
+            </div>
+
+            {/* Quick 8-Feature Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
+              {CUSTOMER_AI_FEATURES.map((feat) => (
+                <button
+                  key={feat.id}
+                  type="button"
+                  onClick={() => openAiFeature(feat.id)}
+                  className="group rounded-2xl bg-white/90 hover:bg-dark-brown border border-dark-brown/10 p-2 text-center transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 flex flex-col items-center justify-between min-h-[78px]"
+                >
+                  <CameraIcon size={16} className="mx-auto text-dark-brown group-hover:text-milk" />
+                  <span className="text-[11px] font-bold uppercase tracking-tight text-dark-brown group-hover:text-milk line-clamp-2 leading-tight">
+                    {feat.shortTitle}
+                  </span>
+                  <span className="text-[9px] font-paragraph text-mid-brown group-hover:text-light-brown mt-0.5">
+                    {feat.badge}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
         {/* Category Filter Tabs & Search Bar */}
         <div className="mt-8 max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           {/* Category Filter Pills */}
@@ -822,7 +967,7 @@ export default function OrderPage() {
                   : "text-dark-brown/70 hover:text-dark-brown hover:bg-dark-brown/5"
               }`}
             >
-              <span>✨</span>
+              <GridIcon size={13} />
               <span>{t("All") || "All"}</span>
               <span className={`text-[10px] px-1.5 py-0.5 rounded-full ml-0.5 ${selectedCategory === "all" ? "bg-white/20 text-milk" : "bg-dark-brown/10 text-dark-brown"}`}>
                 {menuItems.length}
@@ -837,7 +982,7 @@ export default function OrderPage() {
                   : "text-dark-brown/70 hover:text-dark-brown hover:bg-dark-brown/5"
               }`}
             >
-              <span>🥐</span>
+              <PastryIcon size={13} />
               <span>{t("Bakes & Pastries") || "Bakes & Pastries"}</span>
               <span className={`text-[10px] px-1.5 py-0.5 rounded-full ml-0.5 ${selectedCategory === "food" ? "bg-white/20 text-milk" : "bg-dark-brown/10 text-dark-brown"}`}>
                 {menuItems.filter(i => (i.category || "drink") === "food").length}
@@ -852,7 +997,7 @@ export default function OrderPage() {
                   : "text-dark-brown/70 hover:text-dark-brown hover:bg-dark-brown/5"
               }`}
             >
-              <span>☕</span>
+              <CupIcon size={13} />
               <span>{t("Drinks") || "Drinks"}</span>
               <span className={`text-[10px] px-1.5 py-0.5 rounded-full ml-0.5 ${selectedCategory === "drink" ? "bg-white/20 text-milk" : "bg-dark-brown/10 text-dark-brown"}`}>
                 {menuItems.filter(i => (i.category || "drink") === "drink").length}
@@ -882,9 +1027,10 @@ export default function OrderPage() {
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-dark-brown/10 hover:bg-dark-brown/20 text-dark-brown text-[10px] flex items-center justify-center font-bold"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-dark-brown/10 hover:bg-dark-brown/20 text-dark-brown flex items-center justify-center"
+                aria-label="Clear search"
               >
-                ✕
+                <CloseIcon size={10} />
               </button>
             )}
           </div>
@@ -892,7 +1038,7 @@ export default function OrderPage() {
       </div>
 
       {/* Menu Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7 px-5 md:px-10 max-w-6xl mx-auto pb-12">
+      <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7 px-5 md:px-10 max-w-6xl mx-auto ${totalItems > 0 && !showCart ? "pb-36" : "pb-12"}`}>
         {(() => {
           const displayedItems = menuItems.filter((item) => {
             const matchesCategory =
@@ -943,23 +1089,17 @@ export default function OrderPage() {
             return (
               <div
                 key={item.id ?? item.name}
-                className="group relative bg-[#FFFDF9] rounded-[28px] border border-[#EBE3D7] hover:border-[#D4A373]/80 shadow-[0_4px_20px_rgba(42,24,16,0.05)] hover:shadow-[0_22px_45px_rgba(42,24,16,0.14)] transition-all duration-400 hover:-translate-y-2 flex flex-col h-full overflow-hidden"
+                onClick={() => openCustomizer(item)}
+                className="group relative cursor-pointer bg-[#FFFDF9] rounded-[28px] border border-[#EBE3D7] hover:border-[#D4A373]/80 shadow-[0_4px_20px_rgba(42,24,16,0.05)] hover:shadow-[0_22px_45px_rgba(42,24,16,0.14)] transition-all duration-400 hover:-translate-y-2 flex flex-col h-full overflow-hidden"
               >
                 {/* Image Stage */}
                 <div className="p-3 pb-0">
                   <button
                     type="button"
-                    className="relative aspect-[4/3] w-full overflow-hidden rounded-[20px] cursor-zoom-in focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-light-brown group/img bg-[#F7F2EC]"
+                    className="relative aspect-[4/3] w-full overflow-hidden rounded-[20px] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-light-brown group/img bg-[#F7F2EC]"
                     style={{ backgroundColor: item.bgColor }}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setPreviewProduct({
-                        src: getMenuItemImage(item.name, item.image_url, item.color),
-                        alt: item.name,
-                      });
-                    }}
-                    aria-label={`View ${item.name}`}
+                    onClick={() => openCustomizer(item)}
+                    aria-label={`Customize ${item.name}`}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
@@ -971,9 +1111,23 @@ export default function OrderPage() {
                     
                     {/* Floating Category Pill (Top-Left) */}
                     <div className="absolute top-3 left-3 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-white/95 text-dark-brown shadow-sm backdrop-blur-md border border-dark-brown/10 flex items-center gap-1.5">
-                      <span>{isFood ? "🥐" : "☕"}</span>
+                      {isFood ? <PastryIcon size={11} /> : <CupIcon size={11} />}
                       <span>{isFood ? (t("Pastry") || "Pastry") : (t("Drink") || "Drink")}</span>
                     </div>
+
+                    {item.track_stock && (
+                      <div className={`absolute bottom-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm ${
+                        Number(item.stock ?? 0) <= 0
+                          ? "bg-[#3b241c] text-milk"
+                          : Number(item.stock) <= 5
+                          ? "bg-[#C4784A] text-white"
+                          : "bg-white/95 text-dark-brown border border-dark-brown/10"
+                      }`}>
+                        {Number(item.stock ?? 0) <= 0
+                          ? (t("Sold out") || "Sold out")
+                          : `${Number(item.stock)} left`}
+                      </div>
+                    )}
 
                     {/* Floating Rating Pill (Top-Right) */}
                     <div 
@@ -984,7 +1138,7 @@ export default function OrderPage() {
                       className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-white/95 text-dark-brown shadow-sm backdrop-blur-md border border-dark-brown/10 flex items-center gap-1 text-[11px] font-bold hover:bg-white transition-colors cursor-pointer"
                       title="Leave a review"
                     >
-                      <span className="text-amber-500 text-xs">★</span>
+                      <StarIcon size={11} className="text-amber-500" />
                       <span>{itemReviews.length > 0 ? avgRating : "5.0"}</span>
                       {itemReviews.length > 0 && (
                         <span className="text-dark-brown/50 text-[10px]">({itemReviews.length})</span>
@@ -992,8 +1146,17 @@ export default function OrderPage() {
                     </div>
 
                     {/* Quick View Pill (Center Bottom on Hover) */}
-                    <div className="absolute bottom-3 right-3 rounded-full bg-dark-brown/85 hover:bg-dark-brown text-milk px-3 py-1 text-[10px] font-bold uppercase tracking-wider backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-md flex items-center gap-1 transform translate-y-1 group-hover:translate-y-0">
-                      <span>🔍</span>
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setPreviewProduct({
+                          src: getMenuItemImage(item.name, item.image_url, item.color),
+                          alt: item.name,
+                        });
+                      }}
+                      className="absolute bottom-3 right-3 rounded-full bg-dark-brown/85 hover:bg-dark-brown text-milk px-3 py-1 text-[10px] font-bold uppercase tracking-wider backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-md flex items-center gap-1 transform translate-y-1 group-hover:translate-y-0"
+                    >
+                      <SearchIcon size={11} />
                       <span>{t("View") || "View"}</span>
                     </div>
                   </button>
@@ -1025,14 +1188,21 @@ export default function OrderPage() {
                     </div>
 
                     {/* Action Controls */}
-                    {baseQty > 0 ? (
+                    {item.track_stock && Number(item.stock ?? 0) <= 0 ? (
+                      <span className="h-9 px-4 rounded-full bg-dark-brown/10 text-dark-brown/45 font-bold text-xs uppercase tracking-wider flex items-center">
+                        {t("Sold out") || "Sold out"}
+                      </span>
+                    ) : baseQty > 0 ? (
                       <div className="flex items-center gap-2">
                         <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100/90 border border-emerald-300/40 px-3 py-2 rounded-full shadow-2xs">
                           <span>✓</span>
                           <span>{baseQty}</span>
                         </div>
                         <button
-                          onClick={() => openCustomizer(item)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openCustomizer(item);
+                          }}
                           className="h-9 px-4 rounded-full bg-light-brown hover:bg-mid-brown text-dark-brown hover:text-milk font-bold text-xs uppercase tracking-wider shadow-sm hover:shadow-md transition-all active:scale-95 flex items-center gap-1"
                         >
                           <span>+</span>
@@ -1041,7 +1211,10 @@ export default function OrderPage() {
                       </div>
                     ) : (
                       <button
-                        onClick={() => openCustomizer(item)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openCustomizer(item);
+                        }}
                         className={`px-5 py-2.5 sm:px-6 sm:py-3 rounded-full font-bold text-xs uppercase tracking-wider shadow-md hover:shadow-xl hover:scale-[1.03] active:scale-95 transition-all duration-300 flex items-center gap-2 ${
                           isFood
                             ? "bg-[#523122] hover:bg-[#381F14] text-[#FAEADE] hover:text-white"
@@ -1086,7 +1259,7 @@ export default function OrderPage() {
             {/* Cart Header */}
             <div className="flex items-center justify-between p-4 sm:p-5 border-b border-dark-brown/10 shrink-0 bg-milk">
               <div className="flex items-center gap-2">
-                <span className="text-xl">🧺</span>
+                <CartIcon size={18} />
                 <h2 className="text-xl sm:text-2xl font-bold text-dark-brown uppercase tracking-tight">
                   {t("Your Cart")}
                 </h2>
@@ -1107,9 +1280,10 @@ export default function OrderPage() {
                 )}
                 <button
                   onClick={() => setShowCart(false)}
-                  className="h-8 w-8 rounded-full bg-dark-brown/10 text-dark-brown hover:bg-dark-brown hover:text-milk transition-all flex items-center justify-center text-sm font-bold"
+                  className="h-8 w-8 rounded-full bg-dark-brown/10 text-dark-brown hover:bg-dark-brown hover:text-milk transition-all flex items-center justify-center"
+                  aria-label="Close cart"
                 >
-                  ✕
+                  <CloseIcon size={14} />
                 </button>
               </div>
             </div>
@@ -1132,7 +1306,7 @@ export default function OrderPage() {
                   {/* Quick Add Recommendations */}
                   <div className="w-full mt-6 text-left border-t border-dark-brown/10 pt-5">
                     <span className="font-paragraph text-[11px] font-bold uppercase tracking-wider text-dark-brown/50 block mb-3">
-                      ⭐ Popular Bakes & Drinks:
+                      <StarIcon size={11} className="inline" /> Popular Bakes & Drinks:
                     </span>
                     <div className="space-y-2.5">
                       {(menuItems.length > 0 ? menuItems : defaultMenu).slice(0, 3).map((item) => (
@@ -1180,7 +1354,7 @@ export default function OrderPage() {
                   <button
                     type="button"
                     onClick={() => setShowCart(false)}
-                    className="mt-6 inline-flex items-center gap-2 rounded-full bg-dark-brown hover:bg-dark-brown-hover text-milk uppercase font-bold text-xs sm:text-sm py-3 px-8 shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all"
+                    className="mt-4 inline-flex items-center gap-2 rounded-full bg-dark-brown hover:bg-dark-brown-hover text-milk uppercase font-bold text-xs sm:text-sm py-3 px-8 shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all"
                   >
                     <span>Browse Full Menu</span>
                     <span>→</span>
@@ -1233,25 +1407,21 @@ export default function OrderPage() {
 
                   {/* Order Type UI — scrolls with items so Place Order stays pinned */}
                   <div className="bg-dark-brown/5 rounded-2xl p-4 border border-dark-brown/10">
-                    <div className="flex bg-dark-brown/10 rounded-xl p-1 mb-4">
-                      <button
-                        onClick={() => setOrderType("Dine-In")}
-                        className={`flex-1 py-1.5 md:py-2 font-bold text-[10px] md:text-sm rounded-lg transition-all ${orderType === "Dine-In" ? "bg-white text-dark-brown shadow-sm" : "text-dark-brown/50 hover:text-dark-brown"}`}
-                      >
-                        {t("Dine-In")}
-                      </button>
-                      <button
-                        onClick={() => setOrderType("Takeout")}
-                        className={`flex-1 py-1.5 md:py-2 font-bold text-[10px] md:text-sm rounded-lg transition-all ${orderType === "Takeout" ? "bg-white text-dark-brown shadow-sm" : "text-dark-brown/50 hover:text-dark-brown"}`}
-                      >
-                        {t("Takeout")}
-                      </button>
-                      <button
-                        onClick={() => setOrderType("Scheduled")}
-                        className={`flex-1 py-1.5 md:py-2 font-bold text-[10px] md:text-sm rounded-lg transition-all ${orderType === "Scheduled" ? "bg-white text-dark-brown shadow-sm" : "text-dark-brown/50 hover:text-dark-brown"}`}
-                      >
-                        {t("Pre-Order")}
-                      </button>
+                    <div className="grid grid-cols-2 gap-1 bg-dark-brown/10 rounded-xl p-1 mb-4">
+                      {([
+                        ["Dine-In", "Dine-In"],
+                        ["Takeout", "Takeout"],
+                        ["Scheduled", "Pre-Order"],
+                        ["Delivery", "Delivery"],
+                      ] as const).map(([value, label]) => (
+                        <button
+                          key={value}
+                          onClick={() => setOrderType(value)}
+                          className={`py-2 font-bold text-[11px] md:text-sm rounded-lg transition-all ${orderType === value ? "bg-white text-dark-brown shadow-sm" : "text-dark-brown/50 hover:text-dark-brown"}`}
+                        >
+                          {t(label)}
+                        </button>
+                      ))}
                     </div>
                   
                     {orderType === "Dine-In" ? (
@@ -1276,7 +1446,7 @@ export default function OrderPage() {
                           className="w-full bg-white border border-dark-brown/20 rounded-xl px-4 py-3 text-dark-brown font-paragraph focus:outline-none focus:border-light-brown shadow-inner"
                         />
                       </div>
-                    ) : (
+                    ) : orderType === "Scheduled" ? (
                       <div className="flex flex-col gap-3">
                         <div>
                           <label className="block font-bold text-dark-brown text-sm mb-1 ml-1 cursor-pointer">{t("Customer Name")}</label>
@@ -1294,6 +1464,39 @@ export default function OrderPage() {
                             type="datetime-local" 
                             value={pickupTime} 
                             onChange={e => setPickupTime(e.target.value)} 
+                            min={new Date().toISOString().slice(0, 16)}
+                            className="w-full bg-white border border-dark-brown/20 rounded-xl px-4 py-3 text-dark-brown font-paragraph focus:outline-none focus:border-light-brown shadow-inner cursor-pointer"
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col gap-3">
+                        <div>
+                          <label className="block font-bold text-dark-brown text-sm mb-1 ml-1">{t("Customer Name")}</label>
+                          <input
+                            type="text"
+                            value={customerName}
+                            onChange={e => setCustomerName(e.target.value)}
+                            placeholder="..."
+                            className="w-full bg-white border border-dark-brown/20 rounded-xl px-4 py-3 text-dark-brown font-paragraph focus:outline-none focus:border-light-brown shadow-inner"
+                          />
+                        </div>
+                        <div>
+                          <label className="block font-bold text-dark-brown text-sm mb-1 ml-1">{t("Delivery address")}</label>
+                          <textarea
+                            value={deliveryAddress}
+                            onChange={e => setDeliveryAddress(e.target.value)}
+                            rows={2}
+                            placeholder="House no., street, barangay"
+                            className="w-full resize-none bg-white border border-dark-brown/20 rounded-xl px-4 py-3 text-dark-brown font-paragraph focus:outline-none focus:border-light-brown shadow-inner"
+                          />
+                        </div>
+                        <div>
+                          <label className="block font-bold text-dark-brown text-sm mb-1 ml-1">{t("Delivery time")}</label>
+                          <input
+                            type="datetime-local"
+                            value={pickupTime}
+                            onChange={e => setPickupTime(e.target.value)}
                             min={new Date().toISOString().slice(0, 16)}
                             className="w-full bg-white border border-dark-brown/20 rounded-xl px-4 py-3 text-dark-brown font-paragraph focus:outline-none focus:border-light-brown shadow-inner cursor-pointer"
                           />
@@ -1338,7 +1541,7 @@ export default function OrderPage() {
               <h2 className="text-2xl font-bold text-dark-brown uppercase tracking-tight">
                 {customizingItem.category === "food" ? t("Add to Cart") : t("Customize")}
               </h2>
-              <button onClick={() => setCustomizingItem(null)} className="text-dark-brown hover:text-light-brown text-2xl font-bold">✕</button>
+              <button onClick={() => setCustomizingItem(null)} className="text-dark-brown hover:text-light-brown" aria-label="Close"><CloseIcon size={18} /></button>
             </div>
             
             <div className="p-5 overflow-y-auto flex-1">
@@ -1727,7 +1930,7 @@ export default function OrderPage() {
           <div className="relative bg-milk w-full max-w-lg rounded-3xl shadow-2xl flex flex-col max-h-[90vh]">
             <div className="p-5 border-b border-dark-brown/10 flex justify-between items-center app-chip rounded-t-3xl">
               <h2 className="text-xl md:text-2xl font-bold text-dark-brown uppercase tracking-tight truncate pr-4">Reviews: {reviewingItem.name}</h2>
-              <button onClick={() => { setReviewingItem(null); setReviewText(""); setRatingVal(5); }} className="text-dark-brown hover:text-light-brown text-2xl font-bold shrink-0">✕</button>
+              <button onClick={() => { setReviewingItem(null); setReviewText(""); setRatingVal(5); }} className="text-dark-brown hover:text-light-brown shrink-0" aria-label="Close"><CloseIcon size={18} /></button>
             </div>
             
             <div className="p-5 overflow-y-auto flex-1 flex flex-col gap-6">
@@ -1742,7 +1945,7 @@ export default function OrderPage() {
                         onClick={() => setRatingVal(star)}
                         className={`text-2xl transition-colors hover:scale-110 ${star <= ratingVal ? "text-light-brown" : "text-dark-brown/20"}`}
                       >
-                        ★
+                        <StarIcon size={18} />
                       </button>
                     ))}
                   </div>
@@ -1782,8 +1985,10 @@ export default function OrderPage() {
                           <span className="font-bold text-dark-brown text-sm">{review.userName}</span>
                           <span className="font-paragraph text-dark-brown/40 text-xs">{new Date(review.date).toLocaleDateString()}</span>
                         </div>
-                        <div className="flex text-light-brown text-sm mb-2">
-                          {"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}
+                        <div className="mb-2 flex gap-0.5 text-[#e3a458]">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <StarIcon key={star} size={12} className={star <= review.rating ? "" : "opacity-25"} />
+                          ))}
                         </div>
                         <p className="font-paragraph text-dark-brown/80 text-sm leading-relaxed">{review.text}</p>
                       </div>
@@ -1795,6 +2000,15 @@ export default function OrderPage() {
           </div>
         </div>
       )}
+
+      <CustomerAiStudio
+        isOpen={aiStudioOpen}
+        onClose={() => setAiStudioOpen(false)}
+        initialFeature={aiStudioFeature}
+        menuItems={menuItems}
+        customerName={user?.name || customerName}
+        activeOrderItems={cart.map((c) => c.name)}
+      />
 
       <ProductLightbox
         src={previewProduct?.src || ""}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { GB_EASE } from "@/lib/motion";
@@ -133,11 +133,6 @@ export default function OrderProgress({
   const prevStepRef = useRef<number>(-1);
   const prevStatusRef = useRef<OrderProgressStatus | null>(null);
 
-  useEffect(() => {
-    prevStepRef.current = -1;
-    prevStatusRef.current = null;
-  }, []);
-
   useGSAP(
     () => {
       if (isCancelled) return;
@@ -161,31 +156,32 @@ export default function OrderProgress({
       const tl = gsap.timeline({ defaults: { ease: GB_EASE.out } });
 
       if (progressFillRef.current) {
-        tl.to(
-          progressFillRef.current,
-          {
-            width: `${progressPct}%`,
-            duration: isFirstPaint ? 0.55 : isAdvance || justCompleted ? 0.95 : 0.45,
-            ease: GB_EASE.inOut,
-          },
-          0
-        );
+        const bar = {
+          width: `${progressPct}%`,
+          duration: isFirstPaint ? 0.7 : isAdvance || justCompleted ? 1.05 : 0.45,
+          ease: GB_EASE.inOut,
+        };
+        if (isFirstPaint) {
+          tl.fromTo(progressFillRef.current, { width: "0%" }, bar, 0);
+        } else {
+          tl.to(progressFillRef.current, bar, 0);
+        }
       }
 
       if (!isFirstPaint && statusTitleRef.current) {
         tl.fromTo(
           statusTitleRef.current,
-          { autoAlpha: 0.35, y: 8 },
-          { autoAlpha: 1, y: 0, duration: 0.45 },
-          0.05
+          { autoAlpha: 0, y: 14 },
+          { autoAlpha: 1, y: 0, duration: 0.5, ease: "power3.out" },
+          0.08
         );
       }
       if (!isFirstPaint && statusBadgeRef.current) {
         tl.fromTo(
           statusBadgeRef.current,
-          { scale: 0.86, autoAlpha: 0.5 },
-          { scale: 1, autoAlpha: 1, duration: 0.4 },
-          0.08
+          { scale: 0.7, autoAlpha: 0 },
+          { scale: 1, autoAlpha: 1, duration: 0.45, ease: "back.out(2)" },
+          0.1
         );
       }
 
@@ -194,43 +190,40 @@ export default function OrderProgress({
         gsap.killTweensOf(node);
 
         if (isAdvance && i === prev) {
-          tl.fromTo(node, { scale: 1.12 }, { scale: 1, duration: 0.5 }, 0.12);
+          tl.fromTo(
+            node,
+            { scale: 1.18 },
+            { scale: 1, duration: 0.45, ease: "power2.out" },
+            0.12
+          );
         }
 
         if (i === step && !justCompleted) {
           tl.fromTo(
             node,
-            { scale: isFirstPaint ? 0.92 : 0.78 },
-            { scale: 1, duration: 0.55 },
-            isFirstPaint ? 0.1 : 0.28
+            { scale: isFirstPaint ? 0.9 : 0.55, rotation: isFirstPaint ? 0 : -8 },
+            { scale: 1, rotation: 0, duration: 0.6, ease: "back.out(1.8)" },
+            isFirstPaint ? 0.12 : 0.22
           );
-          tl.fromTo(
-            node,
-            { boxShadow: "0 0 0 0 rgba(227,164,88,0)" },
-            {
-              boxShadow: "0 0 0 10px rgba(227,164,88,0.18)",
-              duration: 0.55,
-              yoyo: true,
-              repeat: 1,
-              ease: GB_EASE.inOut,
-              onComplete: () => {
-                gsap.set(node, { clearProps: "boxShadow" });
+          if (!isFirstPaint) {
+            tl.fromTo(
+              node,
+              { boxShadow: "0 0 0 0 rgba(227,164,88,0.45)" },
+              {
+                boxShadow: "0 0 0 14px rgba(227,164,88,0)",
+                duration: 0.7,
+                ease: "power2.out",
               },
-            },
-            isFirstPaint ? 0.15 : 0.32
-          );
+              0.28
+            );
+          }
         }
 
-        // Completion: every step pops to "done" with warm pulse
         if (justCompleted) {
           tl.fromTo(
             node,
-            { scale: 0.88 },
-            {
-              scale: 1,
-              duration: 0.45,
-              ease: "back.out(1.8)",
-            },
+            { scale: 0.86 },
+            { scale: 1, duration: 0.45, ease: "back.out(1.8)" },
             0.15 + i * 0.08
           );
         }
@@ -239,15 +232,20 @@ export default function OrderProgress({
       stepLabelRefs.current.forEach((label, i) => {
         if (!label || i !== step || isFirstPaint) return;
         gsap.killTweensOf(label);
-        tl.fromTo(label, { autoAlpha: 0.45, y: 6 }, { autoAlpha: 1, y: 0, duration: 0.4 }, 0.3);
+        tl.fromTo(
+          label,
+          { autoAlpha: 0, y: 10 },
+          { autoAlpha: 1, y: 0, duration: 0.45, ease: "power2.out" },
+          0.28
+        );
       });
 
-      if (statusBannerRef.current && (status === "ready" || isCompleted)) {
+      if (statusBannerRef.current && (status === "ready" || isCompleted) && !isFirstPaint) {
         tl.fromTo(
           statusBannerRef.current,
-          { autoAlpha: 0, y: 14, scale: 0.98 },
-          { autoAlpha: 1, y: 0, scale: 1, duration: 0.55 },
-          isAdvance || justCompleted ? 0.45 : 0.1
+          { autoAlpha: 0, y: 18, scale: 0.96 },
+          { autoAlpha: 1, y: 0, scale: 1, duration: 0.55, ease: "power3.out" },
+          0.4
         );
       }
     },

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -22,6 +22,11 @@ import ProductLightbox from "@/components/ProductLightbox";
 import { fetchOrderEta, type SmartEta } from "@/lib/smartEta";
 import { getMenuItemImage } from "@/constants";
 import CroissantLogoIcon from "@/components/CroissantLogoIcon";
+import CustomerAiStudio, {
+  CUSTOMER_AI_FEATURES,
+  type CustomerAiFeatureId,
+} from "@/components/CustomerAiStudio";
+import { CameraIcon, CloseIcon, DownloadIcon, StarIcon } from "@/components/MiniIcons";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
 
@@ -43,6 +48,9 @@ interface Order {
   rating?: number;
   paymentMethod?: string;
   paymentStatus?: "unpaid" | "paid" | "";
+  orderType?: string;
+  deliveryAddress?: string;
+  deliveryTime?: string;
 }
 
 export default function DashboardPage() {
@@ -82,6 +90,23 @@ export default function DashboardPage() {
   const [orderEtas, setOrderEtas] = useState<Record<string, SmartEta>>({});
   const [showSpending, setShowSpending] = useState(false);
   const [previewProduct, setPreviewProduct] = useState<{ src: string; alt: string } | null>(null);
+  const [aiStudioOpen, setAiStudioOpen] = useState(false);
+  const [aiStudioFeature, setAiStudioFeature] = useState<CustomerAiFeatureId>("caption");
+  const [aiActiveItems, setAiActiveItems] = useState<string[]>([]);
+  const [menuItems, setMenuItems] = useState<any[]>([]);
+
+  useEffect(() => {
+    try {
+      const local = localStorage.getItem("spylt_menu");
+      if (local) setMenuItems(JSON.parse(local));
+    } catch {}
+  }, []);
+
+  const openAiStudio = (feature: CustomerAiFeatureId, items?: string[]) => {
+    setAiStudioFeature(feature);
+    if (items) setAiActiveItems(items);
+    setAiStudioOpen(true);
+  };
 
   useEffect(() => {
     if (toastMessage) {
@@ -323,6 +348,9 @@ export default function DashboardPage() {
               rating: d.rating,
               paymentMethod: d.payment_method || "",
               paymentStatus: d.payment_status || "unpaid",
+              orderType: d.order_type || "",
+              deliveryAddress: d.delivery_address || "",
+              deliveryTime: d.order_type === "delivery" ? (d.pickup_time || "") : "",
             }));
           }
         } catch (backendErr) {
@@ -616,6 +644,23 @@ export default function DashboardPage() {
     });
   }, [orders]);
 
+  const personalSpend = useMemo(() => {
+    const now = new Date();
+    const startOfWeek = new Date(now);
+    startOfWeek.setHours(0, 0, 0, 0);
+    startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+    const startOfYear = new Date(now.getFullYear(), 0, 1);
+    const active = orders.filter((order) => order.status !== "cancelled");
+    const sumSince = (from: Date) => {
+      const list = active.filter((order) => new Date(order.date) >= from);
+      return {
+        total: list.reduce((sum, order) => sum + order.total, 0),
+        orders: list.length,
+      };
+    };
+    return { week: sumSince(startOfWeek), year: sumSince(startOfYear) };
+  }, [orders]);
+
   if (mounted && !isAuthLoading && !isLoggedIn) {
     return null;
   }
@@ -852,8 +897,9 @@ export default function DashboardPage() {
     brand.style.letterSpacing = "0.15em";
     brand.style.marginBottom = "5px";
 
+    const isDelivery = order.orderType === "delivery";
     const subTitle = document.createElement("div");
-    subTitle.textContent = "PREMIUM DRINKS";
+    subTitle.textContent = isDelivery ? "DELIVERY RECEIPT" : "ORDER RECEIPT";
     subTitle.style.textAlign = "center";
     subTitle.style.fontWeight = "600";
     subTitle.style.fontSize = "10px";
@@ -877,6 +923,8 @@ export default function DashboardPage() {
         <tr><td style="padding: 0 8px 0 0; font-weight: bold;">Status:</td><td style="color: ${stStyle.text}; font-weight: 700;">${order.status.toUpperCase()}</td></tr>
         <tr><td style="padding: 0 8px 0 0; font-weight: bold;">Date:</td><td>${new Date(order.date).toLocaleDateString()}</td></tr>
         <tr><td style="padding: 0 8px 0 0; font-weight: bold;">Time:</td><td>${new Date(order.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td></tr>
+        ${isDelivery ? `<tr><td style="padding: 0 8px 0 0; font-weight: bold; vertical-align: top;">Deliver to:</td><td style="max-width: 180px;">${order.deliveryAddress || "—"}</td></tr>` : ""}
+        ${isDelivery && order.deliveryTime ? `<tr><td style="padding: 0 8px 0 0; font-weight: bold;">Delivery:</td><td>${new Date(order.deliveryTime).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</td></tr>` : ""}
       </table>
     `;
 
@@ -1231,6 +1279,29 @@ export default function DashboardPage() {
                         {t("Track Order")}
                       </Link>
                     )}
+                    <button
+                      type="button"
+                      onClick={() => openAiStudio("caption")}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-light-brown/60 bg-gradient-to-r from-light-brown/30 to-mid-brown/25 px-4 py-2.5 text-xs sm:text-sm font-bold uppercase tracking-wider text-dark-brown transition-all hover:bg-dark-brown hover:text-milk hover:border-dark-brown shadow-sm active:scale-95"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.75"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M12 3.2 13.15 8.7 18.8 9.85 13.15 11 12 16.5 10.85 11 5.2 9.85 10.85 8.7 12 3.2z" />
+                        <path d="M18.2 14.8v3.2" />
+                        <path d="M19.8 16.4h-3.2" />
+                      </svg>
+                      <span>AI Suite</span>
+                    </button>
                   </div>
 
                   {/* Your Usual Chip */}
@@ -1242,7 +1313,7 @@ export default function DashboardPage() {
                         className="group inline-flex items-center gap-2 rounded-full border border-dark-brown/15 bg-milk/90 px-3.5 py-1.5 text-xs font-bold uppercase tracking-wide text-dark-brown transition-all hover:bg-dark-brown hover:text-milk hover:border-dark-brown shadow-sm"
                         title="View your favorite ordered items"
                       >
-                        <span className="text-brand-gold text-[12px]">★</span>
+                        <StarIcon size={12} className="text-brand-gold" />
                         <span className="font-paragraph text-[11px] font-semibold text-dark-brown/50 group-hover:text-milk/70 uppercase tracking-wider">
                           {t("Your usual") || "Your usual"}:
                         </span>
@@ -1332,7 +1403,8 @@ export default function DashboardPage() {
                     return (
                       <div
                         key={order.id}
-                        className={`rounded-2xl border p-4 sm:rounded-3xl sm:p-5 md:p-6 ${isReady
+                        onClick={() => router.push(`/track?id=${encodeURIComponent(order.id)}`)}
+                        className={`cursor-pointer rounded-2xl border p-4 transition-shadow hover:shadow-md sm:rounded-3xl sm:p-5 md:p-6 ${isReady
                             ? "border-light-brown/40 bg-light-brown/15"
                             : "border-dark-brown/10 bg-milk/70"
                           }`}
@@ -1359,7 +1431,10 @@ export default function DashboardPage() {
                                   >
                                     <div
                                       className="relative h-7 w-7 shrink-0 overflow-hidden rounded-lg border border-dark-brown/10 bg-milk cursor-zoom-in"
-                                      onClick={() => setPreviewProduct({ src: itemImg, alt: i.name })}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setPreviewProduct({ src: itemImg, alt: i.name });
+                                      }}
                                       title={`View ${i.name}`}
                                     >
                                       <Image
@@ -1383,7 +1458,10 @@ export default function DashboardPage() {
                           </div>
                           {order.status === "pending" && (
                             <button
-                              onClick={() => setCancelOrderId(order.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setCancelOrderId(order.id);
+                              }}
                               className="self-start rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider text-dark-brown/40 transition-colors hover:bg-red-brown/10 hover:text-red-brown"
                             >
                               {t("Cancel") || "Cancel"}
@@ -1406,7 +1484,10 @@ export default function DashboardPage() {
                             <div className="flex items-center gap-2">
                               <button
                                 type="button"
-                                onClick={() => handleCompleteOrder(order, false)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCompleteOrder(order, false);
+                                }}
                                 className="rounded-full bg-emerald-600 hover:bg-emerald-500 px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider text-white transition-all active:scale-95 shadow-sm"
                                 title="Mark this order as picked up"
                               >
@@ -1414,7 +1495,10 @@ export default function DashboardPage() {
                               </button>
                               <button
                                 type="button"
-                                onClick={() => handleCompleteOrder(order, true)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCompleteOrder(order, true);
+                                }}
                                 className="rounded-full bg-milk/15 hover:bg-milk/25 px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider text-light-brown hover:text-milk transition-all active:scale-95"
                                 title="View tracking receipt & complete"
                               >
@@ -1479,7 +1563,7 @@ export default function DashboardPage() {
                   >
                     <div className="flex items-center justify-between">
                       <p className="font-paragraph text-[10px] font-bold uppercase tracking-[0.2em] text-mid-brown">
-                        ⭐ {t("Your usual") || "Your usual"}
+                        <StarIcon size={11} className="inline" /> {t("Your usual") || "Your usual"}
                       </p>
                       <span className="text-xs text-mid-brown group-hover:translate-x-0.5 transition-transform">→</span>
                     </div>
@@ -1630,31 +1714,54 @@ export default function DashboardPage() {
                                   onClick={() => { setRateOrderId(order.id); setRatingValue(0); }}
                                   className="inline-flex items-center gap-1 rounded-full border border-dark-brown/15 bg-milk/90 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-mid-brown transition-all hover:bg-dark-brown hover:text-milk hover:border-dark-brown shadow-2xs"
                                 >
-                                  <span>★</span> Rate
+                                  <StarIcon size={12} /> Rate
                                 </button>
                               )
                             )}
                             <button
                               onClick={() => handleReorder(order)}
-                              className="inline-flex items-center gap-1 rounded-full bg-dark-brown px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider text-milk shadow-2xs transition-all hover:bg-dark-brown-hover hover:scale-105 active:scale-95"
+                              className="group inline-flex items-center gap-1.5 rounded-full bg-dark-brown px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider text-milk shadow-2xs transition-all hover:bg-dark-brown-hover hover:scale-105 active:scale-95"
                               title="Add items to cart and reorder"
                             >
-                              <span>⟲</span> {t("Reorder") || "Reorder"}
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2.25"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="shrink-0 transition-transform duration-500 ease-out group-hover:-rotate-180"
+                                aria-hidden="true"
+                              >
+                                <path d="M21 12a9 9 0 1 1-2.2-5.8" />
+                                <path d="M21 3v6h-6" />
+                              </svg>
+                              {t("Reorder") || "Reorder"}
                             </button>
                             <button
                               onClick={() => downloadReceipt(order)}
                               className="inline-flex items-center gap-1 rounded-full border border-dark-brown/15 bg-milk/90 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-dark-brown/70 shadow-2xs transition-all hover:bg-dark-brown hover:text-milk hover:border-dark-brown"
                               title="Save / Download Receipt"
                             >
-                              <span>↓</span> {t("Receipt") || "Receipt"}
+                              <DownloadIcon size={12} /> {t("Receipt") || "Receipt"}
+                            </button>
+                            <button
+                              onClick={() => openAiStudio("caption", order.items.map((i) => i.name))}
+                              className="inline-flex items-center gap-1 rounded-full border border-dark-brown/15 bg-milk/90 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-dark-brown/70 shadow-2xs transition-all hover:bg-dark-brown hover:text-milk hover:border-dark-brown"
+                              title="Generate AI Social Media Captions"
+                            >
+                              <CameraIcon size={12} /> Caption
                             </button>
                             <button
                               onClick={() => deleteOrder(order.id)}
                               disabled={deletingOrderIds.includes(order.id)}
                               className="rounded-full px-2.5 py-1.5 text-xs font-bold uppercase tracking-wider text-red-brown/50 transition-colors hover:bg-red-brown/10 hover:text-red-brown disabled:opacity-50"
-                              title="Delete this order record"
+                              aria-label="Delete order"
                             >
-                              ✕
+                              <CloseIcon size={12} />
                             </button>
                           </div>
                         </div>
@@ -1759,7 +1866,7 @@ export default function DashboardPage() {
                     {t("Spending Insights") || "Spending Insights"}
                   </h2>
                   <p className="mt-0.5 font-paragraph text-sm text-dark-brown/40">
-                    {t("Monthly trends") || "Monthly trends"}
+                    {t("This week") || "This week"}, {t("This year") || "this year"}, and monthly trends
                   </p>
                 </div>
                 <span className="text-lg font-bold tabular-nums text-dark-brown/35">
@@ -1769,6 +1876,22 @@ export default function DashboardPage() {
 
               {showSpending && (
                 <div className="mt-5">
+                  <div className="mb-4 grid grid-cols-2 gap-3">
+                    {[
+                      { label: t("This week") || "This week", stats: personalSpend.week },
+                      { label: t("This year") || "This year", stats: personalSpend.year },
+                    ].map((card) => (
+                      <div key={card.label} className="rounded-2xl border border-dark-brown/10 bg-milk/80 px-4 py-3">
+                        <p className="font-paragraph text-[10px] uppercase tracking-[0.18em] text-dark-brown/40">{card.label}</p>
+                        <p className="mt-1 text-xl font-bold tabular-nums text-dark-brown">
+                          ₱{card.stats.total.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                        </p>
+                        <p className="mt-0.5 font-paragraph text-xs text-dark-brown/45">
+                          {card.stats.orders} {card.stats.orders === 1 ? "order" : "orders"}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
                   {spendingData.length === 0 ? (
                     <div className="rounded-3xl border border-dark-brown/10 bg-milk/60 px-6 py-10 text-center">
                       <p className="font-paragraph text-sm text-dark-brown/55">
@@ -2065,6 +2188,16 @@ export default function DashboardPage() {
               </div>
             </div>
           )}
+
+          <CustomerAiStudio
+            isOpen={aiStudioOpen}
+            onClose={() => setAiStudioOpen(false)}
+            initialFeature={aiStudioFeature}
+            menuItems={menuItems}
+            orders={orders}
+            customerName={user?.name || ""}
+            activeOrderItems={aiActiveItems}
+          />
 
           <ProductLightbox
             src={previewProduct?.src || ""}
